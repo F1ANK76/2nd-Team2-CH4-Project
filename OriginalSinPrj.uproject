@@ -1,0 +1,22 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{0C748063-406D-EDCC-FADC-F9A1B5653A88}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "OriginalSinPrj",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		}
+	]
+}
