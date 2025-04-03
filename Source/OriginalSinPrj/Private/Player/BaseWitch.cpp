@@ -5,11 +5,56 @@
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
 #include "Player/Controller/WitchController.h"
+#include "Player/WitchAbilityComponent.h"
 
 ABaseWitch::ABaseWitch()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
+	AbilityComp = CreateDefaultSubobject<UWitchAbilityComponent>(TEXT("Ability Component"));
+
+}
+
+void ABaseWitch::RequestMoveToAbility(float Value)
+{
+	AddMovementInput(GetActorRightVector(), -Value);
+}
+
+void ABaseWitch::RequestUpDownToAbility(float Value)
+{
+	if (Value >= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("On Pressed Up Key"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("On Pressed Down Key"));
+	}
+}
+
+void ABaseWitch::RequestJumpToAbility()
+{
+	Jump();
+}
+
+void ABaseWitch::RequestGuardToAbility()
+{
+}
+
+void ABaseWitch::RequestTauntToAbility()
+{
+}
+
+void ABaseWitch::RequestNormalAttackToAbility()
+{
+}
+
+void ABaseWitch::RequestSpecialAttackToAbility()
+{
+}
+
+void ABaseWitch::RequestSkillAttackToAbility(int32 Value)
+{
 }
 
 void ABaseWitch::BeginPlay()
@@ -18,11 +63,10 @@ void ABaseWitch::BeginPlay()
 	
 }
 
-//void ABaseWitch::Tick(float DeltaTime)
-//{
-//	Super::Tick(DeltaTime);
-//
-//}
+float ABaseWitch::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	return 0.0f;
+}
 
 void ABaseWitch::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -134,69 +178,62 @@ void ABaseWitch::OnPressedMoveKey(const FInputActionValue& Value)
 {
 	float MoveValue = Value.Get<float>();
 
-	AddMovementInput(GetActorRightVector(), -MoveValue);
+	RequestMoveToAbility(MoveValue);
 }
 
 void ABaseWitch::OnPressedUpDownKey(const FInputActionValue& Value)
 {
 	float UpDownValue = Value.Get<float>();
 
-	if (UpDownValue >= 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("On Pressed Up Key"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("On Pressed Down Key"));
-	}
+	RequestUpDownToAbility(UpDownValue);
 }
 
 void ABaseWitch::OnPressedJumpKey(const FInputActionValue& Value)
 {
-	Jump();
+	RequestJumpToAbility();
 }
 
 void ABaseWitch::OnPressedNormalAttackKey(const FInputActionValue& Value)
 {
-
+	RequestNormalAttackToAbility();
 }
 
 void ABaseWitch::OnPressedSpecialAttackKey(const FInputActionValue& Value)
 {
-
+	RequestSpecialAttackToAbility();
 }
 
 void ABaseWitch::OnPressedGuardKey(const FInputActionValue& Value)
 {
-
+	RequestGuardToAbility();
 }
 
 void ABaseWitch::OnPressedTauntKey(const FInputActionValue& Value)
 {
-
+	RequestTauntToAbility();
 }
 
 void ABaseWitch::OnPressedSkill1Key(const FInputActionValue& Value)
 {
-
+	RequestSkillAttackToAbility(0);
 }
 
 void ABaseWitch::OnPressedSkill2Key(const FInputActionValue& Value)
 {
-
+	RequestSkillAttackToAbility(1);
 }
 
 void ABaseWitch::OnPressedSkill3Key(const FInputActionValue& Value)
 {
-
+	RequestSkillAttackToAbility(2);
 }
 
 void ABaseWitch::OnPressedSkill4Key(const FInputActionValue& Value)
 {
-
+	RequestSkillAttackToAbility(3);
 }
 
 void ABaseWitch::OnPressedSkill5Key(const FInputActionValue& Value)
 {
-
+	RequestSkillAttackToAbility(4);
 }

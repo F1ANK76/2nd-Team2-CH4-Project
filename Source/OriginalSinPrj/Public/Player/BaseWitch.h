@@ -7,6 +7,7 @@
 #include "BaseWitch.generated.h"
 
 class AWitchController;
+class UWitchAbilityComponent;
 struct FInputActionValue;
 
 UCLASS()
@@ -16,6 +17,14 @@ class ORIGINALSINPRJ_API ABaseWitch : public ACharacter
 
 public:
 	ABaseWitch();
+	void RequestMoveToAbility(float Value);
+	void RequestUpDownToAbility(float Value);
+	void RequestJumpToAbility();
+	void RequestGuardToAbility();
+	void RequestTauntToAbility();
+	void RequestNormalAttackToAbility();
+	void RequestSpecialAttackToAbility();
+	void RequestSkillAttackToAbility(int32 Value);
 
 protected:
 	UFUNCTION(BlueprintCallable)
@@ -56,11 +65,12 @@ protected:
 
 
 	virtual void BeginPlay() override;
-	//virtual void Tick(float DeltaTime) override;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UWitchAbilityComponent> AbilityComp = nullptr;
 
 protected:
 	TObjectPtr<AWitchController> WitchController = nullptr;
