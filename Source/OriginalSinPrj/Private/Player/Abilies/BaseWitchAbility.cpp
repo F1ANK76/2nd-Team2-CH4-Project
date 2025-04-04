@@ -25,6 +25,11 @@ void ABaseWitchAbility::UndoAbility()
 
 }
 
+const EAbilityType& ABaseWitchAbility::GetAbilityType() const
+{
+	return AbilityType;
+}
+
 void ABaseWitchAbility::BeginPlay()
 {
 	Super::BeginPlay();

@@ -12,18 +12,48 @@ ABaseWitch::ABaseWitch()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	AbilityComp = CreateDefaultSubobject<UWitchAbilityComponent>(TEXT("Ability Component"));
-	
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	DressMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Dress"));
+	StockingsMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Stokings"));
+	ShoesMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Shoes"));
 
-	if (IsValid(AnimInstance))
-	{
-		WitchAnimInstance = Cast<UWitchAnimInstance>(AnimInstance);
-	}
+	/*LeftHandItem = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftHand"));
+	RightHandItem = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightHand"));
+	HatItem = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hat"));*/
+
+	AbilityComp = CreateDefaultSubobject<UWitchAbilityComponent>(TEXT("Ability Component"));
+
+	checkf(IsValid(GetMesh()), TEXT("Skeletal Mesh is invalid"));
+
+	DressMesh->SetupAttachment(GetMesh());
+	StockingsMesh->SetupAttachment(GetMesh());
+	ShoesMesh->SetupAttachment(GetMesh());
+	
+	InitAnimInstance();
 }
 
-void ABaseWitch::SetWitchState()
+void ABaseWitch::SetWitchState(const EWitchStateType NewState)
 {
+	CurrentState = NewState;
+	
+	if (IsValid(WitchAnimInstance))
+	{
+		WitchAnimInstance->SetAnimState(NewState);
+	}
+
+	if (IsValid(DressAnimInstance))
+	{
+		DressAnimInstance->SetAnimState(NewState);
+	}
+
+	if (IsValid(StockingsAnimInstance))
+	{
+		StockingsAnimInstance->SetAnimState(NewState);
+	}
+
+	if (IsValid(ShoesAnimInstance))
+	{
+		ShoesAnimInstance->SetAnimState(NewState);
+	}
 }
 
 void ABaseWitch::SetWitchDirection()
@@ -190,6 +220,39 @@ void ABaseWitch::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 			EnhancedInputComponent->BindAction(TargetAction, ETriggerEvent::Triggered, this, &ThisClass::OnPressedSkill5Key);
 		}
 	}
+}
+
+void ABaseWitch::InitAnimInstance()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (IsValid(AnimInstance))
+	{
+		WitchAnimInstance = Cast<UWitchAnimInstance>(AnimInstance);
+	}
+
+	AnimInstance = DressMesh->GetAnimInstance();
+
+	if (IsValid(AnimInstance))
+	{
+		DressAnimInstance = Cast<UWitchAnimInstance>(AnimInstance);
+	}
+
+	AnimInstance = StockingsMesh->GetAnimInstance();
+
+	if (IsValid(AnimInstance))
+	{
+		StockingsAnimInstance = Cast<UWitchAnimInstance>(AnimInstance);
+	}
+
+	AnimInstance = ShoesMesh->GetAnimInstance();
+
+	if (IsValid(AnimInstance))
+	{
+		ShoesAnimInstance = Cast<UWitchAnimInstance>(AnimInstance);
+	}
+
+	AnimInstance = nullptr;
 }
 
 void ABaseWitch::OnPressedMoveKey(const FInputActionValue& Value)

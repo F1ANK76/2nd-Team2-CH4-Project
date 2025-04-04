@@ -4,34 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Player/WitchTypes.h"
 #include "WitchAbilityComponent.generated.h"
 
 class ABaseWitchAbility;
 class ABaseWitch;
-
-UENUM(BlueprintType)
-enum class EAbilityType : uint8
-{
-	MoveAbility = 0,
-	JumpAbility,
-	GuardAbility,
-	RollAbility,
-	TauntAbility,
-	NormalAttackAbility,
-	UpperAttackAbility,
-	LowerAttackAbility,
-	DashAttackAbility,
-	SpecialAttackAbility,
-	UppercutAttackAbility,
-	ChopAttackAbility,
-	DropkickAttackAbility,
-	Skill1Ability,
-	Skill2Ability,
-	Skill3Ability,
-	Skill4Ability,
-	Skill5Ability
-};
-
+class UCharacterMovementComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ORIGINALSINPRJ_API UWitchAbilityComponent : public UActorComponent
@@ -119,9 +97,11 @@ public:
 	TSubclassOf<ABaseWitchAbility> Skill5AbilityClass = nullptr;
 
 private:
-	TArray<EAbilityType> LastAbilities;
+	TArray<ABaseWitchAbility*> LastAbilities;
+
 	TObjectPtr<ABaseWitchAbility> CurrentAbility = nullptr;
 	TObjectPtr<ABaseWitch> ParentWitch = nullptr;
+	TObjectPtr<UCharacterMovementComponent> ParentMovementComp = nullptr;
 
 	FTimerHandle BufferTimer;
 	float BufferActiveTime = 0.3f;

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Player/WitchTypes.h"
 #include "BaseWitchAbility.generated.h"
 
 class ABaseWitch;
@@ -20,10 +21,13 @@ public:
 	virtual void ExcuteAbility(const FVector2D& DirectionVector);
 	virtual void UndoAbility();
 
+	const EAbilityType& GetAbilityType() const;
+
 protected:
 	virtual void BeginPlay() override;
 
 
 protected:
 	TObjectPtr<ABaseWitch> ParentWitch = nullptr;
+	EAbilityType AbilityType = EAbilityType::None;
 };

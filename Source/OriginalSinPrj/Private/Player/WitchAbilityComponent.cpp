@@ -4,6 +4,7 @@
 #include "Player/WitchAbilityComponent.h"
 #include "Player/Abilies/BaseWitchAbility.h"
 #include "Player/BaseWitch.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 UWitchAbilityComponent::UWitchAbilityComponent()
 {
@@ -13,6 +14,7 @@ UWitchAbilityComponent::UWitchAbilityComponent()
 
 void UWitchAbilityComponent::CheckMoveable(const FVector2D& Value)
 {
+	ParentMovementComp->IsWalkable(FHitResult());
 	if (!bIsMoveable)
 	{
 		return;
@@ -40,6 +42,8 @@ void UWitchAbilityComponent::BeginPlay()
 	}
 
 	checkf(IsValid(ParentWitch), TEXT("Ability Component : Parent is invalid. Parent == nullptr || Not BaseWitch type"));
+
+	ParentMovementComp = ParentWitch->GetCharacterMovement();
 }
 
 ABaseWitchAbility* UWitchAbilityComponent::SpawnAbility(UClass* TargetClass)
@@ -54,6 +58,11 @@ ABaseWitchAbility* UWitchAbilityComponent::SpawnAbility(UClass* TargetClass)
 		{
 			return nullptr;
 		}
+	}
+
+	if (!IsValid(TargetClass))
+	{
+		return nullptr;
 	}
 
 	FActorSpawnParameters SpawnParam;
@@ -82,17 +91,22 @@ void UWitchAbilityComponent::ActiveTimer()
 
 void UWitchAbilityComponent::AddLastAbilityToArray()
 {
-
+	LastAbilities.Add(CurrentAbility);
+	LastAbilities.Insert(CurrentAbility, 0);
+	RemoveOldAbilityFromArray();
 }
 
 void UWitchAbilityComponent::RemoveOldAbilityFromArray()
 {
-
+	if (LastAbilities.Num() > 5)
+	{
+		LastAbilities.RemoveAt(5);
+	}
 }
 
 void UWitchAbilityComponent::ClearLastAbilities()
 {
-
+	LastAbilities.Empty();
 }
 
 

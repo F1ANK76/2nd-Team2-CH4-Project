@@ -5,6 +5,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Character.h"
 
+void UWitchAnimInstance::SetAnimState(const EWitchStateType NewState)
+{
+	AnimState = NewState;
+}
+
 void UWitchAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();

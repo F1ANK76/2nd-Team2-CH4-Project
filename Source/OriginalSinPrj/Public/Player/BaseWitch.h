@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Player/WitchTypes.h"
 #include "BaseWitch.generated.h"
 
 class AWitchController;
@@ -19,7 +20,7 @@ class ORIGINALSINPRJ_API ABaseWitch : public ACharacter
 public:
 	ABaseWitch();
 
-	void SetWitchState();
+	void SetWitchState(const EWitchStateType NewState);
 	void SetWitchDirection();
 
 	void RequestMoveToAbility(float Value);
@@ -73,11 +74,36 @@ protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	void InitAnimInstance();
+
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UWitchAbilityComponent> AbilityComp = nullptr;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Clothes")
+	TObjectPtr<USkeletalMeshComponent> DressMesh = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Clothes")
+	TObjectPtr<USkeletalMeshComponent> ShoesMesh = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Clothes")
+	TObjectPtr<USkeletalMeshComponent> StockingsMesh = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	TObjectPtr<UStaticMeshComponent> LeftHandItem = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	TObjectPtr<UStaticMeshComponent> RightHandItem = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	TObjectPtr<UStaticMeshComponent> HatItem = nullptr;
+
 protected:
 	TObjectPtr<AWitchController> WitchController = nullptr;
 	TObjectPtr<UWitchAnimInstance> WitchAnimInstance = nullptr;
+	TObjectPtr<UWitchAnimInstance> DressAnimInstance = nullptr;
+	TObjectPtr<UWitchAnimInstance> StockingsAnimInstance = nullptr;
+	TObjectPtr<UWitchAnimInstance> ShoesAnimInstance = nullptr;
+
+	EWitchStateType CurrentState = EWitchStateType::Idle;
 };
