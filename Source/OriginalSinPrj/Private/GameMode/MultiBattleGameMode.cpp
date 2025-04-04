@@ -1,4 +1,4 @@
-#include "GameMode/MultiBattleGameMode.h"
+ï»¿#include "GameMode/MultiBattleGameMode.h"
 #include "GameState/MultiBattleGameState.h"
 
 #include "Kismet/GameplayStatics.h"
@@ -6,13 +6,13 @@
 void AMultiBattleGameMode::ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation)
 {
 	/*
-	¹üÀ§ ÆÇÁ¤->TakeDamageÇÔ¼ö·Î HP¸¦ °¨¼Ò½ÃÄÑ¾ßÇÏ´Â ¾×ÅÍ¸¦ ¼±Á¤
+	ë²”ìœ„ íŒì •->TakeDamageí•¨ìˆ˜ë¡œ HPë¥¼ ê°ì†Œì‹œì¼œì•¼í•˜ëŠ” ì•¡í„°ë¥¼ ì„ ì •
 	*/
 
 	if (AMultiBattleGameState* MultiBattleGameState = Cast<AMultiBattleGameState>(UGameplayStatics::GetGameState(this)))
 	{
-		//MultiBattleGameState->ApplyDamage(); -> °ø°ÝÀ» ½ÇÇàÇÑ ¾×ÅÍ°¡ °ø°Ý ¾Ö´Ï¸ÞÀÌ¼ÇÀ» ½ÇÇàÇÏµµ·Ï °ÔÀÓ½ºÅ×ÀÌÆ®¿¡¼­ ¸í·É
-		//TakeDamage(); -> °ø°Ý ¹üÀ§¿¡ ÀÖ´ø ¾×ÅÍÀÇ HP¸¦ °¨¼Ò½ÃÅ°°í ÇÇ°Ý ¾Ö´Ï¸ÞÀÌ¼ÇÀ» ½ÇÇàÇÏµµ·Ï ¸í·É
+		//MultiBattleGameState->ApplyDamage(); -> ê³µê²©ì„ ì‹¤í–‰í•œ ì•¡í„°ê°€ ê³µê²© ì• ë‹ˆë©”ì´ì…˜ì„ ì‹¤í–‰í•˜ë„ë¡ ê²Œìž„ìŠ¤í…Œì´íŠ¸ì—ì„œ ëª…ë ¹
+		//TakeDamage(); -> ê³µê²© ë²”ìœ„ì— ìžˆë˜ ì•¡í„°ì˜ HPë¥¼ ê°ì†Œì‹œí‚¤ê³  í”¼ê²© ì• ë‹ˆë©”ì´ì…˜ì„ ì‹¤í–‰í•˜ë„ë¡ ëª…ë ¹
 	}
 }
 
