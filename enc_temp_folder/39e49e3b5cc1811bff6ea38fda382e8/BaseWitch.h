@@ -8,7 +8,7 @@
 
 class AWitchController;
 class UWitchAbilityComponent;
-class UWitchAnimInstance;
+//class UWitchAnimInstance;
 struct FInputActionValue;
 
 UCLASS()
@@ -18,10 +18,6 @@ class ORIGINALSINPRJ_API ABaseWitch : public ACharacter
 
 public:
 	ABaseWitch();
-
-	void SetWitchState();
-	void SetWitchDirection();
-
 	void RequestMoveToAbility(float Value);
 	void RequestUpDownToAbility(float Value);
 	void RequestJumpToAbility();
@@ -79,5 +75,5 @@ public:
 
 protected:
 	TObjectPtr<AWitchController> WitchController = nullptr;
-	TObjectPtr<UWitchAnimInstance> WitchAnimInstance = nullptr;
+	TObjectPtr<UAnimInstance> WitchAnimInstnace = nullptr;
 };

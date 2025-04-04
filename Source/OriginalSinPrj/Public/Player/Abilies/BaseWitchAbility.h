@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "BaseWitchAbility.generated.h"
 
+class ABaseWitch;
 
 UCLASS()
 class ORIGINALSINPRJ_API ABaseWitchAbility : public AActor
@@ -15,10 +16,14 @@ class ORIGINALSINPRJ_API ABaseWitchAbility : public AActor
 public:	
 	ABaseWitchAbility();
 
-	void ExcuteAbility();
-	void UndoAbility();
+	virtual void InitAbility(ABaseWitch* NewParent);
+	virtual void ExcuteAbility(const FVector2D& DirectionVector);
+	virtual void UndoAbility();
 
 protected:
 	virtual void BeginPlay() override;
 
+
+protected:
+	TObjectPtr<ABaseWitch> ParentWitch = nullptr;
 };

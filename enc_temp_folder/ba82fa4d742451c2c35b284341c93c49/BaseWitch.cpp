@@ -5,7 +5,6 @@
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
 #include "Player/Controller/WitchController.h"
-#include "Player/WitchAnimInstance.h"
 #include "Player/WitchAbilityComponent.h"
 
 ABaseWitch::ABaseWitch()
@@ -18,16 +17,8 @@ ABaseWitch::ABaseWitch()
 
 	if (IsValid(AnimInstance))
 	{
-		WitchAnimInstance = Cast<UWitchAnimInstance>(AnimInstance);
+
 	}
-}
-
-void ABaseWitch::SetWitchState()
-{
-}
-
-void ABaseWitch::SetWitchDirection()
-{
 }
 
 void ABaseWitch::RequestMoveToAbility(float Value)

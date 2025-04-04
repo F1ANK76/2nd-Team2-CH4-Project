@@ -7,6 +7,31 @@
 #include "WitchAbilityComponent.generated.h"
 
 class ABaseWitchAbility;
+class ABaseWitch;
+
+UENUM(BlueprintType)
+enum class EAbilityType : uint8
+{
+	MoveAbility = 0,
+	JumpAbility,
+	GuardAbility,
+	RollAbility,
+	TauntAbility,
+	NormalAttackAbility,
+	UpperAttackAbility,
+	LowerAttackAbility,
+	DashAttackAbility,
+	SpecialAttackAbility,
+	UppercutAttackAbility,
+	ChopAttackAbility,
+	DropkickAttackAbility,
+	Skill1Ability,
+	Skill2Ability,
+	Skill3Ability,
+	Skill4Ability,
+	Skill5Ability
+};
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ORIGINALSINPRJ_API UWitchAbilityComponent : public UActorComponent
@@ -22,6 +47,8 @@ protected:
 	virtual void BeginPlay() override;
 	
 private:
+	ABaseWitchAbility* SpawnAbility(UClass* TargetClass);
+	void ExcuteCurrentAbility(const FVector2D& DirectionVector);
 	void ActiveTimer();
 	void AddLastAbilityToArray();
 	void RemoveOldAbilityFromArray();
@@ -30,70 +57,71 @@ private:
 public:
 	// Move
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> MoveAbility = nullptr;
+	TSubclassOf<ABaseWitchAbility> MoveAbilityClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> JumpAbility = nullptr;
+	TSubclassOf<ABaseWitchAbility> JumpAbilityClass = nullptr;
 
 
 	// Other
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> GuardAbility = nullptr;
+	TSubclassOf<ABaseWitchAbility> GuardAbilityClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> RollAbility = nullptr;
+	TSubclassOf<ABaseWitchAbility> RollAbilityClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> TauntAbility = nullptr;
+	TSubclassOf<ABaseWitchAbility> TauntAbilityClass = nullptr;
 
 
 	// Normal Attack
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> NormalAttackAbility = nullptr;
+	TSubclassOf<ABaseWitchAbility> NormalAttackAbilityClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> UpperAttackAbility = nullptr;
+	TSubclassOf<ABaseWitchAbility> UpperAttackAbilityClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> LowerAttackAbility = nullptr;
+	TSubclassOf<ABaseWitchAbility> LowerAttackAbilityClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> DashAttackAbility = nullptr;
+	TSubclassOf<ABaseWitchAbility> DashAttackAbilityClass = nullptr;
 
 
 	// Special Attack
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> SpecialAttackAbility = nullptr;
+	TSubclassOf<ABaseWitchAbility> SpecialAttackAbilityClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> DropKickAttackAbility = nullptr;
+	TSubclassOf<ABaseWitchAbility> DropKickAttackAbilityClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> UppercutAttackAbility = nullptr;
+	TSubclassOf<ABaseWitchAbility> UppercutAttackAbilityClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> ChopAttackAbility = nullptr;
+	TSubclassOf<ABaseWitchAbility> ChopAttackAbilityClass = nullptr;
 
-	
+
 	// Skill Attack
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> Skill1Ability = nullptr;
+	TSubclassOf<ABaseWitchAbility> Skill1AbilityClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> Skill2Ability = nullptr;
+	TSubclassOf<ABaseWitchAbility> Skill2AbilityClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> Skill3Ability = nullptr;
+	TSubclassOf<ABaseWitchAbility> Skill3AbilityClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> Skill4Ability = nullptr;
+	TSubclassOf<ABaseWitchAbility> Skill4AbilityClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<ABaseWitchAbility> Skill5Ability = nullptr;
+	TSubclassOf<ABaseWitchAbility> Skill5AbilityClass = nullptr;
 
 private:
-	TArray<ABaseWitchAbility*> LastAbilities;
+	TArray<EAbilityType> LastAbilities;
 	TObjectPtr<ABaseWitchAbility> CurrentAbility = nullptr;
+	TObjectPtr<ABaseWitch> ParentWitch = nullptr;
 
 	FTimerHandle BufferTimer;
 	float BufferActiveTime = 0.3f;
@@ -103,7 +131,7 @@ private:
 	bool bIsLeft = true;
 	float DirectionValue = 0.0f;
 
-	/*TObjectPtr<ABaseWitchAbility> MoveAbility = nullptr;
+	TObjectPtr<ABaseWitchAbility> MoveAbility = nullptr;
 	TObjectPtr<ABaseWitchAbility> JumpAbility = nullptr;
 	TObjectPtr<ABaseWitchAbility> GuardAbility = nullptr;
 	TObjectPtr<ABaseWitchAbility> RollAbility = nullptr;
@@ -123,5 +151,5 @@ private:
 	TObjectPtr<ABaseWitchAbility> Skill2Ability = nullptr;
 	TObjectPtr<ABaseWitchAbility> Skill3Ability = nullptr;
 	TObjectPtr<ABaseWitchAbility> Skill4Ability = nullptr;
-	TObjectPtr<ABaseWitchAbility> Skill5Ability = nullptr;*/
+	TObjectPtr<ABaseWitchAbility> Skill5Ability = nullptr;
 };

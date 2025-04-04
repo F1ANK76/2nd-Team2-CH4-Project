@@ -14,7 +14,8 @@ class ORIGINALSINPRJ_API AMoveAbility : public ABaseWitchAbility
 {
 	GENERATED_BODY()
 	
-	
+public:
+	virtual void ExcuteAbility(const FVector2D& DirectionValue) override;
 	
 	
 };

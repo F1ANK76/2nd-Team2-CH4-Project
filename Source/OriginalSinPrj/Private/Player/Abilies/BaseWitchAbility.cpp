@@ -10,7 +10,12 @@ ABaseWitchAbility::ABaseWitchAbility()
 
 }
 
-void ABaseWitchAbility::ExcuteAbility()
+void ABaseWitchAbility::InitAbility(ABaseWitch* NewParent)
+{
+	ParentWitch = NewParent;
+}
+
+void ABaseWitchAbility::ExcuteAbility(const FVector2D& DirectionVector)
 {
 
 }
