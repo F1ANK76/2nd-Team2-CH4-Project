@@ -74,6 +74,4 @@ public:
 
 protected:
 	TObjectPtr<AWitchController> WitchController = nullptr;
-
-	bool bIsJumpable = true;
 };
