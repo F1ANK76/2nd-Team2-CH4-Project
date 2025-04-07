@@ -30,4 +30,10 @@ public:
 
 	UFUNCTION(Category = "Lobby Event")
 	virtual void TravelLevel(const FName& LevelName) = 0;
+
+	UFUNCTION(Category = "Lobby Event")
+	virtual void JoinSessionPlayer(const FString& PlayerName) = 0;
+
+	UFUNCTION(Category = "Lobby Event")
+	virtual void ExitSessionPlayer(const FString& PlayerName) = 0;
 };
