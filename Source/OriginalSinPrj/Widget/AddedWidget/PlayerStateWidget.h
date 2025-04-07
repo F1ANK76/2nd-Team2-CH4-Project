@@ -14,4 +14,8 @@ class ORIGINALSINPRJ_API UPlayerStateWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 	
+
+	//Ä³¸¯ÅÍ UI
+	
+
 };

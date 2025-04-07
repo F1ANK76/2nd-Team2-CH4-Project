@@ -1,26 +1,10 @@
 #include "BaseWidget.h"
+#include "Kismet/GameplayStatics.h"
+#include "Animation/WidgetAnimation.h"
 
 void UBaseWidget::NativeConstruct()
 {
     Super::NativeConstruct();
-}
-
-void UBaseWidget::Show()
-{
-    SetVisibility(ESlateVisibility::Visible);
-    if (FadeInAnimation)
-    {
-        PlayAnimation(FadeInAnimation);
-    }
-}
-
-void UBaseWidget::Hide()
-{
-    if (FadeOutAnimation)
-    {
-        PlayAnimation(FadeOutAnimation);
-    }
-    SetVisibility(ESlateVisibility::Hidden);
 }
 
 
@@ -62,6 +46,43 @@ void UBaseWidget::Update()
 
 }
 
+void UBaseWidget::PlayUIOpenAnimation()
+{
+	if (bIsPlaying)
+	{
+		return;
+	}
+	PlayAnimation(OpenAnimation);
+}
+
+void UBaseWidget::PlayUICloseAnimation()
+{
+	if (bIsPlaying)
+	{
+		return;
+	}
+	PlayAnimation(CloseAnimation);
+}
+
+void UBaseWidget::PlayUIOpenAnimation(UWidgetAnimation* UIOpenAnimation)
+{
+	if (bIsPlaying)
+	{
+		return;
+	}
+	PlayAnimation(UIOpenAnimation);
+}
+
+void UBaseWidget::PlayUICloseAnimation(UWidgetAnimation* UIcloseAnimation)
+{
+	if (bIsPlaying)
+	{
+		return;
+	}
+	PlayAnimation(UIcloseAnimation);
+}
+
+
 void UBaseWidget::PlayAddAnim()
 {
 	if (bIsPlaying)
@@ -70,6 +91,7 @@ void UBaseWidget::PlayAddAnim()
 	}
 	PlayAnimation(OpenAnimation);
 }
+
 
 /*
 void UBaseWidget::PlayRemoveAnim(bool bIsNext, ESceneType SceneType)
@@ -104,20 +126,45 @@ void UBaseWidget::EndRemoveAnim()
 
 void UBaseWidget::OnClickedMoveNext()
 {
+	//UISubsystem혹은 UIhandler 체크
+	// UISubsystem혹은 UIhandler에 클릭했다고 알리고 사운드 발동 리퀘스트.
+	// 장면전환 함수 실행 요청
+	// 
+	
 	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 	//UIHandle->RequestPlayUISound(EUISoundType::Click);
 	//UIHandle->ClickedMoveToNext();
 }
 
-void UBaseWidget::OnClickedMoveMain()
+void UBaseWidget::OnClickedMoveSingleMode()
 {
-	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
-	//UIHandle->RequestPlayUISound(EUISoundType::Click);
-	//UIHandle->ClickedMoveToMain();
+	//fade out
+	//씬 전환? 혹은 레벨 전환? UIsubsystem 혹은 UIhandler에 요청
+	//fade in
+}
+
+
+void UBaseWidget::OnClickedMoveMultiMode()
+{
+	//fade out
+	//씬 전환? 혹은 레벨 전환? UIsubsystem 혹은 UIhandler에 요청
+	//fade in
+}
+
+
+void UBaseWidget::OnClickedMoveTrainingMode()
+{
+	//fade out
+	//씬 전환? 혹은 레벨 전환? UIsubsystem 혹은 UIhandler에 요청
+	//fade in
 }
 
 void UBaseWidget::OnClickedMoveTitle()
 {
+	//UISubsystem혹은 UIhandler 체크
+	// UISubsystem혹은 UIhandler에 클릭했다고 알리고 사운드 발동 리퀘스트.
+	// 타이틀 레벨 전환 함수 실행 요청
+ 
 	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 	//UIHandle->RequestPlayUISound(EUISoundType::Click);
 	//UIHandle->ClickedMoveToTitle();
@@ -125,21 +172,37 @@ void UBaseWidget::OnClickedMoveTitle()
 
 void UBaseWidget::OnClickedQuitGame()
 {
+	//UISubsystem혹은 UIhandler 체크
+	// UISubsystem혹은 UIhandler에 클릭했다고 알리고 사운드 발동 리퀘스트.
+	// 게임 종료 함수 실행 요청
+
+
 	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 	//UIHandle->RequestPlayUISound(EUISoundType::Click);
 	//UIHandle->ClickedQuitGame();
 }
 
-/*
+
 void UBaseWidget::OnClickedOpenWidget(const EWidgetType WidgetType)
 {
-	checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
-	UIHandle->AddToViewportByCoverType(WidgetType);
+	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
+	//UIHandle->AddToViewportByCoverType(WidgetType);
 }
 
 void UBaseWidget::OnClickedCloseWidget(const EWidgetType WidgetType)
 {
-	checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
-	UIHandle->RequestRemoveCoverFromViewport(WidgetType);
+	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
+	//UIHandle->RequestRemoveCoverFromViewport(WidgetType);
 }
-*/
+
+
+
+
+void UBaseWidget::OnClick_MoveLevel()
+{
+	//if (UISubsystem이 존재하면)
+	{
+		/*UISubSystem에 요청*/
+		//UISub->RequestLevelChange("LevelName");
+	}
+}
