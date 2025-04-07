@@ -14,4 +14,9 @@ class ORIGINALSINPRJ_API UGameSettingWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 	
+	//파밍모드 설정 UI
+	//시간제한 설정 UI
+	//버프 여부 설정 UI
+
+
 };
