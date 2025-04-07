@@ -20,17 +20,26 @@ public:
 	UWitchAbilityComponent();
 
 	void CheckMoveable(const FVector2D& Value);
+	void CheckAttackable(const EAttackType AttackType);
+	void CheckSkillAttackable(int32 SkillNum);
+	void CheckJumpable();
 
 protected:
 	virtual void BeginPlay() override;
-	
-private:
+
 	ABaseWitchAbility* SpawnAbility(UClass* TargetClass);
 	void ExcuteCurrentAbility(const FVector2D& DirectionVector);
 	void ActiveTimer();
 	void AddLastAbilityToArray();
 	void RemoveOldAbilityFromArray();
 	void ClearLastAbilities();
+
+	void ApplyNormalAttack();
+	void ApplySpecialAttack();
+	void ApplyJumpAttack();
+	void ApplySkillAttack(int32 SkillNum);
+
+	void CheckDirection();
 
 public:
 	// Move
@@ -104,12 +113,20 @@ private:
 	TObjectPtr<UCharacterMovementComponent> ParentMovementComp = nullptr;
 
 	FTimerHandle BufferTimer;
-	float BufferActiveTime = 0.3f;
+	float BufferActiveTime = 1.0f;
 
 	bool bIsMoveable = true;
-	bool bIsUseable = true;
-	bool bIsLeft = true;
-	float DirectionValue = 0.0f;
+	bool bIsAttackable = true;
+	bool bIsJumpable = true;
+	
+	EDirectionType DirectionType = EDirectionType::Left;
+
+	int32 MaxMana = 5;
+	int32 CurrentMana = 5;
+
+	FVector2D Direction = FVector2D::ZeroVector;
+
+	TObjectPtr<ABaseWitchAbility> TempAbility = nullptr;
 
 	TObjectPtr<ABaseWitchAbility> MoveAbility = nullptr;
 	TObjectPtr<ABaseWitchAbility> JumpAbility = nullptr;

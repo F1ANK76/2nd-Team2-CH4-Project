@@ -4,7 +4,7 @@
 #include "Player/Abilies/MoveAbility.h"
 #include "Player/BaseWitch.h"
 
-const float AMoveAbility::RotateValue = 90;
+const float AMoveAbility::RotateValue = 360;
 
 void AMoveAbility::InitAbility(ABaseWitch* NewParent)
 {
@@ -21,15 +21,27 @@ void AMoveAbility::ExcuteAbility(const FVector2D& DirectionValue)
 	{
 		return;
 	}
-	
-	FRotator NewRotation(0, RotateValue, 0);
 
 	if (DirectionValue.X < 0)
 	{
-		NewRotation *= -1;
+		if (bIsLeft)
+		{
+			bIsLeft = false;
+			ParentWitch->AddControllerYawInput(RotateValue);
+		}
+
+		ParentWitch->AddMovementInput(GetActorRightVector(), -DirectionValue.X);
 	}
-	
-	ParentWitch->AddMovementInput(GetActorRightVector(), -DirectionValue.X);
-	ParentWitch->SetActorRotation(NewRotation);
+	else if (DirectionValue.X > 0)
+	{
+		if (!bIsLeft)
+		{
+			bIsLeft = true;
+			ParentWitch->AddControllerYawInput(RotateValue);
+		}
+
+		ParentWitch->AddMovementInput(GetActorRightVector(), DirectionValue.X);
+	}
+
 	ParentWitch->SetWitchState(EWitchStateType::Move);
 }

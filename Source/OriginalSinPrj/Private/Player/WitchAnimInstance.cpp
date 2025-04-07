@@ -4,11 +4,8 @@
 #include "Player/WitchAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Character.h"
+#include "Player/BaseWitch.h"
 
-void UWitchAnimInstance::SetAnimState(const EWitchStateType NewState)
-{
-	AnimState = NewState;
-}
 
 void UWitchAnimInstance::NativeInitializeAnimation()
 {
@@ -18,11 +15,12 @@ void UWitchAnimInstance::NativeInitializeAnimation()
 
 	if (IsValid(OwnPawn))
 	{
-		ACharacter* OwnCharacter = Cast<ACharacter>(OwnPawn);
+		OwnCharacter = Cast<ABaseWitch>(OwnPawn);
 
 		if (IsValid(OwnCharacter))
 		{
 			MovementComp = OwnCharacter->GetCharacterMovement();
+			CharacterType = OwnCharacter->GetWitchType();
 		}
 	}
 }
@@ -33,6 +31,12 @@ void UWitchAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 	if (IsValid(MovementComp))
 	{
-		Speed = MovementComp->Velocity.Size();
+		FVector Velocity = MovementComp->Velocity;
+		FVector Width = FVector(Velocity.X, Velocity.Y, 0);
+		Speed = Width.Size();
+
+		CharacterState = OwnCharacter->GetWitchState();
+
+		bIsInAir = MovementComp->IsFalling();
 	}
 }

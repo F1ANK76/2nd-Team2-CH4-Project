@@ -6,15 +6,15 @@
 #include "Player/Abilies/BaseWitchAbility.h"
 #include "LowerAttackAbility.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class ORIGINALSINPRJ_API ALowerAttackAbility : public ABaseWitchAbility
 {
 	GENERATED_BODY()
 	
-	
+public:
+	virtual void InitAbility(ABaseWitch* NewParent) override;
+	virtual void ExcuteAbility(const FVector2D& DirectionValue) override;
 	
 	
 };

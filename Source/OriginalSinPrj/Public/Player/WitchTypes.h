@@ -9,7 +9,10 @@
 UENUM(BlueprintType)
 enum class ECharacterType : uint8
 {
-	None = 0
+	None = 0,
+	Witch1,
+	Witch2,
+	Witch3
 };
 
 UENUM(BlueprintType)
@@ -49,6 +52,24 @@ enum class EAbilityType : uint8
 	Skill3Ability,
 	Skill4Ability,
 	Skill5Ability
+};
+
+UENUM(BlueprintType)
+enum class EAttackType : uint8
+{
+	None = 0,
+	NormalAttack,
+	SpecialAttack,
+	JumpAttack
+};
+
+UENUM(BlueprintType)
+enum class EDirectionType : uint8
+{
+	Left = 0,
+	Right,
+	Up,
+	Down
 };
 
 UCLASS()

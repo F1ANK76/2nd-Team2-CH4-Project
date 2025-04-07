@@ -8,6 +8,7 @@
 #include "WitchAnimInstance.generated.h"
 
 class UCharacterMovementComponent;
+class ABaseWitch;
 
 UCLASS()
 class ORIGINALSINPRJ_API UWitchAnimInstance : public UAnimInstance
@@ -15,7 +16,6 @@ class ORIGINALSINPRJ_API UWitchAnimInstance : public UAnimInstance
 	GENERATED_BODY()
 	
 public:
-	void SetAnimState(const EWitchStateType NewState);
 
 protected:
 	virtual void NativeInitializeAnimation() override;
@@ -23,12 +23,18 @@ protected:
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	EWitchStateType AnimState = EWitchStateType::Idle;
+	EWitchStateType CharacterState = EWitchStateType::Idle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	ECharacterType CharacterType = ECharacterType::None;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float Speed = 0.0f;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bIsInAir = false;
+
 protected:
 	TObjectPtr<UCharacterMovementComponent> MovementComp = nullptr;
-
+	TObjectPtr<ABaseWitch> OwnCharacter = nullptr;
 };

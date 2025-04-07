@@ -27,37 +27,68 @@ ABaseWitch::ABaseWitch()
 	DressMesh->SetupAttachment(GetMesh());
 	StockingsMesh->SetupAttachment(GetMesh());
 	ShoesMesh->SetupAttachment(GetMesh());
-	
-	InitAnimInstance();
 }
 
 void ABaseWitch::SetWitchState(const EWitchStateType NewState)
 {
 	CurrentState = NewState;
 	
-	if (IsValid(WitchAnimInstance))
+	/*if (IsValid(WitchAnimInstance))
 	{
-		WitchAnimInstance->SetAnimState(NewState);
+		WitchAnimInstance->SetAnimState(CurrentState);
 	}
 
 	if (IsValid(DressAnimInstance))
 	{
-		DressAnimInstance->SetAnimState(NewState);
+		DressAnimInstance->SetAnimState(CurrentState);
 	}
 
 	if (IsValid(StockingsAnimInstance))
 	{
-		StockingsAnimInstance->SetAnimState(NewState);
+		StockingsAnimInstance->SetAnimState(CurrentState);
 	}
 
 	if (IsValid(ShoesAnimInstance))
 	{
-		ShoesAnimInstance->SetAnimState(NewState);
-	}
+		ShoesAnimInstance->SetAnimState(CurrentState);
+	}*/
 }
 
 void ABaseWitch::SetWitchDirection()
 {
+}
+
+void ABaseWitch::PlayAnimation(UAnimMontage* Target)
+{
+	if (IsValid(WitchAnimInstance))
+	{
+		WitchAnimInstance->Montage_Play(Target);
+	}
+
+	if (IsValid(DressAnimInstance))
+	{
+		DressAnimInstance->Montage_Play(Target);
+	}
+
+	if (IsValid(StockingsAnimInstance))
+	{
+		StockingsAnimInstance->Montage_Play(Target);
+	}
+
+	if (IsValid(ShoesAnimInstance))
+	{
+		ShoesAnimInstance->Montage_Play(Target);
+	}
+}
+
+const EWitchStateType ABaseWitch::GetWitchState() const
+{
+	return CurrentState;
+}
+
+const ECharacterType ABaseWitch::GetWitchType() const
+{
+	return WitchType;
 }
 
 void ABaseWitch::RequestMoveToAbility(float Value)
@@ -70,19 +101,18 @@ void ABaseWitch::RequestMoveToAbility(float Value)
 
 void ABaseWitch::RequestUpDownToAbility(float Value)
 {
-	if (Value >= 0)
+	if (IsValid(AbilityComp))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("On Pressed Up Key"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("On Pressed Down Key"));
+		AbilityComp->CheckMoveable(FVector2D(0, Value));
 	}
 }
 
 void ABaseWitch::RequestJumpToAbility()
 {
-	Jump();
+	if (IsValid(AbilityComp))
+	{
+		AbilityComp->CheckJumpable();
+	}
 }
 
 void ABaseWitch::RequestGuardToAbility()
@@ -95,20 +125,33 @@ void ABaseWitch::RequestTauntToAbility()
 
 void ABaseWitch::RequestNormalAttackToAbility()
 {
+	if (IsValid(AbilityComp))
+	{
+		AbilityComp->CheckAttackable(EAttackType::NormalAttack);
+	}
 }
 
 void ABaseWitch::RequestSpecialAttackToAbility()
 {
+	if (IsValid(AbilityComp))
+	{
+		AbilityComp->CheckAttackable(EAttackType::SpecialAttack);
+	}
 }
 
 void ABaseWitch::RequestSkillAttackToAbility(int32 Value)
 {
+	if (IsValid(AbilityComp))
+	{
+		AbilityComp->CheckSkillAttackable(Value);
+	}
 }
 
 void ABaseWitch::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	InitAnimInstance();
 }
 
 float ABaseWitch::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

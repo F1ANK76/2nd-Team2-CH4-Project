@@ -26,6 +26,9 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Montage")
+	TObjectPtr<UAnimMontage> AbilityMontage = nullptr;
 
 protected:
 	TObjectPtr<ABaseWitch> ParentWitch = nullptr;

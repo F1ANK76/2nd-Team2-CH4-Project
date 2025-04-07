@@ -20,5 +20,5 @@ public:
 	
 private:
 	static const float RotateValue;
-
+	bool bIsLeft = false;
 };

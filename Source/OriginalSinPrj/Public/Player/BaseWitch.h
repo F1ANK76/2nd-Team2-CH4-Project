@@ -22,6 +22,10 @@ public:
 
 	void SetWitchState(const EWitchStateType NewState);
 	void SetWitchDirection();
+	void PlayAnimation(UAnimMontage* Target);
+
+	const EWitchStateType GetWitchState() const;
+	const ECharacterType GetWitchType() const;
 
 	void RequestMoveToAbility(float Value);
 	void RequestUpDownToAbility(float Value);
@@ -106,4 +110,5 @@ protected:
 	TObjectPtr<UWitchAnimInstance> ShoesAnimInstance = nullptr;
 
 	EWitchStateType CurrentState = EWitchStateType::Idle;
+	ECharacterType WitchType = ECharacterType::Witch1; //
 };

@@ -14,7 +14,9 @@ class ORIGINALSINPRJ_API AJumpAbility : public ABaseWitchAbility
 {
 	GENERATED_BODY()
 	
-	
+public:
+	virtual void InitAbility(ABaseWitch* NewParent) override;
+	virtual void ExcuteAbility(const FVector2D& DirectionValue) override;
 	
 	
 };
