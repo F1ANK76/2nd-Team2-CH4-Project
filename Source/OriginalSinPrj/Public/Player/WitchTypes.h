@@ -39,6 +39,7 @@ enum class EAbilityType : uint8
 	GuardAbility,
 	RollAbility,
 	TauntAbility,
+	HitAbility,
 	NormalAttackAbility,
 	UpperAttackAbility,
 	LowerAttackAbility,

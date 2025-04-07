@@ -10,6 +10,7 @@
 class AWitchController;
 class UWitchAbilityComponent;
 class UWitchAnimInstance;
+class UBoxComponent;
 struct FInputActionValue;
 
 UCLASS()
@@ -21,11 +22,12 @@ public:
 	ABaseWitch();
 
 	void SetWitchState(const EWitchStateType NewState);
-	void SetWitchDirection();
+	void SetWitchDirection(const FVector2D& DirectionVector);
 	void PlayAnimation(UAnimMontage* Target);
 
 	const EWitchStateType GetWitchState() const;
 	const ECharacterType GetWitchType() const;
+	UBoxComponent* GetDamager(EDirectionType Target) const;
 
 	void RequestMoveToAbility(float Value);
 	void RequestUpDownToAbility(float Value);
@@ -35,6 +37,7 @@ public:
 	void RequestNormalAttackToAbility();
 	void RequestSpecialAttackToAbility();
 	void RequestSkillAttackToAbility(int32 Value);
+	void RequestHitToAbility(const FVector& TargetPos);
 
 protected:
 	UFUNCTION(BlueprintCallable)
@@ -101,6 +104,18 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
 	TObjectPtr<UStaticMeshComponent> HatItem = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damager")
+	TObjectPtr<UBoxComponent> ForwardDamager = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damager")
+	TObjectPtr<UBoxComponent> BackDamager = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damager")
+	TObjectPtr<UBoxComponent> UpperDamager = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damager")
+	TObjectPtr<UBoxComponent> LowerDamager = nullptr;
 
 protected:
 	TObjectPtr<AWitchController> WitchController = nullptr;

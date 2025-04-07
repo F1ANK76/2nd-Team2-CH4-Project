@@ -23,6 +23,9 @@ public:
 	void CheckAttackable(const EAttackType AttackType);
 	void CheckSkillAttackable(int32 SkillNum);
 	void CheckJumpable();
+	void CheckHitable(const FVector& ComparePos);
+
+	void ResponseEndAttack();
 
 protected:
 	virtual void BeginPlay() override;
@@ -40,6 +43,7 @@ protected:
 	void ApplySkillAttack(int32 SkillNum);
 
 	void CheckDirection();
+	bool CheckHittedDirection(const FVector& HitActorPos);
 
 public:
 	// Move
@@ -59,6 +63,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
 	TSubclassOf<ABaseWitchAbility> TauntAbilityClass = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
+	TSubclassOf<ABaseWitchAbility> HitAbilityClass = nullptr;
 
 
 	// Normal Attack
@@ -125,6 +132,7 @@ private:
 	int32 CurrentMana = 5;
 
 	FVector2D Direction = FVector2D::ZeroVector;
+	bool bIsLeft = false;
 
 	TObjectPtr<ABaseWitchAbility> TempAbility = nullptr;
 
@@ -133,6 +141,7 @@ private:
 	TObjectPtr<ABaseWitchAbility> GuardAbility = nullptr;
 	TObjectPtr<ABaseWitchAbility> RollAbility = nullptr;
 	TObjectPtr<ABaseWitchAbility> TauntAbility = nullptr;
+	TObjectPtr<ABaseWitchAbility> HitAbility = nullptr;
 
 	TObjectPtr<ABaseWitchAbility> NormalAttackAbility = nullptr;
 	TObjectPtr<ABaseWitchAbility> UpperAttackAbility = nullptr;

@@ -7,6 +7,7 @@
 #include "Player/Controller/WitchController.h"
 #include "Player/WitchAnimInstance.h"
 #include "Player/WitchAbilityComponent.h"
+#include "Components/BoxComponent.h"
 
 ABaseWitch::ABaseWitch()
 {
@@ -22,11 +23,31 @@ ABaseWitch::ABaseWitch()
 
 	AbilityComp = CreateDefaultSubobject<UWitchAbilityComponent>(TEXT("Ability Component"));
 
+	ForwardDamager = CreateDefaultSubobject<UBoxComponent>(TEXT("Forward Damager"));
+	BackDamager = CreateDefaultSubobject<UBoxComponent>(TEXT("Back Damager"));
+	UpperDamager = CreateDefaultSubobject<UBoxComponent>(TEXT("Upper Damager"));
+	LowerDamager = CreateDefaultSubobject<UBoxComponent>(TEXT("Lower Damager"));
+
 	checkf(IsValid(GetMesh()), TEXT("Skeletal Mesh is invalid"));
 
 	DressMesh->SetupAttachment(GetMesh());
 	StockingsMesh->SetupAttachment(GetMesh());
 	ShoesMesh->SetupAttachment(GetMesh());
+
+	ForwardDamager->SetupAttachment(GetMesh());
+	BackDamager->SetupAttachment(GetMesh());
+	UpperDamager->SetupAttachment(GetMesh());
+	LowerDamager->SetupAttachment(GetMesh());
+
+	ForwardDamager->SetGenerateOverlapEvents(true);
+	BackDamager->SetGenerateOverlapEvents(true);
+	UpperDamager->SetGenerateOverlapEvents(true);
+	LowerDamager->SetGenerateOverlapEvents(true);
+
+	ForwardDamager->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	BackDamager->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	UpperDamager->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	LowerDamager->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 }
 
 void ABaseWitch::SetWitchState(const EWitchStateType NewState)
@@ -54,8 +75,9 @@ void ABaseWitch::SetWitchState(const EWitchStateType NewState)
 	}*/
 }
 
-void ABaseWitch::SetWitchDirection()
+void ABaseWitch::SetWitchDirection(const FVector2D& DirectionVector)
 {
+	
 }
 
 void ABaseWitch::PlayAnimation(UAnimMontage* Target)
@@ -89,6 +111,33 @@ const EWitchStateType ABaseWitch::GetWitchState() const
 const ECharacterType ABaseWitch::GetWitchType() const
 {
 	return WitchType;
+}
+
+UBoxComponent* ABaseWitch::GetDamager(EDirectionType Target) const
+{
+	switch (Target)
+	{
+	case EDirectionType::Left:
+		return BackDamager;
+		break;
+
+	case EDirectionType::Right:
+		return ForwardDamager;
+		break;
+
+	case EDirectionType::Up:
+		return UpperDamager;
+		break;
+
+	case EDirectionType::Down:
+		return LowerDamager;
+		break;
+
+	default:
+		checkNoEntry();
+		break;
+	}
+	return nullptr;
 }
 
 void ABaseWitch::RequestMoveToAbility(float Value)
@@ -147,6 +196,14 @@ void ABaseWitch::RequestSkillAttackToAbility(int32 Value)
 	}
 }
 
+void ABaseWitch::RequestHitToAbility(const FVector& TargetPos)
+{
+	if (IsValid(AbilityComp))
+	{
+		AbilityComp->CheckHitable(TargetPos);
+	}
+}
+
 void ABaseWitch::BeginPlay()
 {
 	Super::BeginPlay();
@@ -156,6 +213,13 @@ void ABaseWitch::BeginPlay()
 
 float ABaseWitch::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	if (!IsValid(DamageCauser))
+	{
+		return 0.0f;
+	}
+
+	RequestHitToAbility(DamageCauser->GetActorLocation());
+
 	return 0.0f;
 }
 

@@ -4,20 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "Player/Abilies/BaseWitchAbility.h"
-#include "NormalAttackAbility.generated.h"
+#include "HitAbility.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ORIGINALSINPRJ_API ANormalAttackAbility : public ABaseWitchAbility
+class ORIGINALSINPRJ_API AHitAbility : public ABaseWitchAbility
 {
 	GENERATED_BODY()
-
+	
 public:
 	virtual void InitAbility(ABaseWitch* NewParent) override;
 	virtual void ExcuteAbility(const FVector2D& DirectionValue) override;
-
-private:
-	float Damage = 5.0f;
+	
+	
 };

@@ -19,10 +19,10 @@ void UWitchAbilityComponent::CheckMoveable(const FVector2D& Value)
 		return;
 	}
 
-	if (ParentMovementComp->IsFalling())
+	/*if (ParentMovementComp->IsFalling())
 	{
 		return;
-	}
+	}*/
 
 	if (!bIsMoveable)
 	{
@@ -35,7 +35,7 @@ void UWitchAbilityComponent::CheckMoveable(const FVector2D& Value)
 	}
 	
 	Direction = Value;
-
+	//ParentWitch->SetWitchDirection(Direction); // 
 	CurrentAbility = MoveAbility;
 	ExcuteCurrentAbility(Value);
 }
@@ -47,7 +47,7 @@ void UWitchAbilityComponent::CheckAttackable(const EAttackType AttackType)
 		return;
 	}
 
-	bIsMoveable = false; // TODO : Anim Montage Notify -> bIsMoveable = true;
+	bIsMoveable = false;
 	bIsAttackable = false;
 	bIsJumpable = false;
 
@@ -83,7 +83,7 @@ void UWitchAbilityComponent::CheckSkillAttackable(int32 SkillNum)
 		return;
 	}
 
-	bIsMoveable = false; // TODO : Anim Montage Notify -> bIsMoveable = true;
+	bIsMoveable = false;
 	bIsAttackable = false;
 	bIsJumpable = false;
 
@@ -106,6 +106,77 @@ void UWitchAbilityComponent::CheckJumpable()
 	ExcuteCurrentAbility(Direction);
 }
 
+void UWitchAbilityComponent::CheckHitable(const FVector& ComparePos)
+{
+	bool bIsEqualDirection = CheckHittedDirection(ComparePos);
+
+	if (IsValid(CurrentAbility))
+	{
+		if (CurrentAbility == RollAbility)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Current Ability is Roll"));
+			return;
+		}
+
+		if (CurrentAbility == GuardAbility)
+		{
+			if (bIsEqualDirection)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Current Ability is Guard And Compare Direction is Equal"));
+				return;
+			}
+
+			GuardAbility->UndoAbility();
+		}
+	}
+
+	if (!IsValid(HitAbility))
+	{
+		HitAbility = SpawnAbility(HitAbilityClass);
+	}
+
+	CurrentAbility = HitAbility;
+
+	if (bIsEqualDirection)
+	{
+		ExcuteCurrentAbility(-Direction);
+	}
+	else
+	{
+		ExcuteCurrentAbility(Direction);
+	}
+}
+
+bool UWitchAbilityComponent::CheckHittedDirection(const FVector& HitActorPos)
+{
+	FVector HittedDirection = HitActorPos - ParentWitch->GetActorLocation();
+
+	if (HittedDirection.Y > 0)
+	{
+		if (!bIsLeft)
+		{
+			return true;
+		}
+
+		return false;
+	}
+	else
+	{
+		if (bIsLeft)
+		{
+			return true;
+		}
+
+		return false;
+	}
+}
+
+void UWitchAbilityComponent::ResponseEndAttack()
+{
+	bIsMoveable = true;
+	bIsAttackable = true;
+	bIsJumpable = true;
+}
 
 void UWitchAbilityComponent::BeginPlay()
 {
@@ -187,10 +258,6 @@ void UWitchAbilityComponent::ClearLastAbilities()
 {
 	LastAbilities.Empty();
 	CurrentAbility = nullptr;
-
-	bIsMoveable = true;
-	bIsAttackable = true;
-	bIsJumpable = true;
 }
 
 void UWitchAbilityComponent::ApplyNormalAttack()
@@ -209,7 +276,7 @@ void UWitchAbilityComponent::ApplyNormalAttack()
 		int32 LastIndex = LastAbilities.Num() - 1;
 		EAbilityType LastAbilityType = LastAbilities[LastIndex]->GetAbilityType();
 
-		if (LastAbilityType == EAbilityType::MoveAbility)
+		if (LastAbilityType == EAbilityType::MoveAbility || LastAbilityType == EAbilityType::JumpAbility)
 		{
 			CheckDirection();
 
@@ -238,10 +305,10 @@ void UWitchAbilityComponent::ApplyNormalAttack()
 				CurrentAbility = DashAttackAbility;
 			}
 		}
-		else if (LastAbilityType == EAbilityType::JumpAbility)
-		{
-			//Jump Attack...
-		}
+		//else if (LastAbilityType == EAbilityType::JumpAbility)
+		//{
+		//	//Jump Attack...
+		//}
 		else
 		{
 			if (!IsValid(NormalAttackAbility))
@@ -272,7 +339,7 @@ void UWitchAbilityComponent::ApplySpecialAttack()
 		int32 LastIndex = LastAbilities.Num() - 1;
 		EAbilityType LastAbilityType = LastAbilities[LastIndex]->GetAbilityType();
 
-		if (LastAbilityType == EAbilityType::MoveAbility)
+		if (LastAbilityType == EAbilityType::MoveAbility || LastAbilityType == EAbilityType::JumpAbility)
 		{
 			CheckDirection();
 
@@ -301,10 +368,10 @@ void UWitchAbilityComponent::ApplySpecialAttack()
 				CurrentAbility = DropkickAttackAbility;
 			}
 		}
-		else if (LastAbilityType == EAbilityType::JumpAbility)
-		{
-			//Jump Attack...
-		}
+		//else if (LastAbilityType == EAbilityType::JumpAbility)
+		//{
+		//	//Jump Attack...
+		//}
 		else
 		{
 			if (!IsValid(SpecialAttackAbility))
@@ -378,10 +445,12 @@ void UWitchAbilityComponent::CheckDirection()
 	if (Direction.X > 0)
 	{
 		DirectionType = EDirectionType::Left;
+		bIsLeft = true;
 	}
 	else if (Direction.X < 0)
 	{
 		DirectionType = EDirectionType::Right;
+		bIsLeft = false;
 	}
 	else if (Direction.Y > 0)
 	{
