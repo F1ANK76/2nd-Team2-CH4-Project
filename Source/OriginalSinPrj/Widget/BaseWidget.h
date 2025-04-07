@@ -8,36 +8,26 @@
 
 
 class UUIHandle;
+enum EWidgetType;
+enum ESceneType;
 
 UCLASS()
 class ORIGINALSINPRJ_API UBaseWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-public:
-    // UI 표시 함수
-    UFUNCTION(BlueprintCallable, Category = "UI")
-    void Show();
-
-    // UI 숨김 함수
-    UFUNCTION(BlueprintCallable, Category = "UI")
-    void Hide();
-
 protected:
     virtual void NativeConstruct() override;
-
-    // 애니메이션을 위한 변수 (Blueprint에서 설정 가능)
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-    UWidgetAnimation* FadeInAnimation;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-    UWidgetAnimation* FadeOutAnimation;
-	
 	
 public:
 	virtual void InitWidget(UUIHandle* uiHandle);
 	virtual void Action();
 	virtual void Update();
+	virtual void PlayUIOpenAnimation();
+	virtual void PlayUICloseAnimation();
+	virtual void PlayUIOpenAnimation(UWidgetAnimation* UIOpenAnimation);
+	virtual void PlayUICloseAnimation(UWidgetAnimation* UIcloseAnimation);
+	
 	virtual void PlayAddAnim();
 	virtual void PlayRemoveAnim();
 	//virtual void PlayRemoveAnim(bool bIsNext, ESceneType SceneType = ESceneType::Title);
@@ -59,16 +49,25 @@ protected:
 	virtual void OnClickedMoveNext();
 
 	UFUNCTION()
-	virtual void OnClickedMoveMain();
+	virtual void OnClickedMoveTitle();
 
 	UFUNCTION()
-	virtual void OnClickedMoveTitle();
+	virtual void OnClickedMoveSingleMode();
+
+	UFUNCTION()
+	virtual void OnClickedMoveMultiMode();
+
+	UFUNCTION()
+	virtual void OnClickedMoveTrainingMode();
 
 	UFUNCTION()
 	virtual void OnClickedQuitGame();
 
-	//virtual void OnClickedOpenWidget(const EWidgetType WidgetType);
-	//virtual void OnClickedCloseWidget(const EWidgetType WidgetType);
+	UFUNCTION()
+	virtual void OnClick_MoveLevel();
+	
+	virtual void OnClickedOpenWidget(const EWidgetType WidgetType);
+	virtual void OnClickedCloseWidget(const EWidgetType WidgetType);
 
 protected:
 	FWidgetAnimationDynamicEvent StartAddDelegate;
