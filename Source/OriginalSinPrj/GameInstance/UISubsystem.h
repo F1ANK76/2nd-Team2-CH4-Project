@@ -7,7 +7,7 @@
 #include "EnumSet.h"
 #include "UISubsystem.generated.h"
 
-class UTestBaseWidget;
+class UBaseWidget;
 class UUISettings;
 
 UCLASS()
@@ -22,10 +22,10 @@ public:
 	void CreateWidgets();
 
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTestBaseWidget> CurrentActiveWidget = nullptr;
+	TObjectPtr<UBaseWidget> CurrentActiveWidget = nullptr;
 
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UTestBaseWidget> TitleLevelWidget = nullptr;
+	TObjectPtr<UBaseWidget> TitleLevelWidget = nullptr;
 
 	UWorld* World;
 

@@ -6,7 +6,7 @@
 #include "Engine/DeveloperSettings.h"
 #include "UISettings.generated.h"
 
-class UTestBaseWidget;
+class UBaseWidget;
 
 UCLASS(Config = UISetting, DefaultConfig, meta = (DisplayName = "UI Settings"))
 class ORIGINALSINPRJ_API UUISettings : public UDeveloperSettings
@@ -14,7 +14,6 @@ class ORIGINALSINPRJ_API UUISettings : public UDeveloperSettings
 	GENERATED_BODY()
 	
 public:
-
 	UPROPERTY(EditAnywhere, Config, Category = "Widgets")
-	TSubclassOf<UTestBaseWidget> TitleWidgetClass;
+	TSubclassOf<UBaseWidget> TitleWidgetClass;
 };

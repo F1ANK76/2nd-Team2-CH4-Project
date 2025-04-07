@@ -2,7 +2,7 @@
 
 #include "UISubsystem.h"
 #include "Kismet/GameplayStatics.h"
-#include "TestBaseWidget.h"
+#include "../Widget/BaseWidget.h"
 #include "UISettings.h"
 
 void UUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -58,7 +58,7 @@ void UUISubsystem::CreateWidgets()
     {
         if (UISettings->TitleWidgetClass)
         {
-            TitleLevelWidget = CreateWidget<UTestBaseWidget>(World, UISettings->TitleWidgetClass);
+            TitleLevelWidget = CreateWidget<UBaseWidget>(World, UISettings->TitleWidgetClass);
         }
         else
         {
