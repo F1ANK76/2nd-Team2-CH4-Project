@@ -27,6 +27,27 @@ public:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UBaseWidget> TitleLevelWidget = nullptr;
 
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBaseWidget> MatchLevelWidget = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBaseWidget> LobbyLevelWidget = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBaseWidget> MultiLevelWidget = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBaseWidget> CooperationLevelWidget = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBaseWidget> SingleLevelWidget = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBaseWidget> TrainingLevelWidget = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBaseWidget> FarmingLevelWidget = nullptr;
+
 	UWorld* World;
 
 	const UUISettings* UISettings;
