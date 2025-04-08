@@ -2,11 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "OriginalSinPrj/Interface/LobbyEvent.h"
+#include "OriginalSinPrj/Interface/SessionManage.h"
 #include "GameFramework/GameMode.h"
 #include "MenuGameMode.generated.h"
 
 UCLASS()
-class ORIGINALSINPRJ_API AMenuGameMode : public AGameMode, public ILobbyEvent
+class ORIGINALSINPRJ_API AMenuGameMode : public AGameMode, public ILobbyEvent, public ISessionManage
 {
 	GENERATED_BODY()
 	
@@ -31,4 +32,16 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	virtual void ExitSessionPlayer(const FString& PlayerName) override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void CreateGameSession(const FString& SessionName) override;
+	
+	UFUNCTION(BlueprintCallable)
+	virtual void JoinGameSession(const FOnlineSessionSearchResult& SearchResult) override;
+	
+	UFUNCTION(BlueprintCallable)
+	virtual void FindGameSessions() override;
+	
+	UFUNCTION(BlueprintCallable)
+	virtual void DestroyGameSession() override;
 };
