@@ -23,6 +23,9 @@ public:
 	virtual void DrawMatch();
 
 	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation);
+
+	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation);
 
 	UFUNCTION(NetMulticast, Reliable)

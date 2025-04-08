@@ -73,6 +73,22 @@ void AMenuGameState::SetIsSessionConnected(bool IsSessionConnected)
 	bIsSessionConnected = IsSessionConnected;
 }
 
+void AMenuGameState::CreateGameSession(const FString& SessionName)
+{
+}
+
+void AMenuGameState::JoinGameSession(const FOnlineSessionSearchResult& SearchResult)
+{
+}
+
+void AMenuGameState::FindGameSessions()
+{
+}
+
+void AMenuGameState::DestroyGameSession()
+{
+}
+
 void AMenuGameState::Multicast_ReadyPlayer_Implementation(APlayerController* Player)
 {
 	/*if (PlayerList.Contains())
