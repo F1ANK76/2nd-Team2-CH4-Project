@@ -1,5 +1,6 @@
 #include "MenuGameMode.h"
 #include "MenuGameState.h"
+#include "OnlineSessionSettings.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -56,5 +57,37 @@ void AMenuGameMode::ExitSessionPlayer(const FString& PlayerName)
 	if (AMenuGameState* MenuGameState = Cast<AMenuGameState>(UGameplayStatics::GetGameState(this)))
 	{
 		MenuGameState->ExitSessionPlayer(PlayerName);
+	}
+}
+
+void AMenuGameMode::CreateGameSession(const FString& SessionName)
+{
+	if (AMenuGameState* MenuGameState = Cast<AMenuGameState>(UGameplayStatics::GetGameState(this)))
+	{
+		MenuGameState->CreateGameSession(SessionName);
+	}
+}
+
+void AMenuGameMode::JoinGameSession(const FOnlineSessionSearchResult& SearchResult)
+{
+	if (AMenuGameState* MenuGameState = Cast<AMenuGameState>(UGameplayStatics::GetGameState(this)))
+	{
+		MenuGameState->JoinGameSession(SearchResult);
+	}
+}
+
+void AMenuGameMode::FindGameSessions()
+{
+	if (AMenuGameState* MenuGameState = Cast<AMenuGameState>(UGameplayStatics::GetGameState(this)))
+	{
+		MenuGameState->FindGameSessions();
+	}
+}
+
+void AMenuGameMode::DestroyGameSession()
+{
+	if (AMenuGameState* MenuGameState = Cast<AMenuGameState>(UGameplayStatics::GetGameState(this)))
+	{
+		MenuGameState->DestroyGameSession();
 	}
 }

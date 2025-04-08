@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "OnlineSessionSettings.h"
 #include "OriginalSinPrj/Interface/LobbyEvent.h"
 #include "OriginalSinPrj/Interface/SessionManage.h"
 #include "GameFramework/GameState.h"
@@ -41,7 +42,7 @@ public: /*---------------------멀티플레이---------------------*/
 	UFUNCTION(BlueprintCallable)
 	virtual void CreateGameSession(const FString& SessionName) override;
 
-	UFUNCTION(BlueprintCallable)
+	//UFUNCTION(BlueprintCallable)
 	virtual void JoinGameSession(const FOnlineSessionSearchResult& SearchResult) override;
 
 	UFUNCTION(BlueprintCallable)

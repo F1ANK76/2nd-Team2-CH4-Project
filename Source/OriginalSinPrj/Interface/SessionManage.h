@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "OnlineSessionSettings.h"
 #include "UObject/Interface.h"
 #include "SessionManage.generated.h"
 
@@ -21,7 +22,7 @@ public:
 	UFUNCTION(Category = "SessionManage")
 	virtual void FindGameSessions() = 0;
 
-	UFUNCTION(Category = "SessionManage")
+	//UFUNCTION(Category = "SessionManage")
 	virtual void JoinGameSession(const FOnlineSessionSearchResult& SearchResult) = 0;
 
 	UFUNCTION(Category = "SessionManage")
