@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "5.5",
+	"EngineAssociation": "{0C748063-406D-EDCC-FADC-F9A1B5653A88}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -12,7 +12,8 @@
 				"UMG",
 				"Engine",
 				"AIModule",
-				"DeveloperSettings"
+				"DeveloperSettings",
+				"CoreUObject"
 			]
 		}
 	],
