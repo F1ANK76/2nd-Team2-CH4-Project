@@ -21,10 +21,5 @@ void UOriginalSinPrjGameInstance::Init()
 
     AudioSubsystem = GetSubsystem<UAudioSubsystem>();
 
-    //if (AudioSubsystem)
-    //{
-    //    AudioSubsystem->PlayBGM(ESoundDataType::Level, static_cast<uint8>(ELevelSoundType::TitleSound));
-    //}
-
     DataSubsystem = GetSubsystem<UDataSubsystem>();
 }
