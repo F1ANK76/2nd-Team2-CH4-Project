@@ -27,7 +27,7 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	TObjectPtr<UButton> ToTitleButton;
 
-	/*
+	
 	UPROPERTY(Meta = (BindWidget))
 	TObjectPtr<UButton> OpenPlayerSettingButton;
 	
@@ -38,6 +38,6 @@ private:
 
 	UPROPERTY(Meta = (BindWidgetAnim), Transient)
 	TObjectPtr<UWidgetAnimation> SettingWindowSlideOutAnim;
-	*/
+	
 	bool bIsSlided = false;
 };

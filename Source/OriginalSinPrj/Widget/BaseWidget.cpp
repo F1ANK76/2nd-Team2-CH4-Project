@@ -1,10 +1,25 @@
 #include "BaseWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Animation/WidgetAnimation.h"
+#include "../GameInstance/UISubsystem.h"
 
 void UBaseWidget::NativeConstruct()
 {
     Super::NativeConstruct();
+
+
+	/*
+	UIHandle = GetGameInstance()->GetSubsystem<UUISubsystem>();
+	StartAddDelegate.BindDynamic(this, &ThisClass::StartAddAnim);
+	EndAddDelegate.BindDynamic(this, &ThisClass::EndAddAnim);
+	StartRemoveDelegate.BindDynamic(this, &ThisClass::StartRemoveAnim);
+	EndRemoveDelegate.BindDynamic(this, &ThisClass::EndRemoveAnim);
+
+	BindToAnimationStarted(OpenAnimation, StartAddDelegate);
+	BindToAnimationFinished(OpenAnimation, EndAddDelegate);
+	BindToAnimationStarted(CloseAnimation, StartRemoveDelegate);
+	BindToAnimationFinished(CloseAnimation, EndRemoveDelegate);
+	*/
 }
 
 
@@ -121,7 +136,7 @@ void UBaseWidget::StartRemoveAnim()
 void UBaseWidget::EndRemoveAnim()
 {
 	bIsPlaying = false;
-	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
+	checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 }
 
 void UBaseWidget::OnClickedMoveNext()
@@ -131,7 +146,7 @@ void UBaseWidget::OnClickedMoveNext()
 	// 장면전환 함수 실행 요청
 	// 
 	
-	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
+	checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 	//UIHandle->RequestPlayUISound(EUISoundType::Click);
 	//UIHandle->ClickedMoveToNext();
 }
@@ -141,6 +156,8 @@ void UBaseWidget::OnClickedMoveSingleMode()
 	//fade out
 	//씬 전환? 혹은 레벨 전환? UIsubsystem 혹은 UIhandler에 요청
 	//fade in
+
+	UIHandle->ShowLevel(ELevelType::SingleLevel);
 }
 
 
@@ -149,6 +166,7 @@ void UBaseWidget::OnClickedMoveMultiMode()
 	//fade out
 	//씬 전환? 혹은 레벨 전환? UIsubsystem 혹은 UIhandler에 요청
 	//fade in
+	UIHandle->ShowLevel(ELevelType::MultiLevel);
 }
 
 
@@ -157,6 +175,7 @@ void UBaseWidget::OnClickedMoveTrainingMode()
 	//fade out
 	//씬 전환? 혹은 레벨 전환? UIsubsystem 혹은 UIhandler에 요청
 	//fade in
+	UIHandle->ShowLevel(ELevelType::TrainingLevel);
 }
 
 void UBaseWidget::OnClickedMoveTitle()
@@ -168,6 +187,7 @@ void UBaseWidget::OnClickedMoveTitle()
 	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 	//UIHandle->RequestPlayUISound(EUISoundType::Click);
 	//UIHandle->ClickedMoveToTitle();
+	UIHandle->ShowLevel(ELevelType::TitleLevel);
 }
 
 void UBaseWidget::OnClickedQuitGame()
@@ -179,7 +199,8 @@ void UBaseWidget::OnClickedQuitGame()
 
 	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 	//UIHandle->RequestPlayUISound(EUISoundType::Click);
-	//UIHandle->ClickedQuitGame();
+	UIHandle->CloseGame();
+
 }
 
 
