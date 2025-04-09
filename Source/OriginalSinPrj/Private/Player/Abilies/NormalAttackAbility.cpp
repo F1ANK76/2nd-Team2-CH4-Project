@@ -5,42 +5,78 @@
 #include "Player/BaseWitch.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/Struct/AbilityDataBuffer.h"
 
-void ANormalAttackAbility::InitAbility(ABaseWitch* NewParent)
+void ANormalAttackAbility::InitAbility()
 {
-	Super::InitAbility(NewParent);
+	Super::InitAbility();
 
 	AbilityType = EAbilityType::NormalAttackAbility;
 }
 
-void ANormalAttackAbility::ExcuteAbility(const FVector2D& DirectionValue)
+bool ANormalAttackAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 {
-	Super::ExcuteAbility(DirectionValue);
+	Super::ExcuteAbility(Buffer);
 
-	ParentWitch->SetWitchState(EWitchStateType::NormalAttack);
+	if (!CheckExcuteable(Buffer))
+	{
+		return false;
+	}
+
+	Buffer.bIsJumpable = false;
+	Buffer.bIsMoveable = false;
+	Buffer.bIsUseable = false;
+	Buffer.ParentWitch->SetWitchState(EWitchStateType::NormalAttack);
 	
-	UBoxComponent* Damager = ParentWitch->GetDamager(EDirectionType::Right);
+	UBoxComponent* Damager = Buffer.ParentWitch->GetDamager(EDirectionType::Right);
 
 	if (!IsValid(Damager))
 	{
-		return;
+		return false;
 	}
+
+	Buffer.ParentWitch->PlayAnimation(AbilityMontage);
 
 	TArray<AActor*> HittedActors;
 	Damager->GetOverlappingActors(HittedActors);
 
 	if (HittedActors.IsEmpty())
 	{
-		return;
+		return false;
 	}
 
 	for (AActor* HittedActor : HittedActors)
 	{
-		if (HittedActor == ParentWitch)
+		if (HittedActor == Buffer.ParentWitch)
 		{
 			continue;
 		}
 
-		UGameplayStatics::ApplyDamage(HittedActor, Damage, ParentWitch->GetController(), ParentWitch, UDamageType::StaticClass());
+		UGameplayStatics::ApplyDamage(HittedActor, Damage, Buffer.ParentWitch->GetController(), Buffer. ParentWitch, UDamageType::StaticClass());
 	}
+
+	return true;
+}
+
+void ANormalAttackAbility::UndoAbility(FAbilityDataBuffer& Buffer)
+{
+	Super::UndoAbility(Buffer);
+
+	Buffer.ParentWitch->StopAnimation(AbilityMontage);
+
+	Buffer.bIsJumpable = true;
+	Buffer.bIsMoveable = true;
+	Buffer.bIsUseable = true;
+}
+
+bool ANormalAttackAbility::CheckExcuteable(FAbilityDataBuffer& Buffer)
+{
+	Super::CheckExcuteable(Buffer);
+
+	if (!Buffer.bIsUseable)
+	{
+		return false;
+	}
+
+	return true;
 }

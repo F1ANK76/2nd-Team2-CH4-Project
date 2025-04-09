@@ -8,6 +8,7 @@
 #include "BaseWitchAbility.generated.h"
 
 class ABaseWitch;
+struct FAbilityDataBuffer;
 
 UCLASS()
 class ORIGINALSINPRJ_API ABaseWitchAbility : public AActor
@@ -17,20 +18,20 @@ class ORIGINALSINPRJ_API ABaseWitchAbility : public AActor
 public:	
 	ABaseWitchAbility();
 
-	virtual void InitAbility(ABaseWitch* NewParent);
-	virtual void ExcuteAbility(const FVector2D& DirectionVector);
-	virtual void UndoAbility();
+	virtual void InitAbility() {};
+	virtual bool ExcuteAbility(FAbilityDataBuffer& Buffer) { return true; };
+	virtual void UndoAbility(FAbilityDataBuffer& Buffer) {};
 
 	const EAbilityType& GetAbilityType() const;
 
 protected:
 	virtual void BeginPlay() override;
+	virtual bool CheckExcuteable(FAbilityDataBuffer& Buffer) { return true; };
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Montage")
 	TObjectPtr<UAnimMontage> AbilityMontage = nullptr;
 
 protected:
-	TObjectPtr<ABaseWitch> ParentWitch = nullptr;
 	EAbilityType AbilityType = EAbilityType::None;
 };

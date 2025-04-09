@@ -3,17 +3,20 @@
 
 #include "Player/Abilies/UpperAttackAbility.h"
 #include "Player/BaseWitch.h"
+#include "Player/Struct/AbilityDataBuffer.h"
 
-void AUpperAttackAbility::InitAbility(ABaseWitch* NewParent)
+void AUpperAttackAbility::InitAbility()
 {
-	Super::InitAbility(NewParent);
+	Super::InitAbility();
 
 	AbilityType = EAbilityType::LowerAttackAbility;
 }
 
-void AUpperAttackAbility::ExcuteAbility(const FVector2D& DirectionValue)
+bool AUpperAttackAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 {
-	Super::ExcuteAbility(DirectionValue);
+	Super::ExcuteAbility(Buffer);
 
-	ParentWitch->SetWitchState(EWitchStateType::NormalAttack);
+	Buffer.ParentWitch->SetWitchState(EWitchStateType::NormalAttack);
+
+	return true;
 }

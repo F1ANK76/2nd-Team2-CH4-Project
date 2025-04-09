@@ -12,386 +12,82 @@ UWitchAbilityComponent::UWitchAbilityComponent()
 
 }
 
-void UWitchAbilityComponent::CheckMoveable(const FVector2D& Value)
+void UWitchAbilityComponent::CallMove(const FVector2D& Value)
 {
 	if (!IsValid(ParentMovementComp))
 	{
 		return;
 	}
 
-	/*if (ParentMovementComp->IsFalling())
-	{
-		return;
-	}*/
-
-	if (!bIsMoveable)
-	{
-		return;
-	}
+	AbilityBuffer.MoveValueVector = Value;
 
 	if (!IsValid(MoveAbility))
 	{
 		MoveAbility = SpawnAbility(MoveAbilityClass);
 	}
-	
-	Direction = Value;
-	//ParentWitch->SetWitchDirection(Direction); // 
-	CurrentAbility = MoveAbility;
-	ExcuteCurrentAbility(Value);
-}
 
-void UWitchAbilityComponent::CheckAttackable(const EAttackType AttackType)
-{
-	if (!bIsAttackable)
+	AbilityBuffer.CurrentAbility = MoveAbility;
+	ExcuteCurrentAbility();
+
+	if (AbilityBuffer.CurrentAbility == GuardAbility)
 	{
-		return;
-	}
-
-	bIsMoveable = false;
-	bIsAttackable = false;
-	bIsJumpable = false;
-
-	switch (AttackType)
-	{
-	case EAttackType::NormalAttack:
-		ApplyNormalAttack();
-		break;
-
-	case EAttackType::SpecialAttack:
-		ApplySpecialAttack();
-		break;
-
-	case EAttackType::JumpAttack:
-		ApplyJumpAttack();
-		break;
-
-	default:
-		checkNoEntry();
-		break;
+		CallRoll(Value);
 	}
 }
 
-void UWitchAbilityComponent::CheckSkillAttackable(int32 SkillNum)
+void UWitchAbilityComponent::CallNormalAttack()
 {
-	if (!bIsAttackable)
+	if (!AbilityBuffer.LastAbilities.IsEmpty())
 	{
-		return;
-	}
-
-	if (CurrentMana <= SkillNum)
-	{
-		return;
-	}
-
-	bIsMoveable = false;
-	bIsAttackable = false;
-	bIsJumpable = false;
-
-	ApplySkillAttack(SkillNum);
-}
-
-void UWitchAbilityComponent::CheckJumpable()
-{
-	if (!bIsJumpable)
-	{
-		return;
-	}
-
-	if (!IsValid(JumpAbility))
-	{
-		JumpAbility = SpawnAbility(JumpAbilityClass);
-	}
-
-	CurrentAbility = JumpAbility;
-	ExcuteCurrentAbility(Direction);
-}
-
-void UWitchAbilityComponent::CheckHitable(const FVector& ComparePos)
-{
-	bool bIsEqualDirection = CheckHittedDirection(ComparePos);
-
-	if (IsValid(CurrentAbility))
-	{
-		if (CurrentAbility == RollAbility)
+		if (AbilityBuffer.LastAbilities[0] == JumpAbility)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Current Ability is Roll"));
+			CallNormalAttackAtJump();
 			return;
 		}
-
-		if (CurrentAbility == GuardAbility)
-		{
-			if (bIsEqualDirection)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Current Ability is Guard And Compare Direction is Equal"));
-				return;
-			}
-
-			GuardAbility->UndoAbility();
-		}
 	}
 
-	if (!IsValid(HitAbility))
+	if (AbilityBuffer.ComandDirection != EDirectionType::None)
 	{
-		HitAbility = SpawnAbility(HitAbilityClass);
-	}
-
-	CurrentAbility = HitAbility;
-
-	if (bIsEqualDirection)
-	{
-		ExcuteCurrentAbility(-Direction);
-	}
-	else
-	{
-		ExcuteCurrentAbility(Direction);
-	}
-}
-
-bool UWitchAbilityComponent::CheckHittedDirection(const FVector& HitActorPos)
-{
-	FVector HittedDirection = HitActorPos - ParentWitch->GetActorLocation();
-
-	if (HittedDirection.Y > 0)
-	{
-		if (!bIsLeft)
-		{
-			return true;
-		}
-
-		return false;
-	}
-	else
-	{
-		if (bIsLeft)
-		{
-			return true;
-		}
-
-		return false;
-	}
-}
-
-void UWitchAbilityComponent::ResponseEndAttack()
-{
-	bIsMoveable = true;
-	bIsAttackable = true;
-	bIsJumpable = true;
-}
-
-void UWitchAbilityComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (IsValid(GetOwner()))
-	{
-		ParentWitch = Cast<ABaseWitch>(GetOwner());
-	}
-
-	checkf(IsValid(ParentWitch), TEXT("Ability Component : Parent is invalid. Parent == nullptr || Not BaseWitch type"));
-
-	ParentMovementComp = ParentWitch->GetCharacterMovement();
-}
-
-ABaseWitchAbility* UWitchAbilityComponent::SpawnAbility(UClass* TargetClass)
-{
-	if (!IsValid(ParentWitch))
-	{
-		if (IsValid(GetOwner()))
-		{
-			ParentWitch = Cast<ABaseWitch>(GetOwner());
-		}
-		else
-		{
-			return nullptr;
-		}
-	}
-
-	if (!IsValid(TargetClass))
-	{
-		return nullptr;
-	}
-
-	FActorSpawnParameters SpawnParam;
-	FVector SpawnPos = ParentWitch->GetActorLocation();
-	FRotator SpawnRot = ParentWitch->GetActorRotation();
-
-	TempAbility = GetWorld()->SpawnActor<ABaseWitchAbility>(TargetClass, SpawnPos, SpawnRot, SpawnParam);
-	TempAbility->AttachToActor(ParentWitch, FAttachmentTransformRules::KeepWorldTransform);
-	TempAbility->InitAbility(ParentWitch);
-
-	return TempAbility;
-}
-
-void UWitchAbilityComponent::ExcuteCurrentAbility(const FVector2D& DirectionVector)
-{
-	if (!IsValid(CurrentAbility))
-	{
+		CallNormalAttackAtMove();
 		return;
 	}
 
-	CurrentAbility->ExcuteAbility(DirectionVector);
-	AddLastAbilityToArray();
-	ActiveTimer();
-}
-
-void UWitchAbilityComponent::ActiveTimer()
-{
-	GetWorld()->GetTimerManager().SetTimer(BufferTimer, this, &ThisClass::ClearLastAbilities, BufferActiveTime, false);
-}
-
-void UWitchAbilityComponent::AddLastAbilityToArray()
-{
-	LastAbilities.Add(CurrentAbility);
-	LastAbilities.Insert(CurrentAbility, 0);
-	RemoveOldAbilityFromArray();
-}
-
-void UWitchAbilityComponent::RemoveOldAbilityFromArray()
-{
-	if (LastAbilities.Num() > 5)
+	if (!IsValid(NormalAttackAbility))
 	{
-		LastAbilities.RemoveAt(5);
+		NormalAttackAbility = SpawnAbility(NormalAttackAbilityClass);
 	}
+
+	AbilityBuffer.CurrentAbility = NormalAttackAbility;
+	ExcuteCurrentAbility();
 }
 
-void UWitchAbilityComponent::ClearLastAbilities()
+void UWitchAbilityComponent::CallSpecialAttack()
 {
-	LastAbilities.Empty();
-	CurrentAbility = nullptr;
-}
-
-void UWitchAbilityComponent::ApplyNormalAttack()
-{
-	if (LastAbilities.IsEmpty())
+	if (!AbilityBuffer.LastAbilities.IsEmpty())
 	{
-		if (!IsValid(NormalAttackAbility))
+		if (AbilityBuffer.LastAbilities[0] == JumpAbility)
 		{
-			NormalAttackAbility = SpawnAbility(NormalAttackAbilityClass);
-		}
-
-		CurrentAbility = NormalAttackAbility;
-	}
-	else
-	{
-		int32 LastIndex = LastAbilities.Num() - 1;
-		EAbilityType LastAbilityType = LastAbilities[LastIndex]->GetAbilityType();
-
-		if (LastAbilityType == EAbilityType::MoveAbility || LastAbilityType == EAbilityType::JumpAbility)
-		{
-			CheckDirection();
-
-			if (DirectionType == EDirectionType::Up)
-			{
-				if (!IsValid(UpperAttackAbility))
-				{
-					UpperAttackAbility = SpawnAbility(UpperAttackAbilityClass);
-				}
-				CurrentAbility = UpperAttackAbility;
-			}
-			else if (DirectionType == EDirectionType::Down)
-			{
-				if (!IsValid(LowerAttackAbility))
-				{
-					LowerAttackAbility = SpawnAbility(LowerAttackAbilityClass);
-				}
-				CurrentAbility = LowerAttackAbility;
-			}
-			else
-			{
-				if (!IsValid(DashAttackAbility))
-				{
-					DashAttackAbility = SpawnAbility(DashAttackAbilityClass);
-				}
-				CurrentAbility = DashAttackAbility;
-			}
-		}
-		//else if (LastAbilityType == EAbilityType::JumpAbility)
-		//{
-		//	//Jump Attack...
-		//}
-		else
-		{
-			if (!IsValid(NormalAttackAbility))
-			{
-				NormalAttackAbility = SpawnAbility(NormalAttackAbilityClass);
-			}
-
-			CurrentAbility = NormalAttackAbility;
+			CallSpecialAttackAtJump();
+			return;
 		}
 	}
 
-	ExcuteCurrentAbility(Direction);
-}
-
-void UWitchAbilityComponent::ApplySpecialAttack()
-{
-	if (LastAbilities.IsEmpty())
+	if (AbilityBuffer.ComandDirection != EDirectionType::None)
 	{
-		if (!IsValid(SpecialAttackAbility))
-		{
-			SpecialAttackAbility = SpawnAbility(SpecialAttackAbilityClass);
-		}
-
-		CurrentAbility = SpecialAttackAbility;
-	}
-	else
-	{
-		int32 LastIndex = LastAbilities.Num() - 1;
-		EAbilityType LastAbilityType = LastAbilities[LastIndex]->GetAbilityType();
-
-		if (LastAbilityType == EAbilityType::MoveAbility || LastAbilityType == EAbilityType::JumpAbility)
-		{
-			CheckDirection();
-
-			if (DirectionType == EDirectionType::Up)
-			{
-				if (!IsValid(UppercutAttackAbility))
-				{
-					UppercutAttackAbility = SpawnAbility(UppercutAttackAbilityClass);
-				}
-				CurrentAbility = UppercutAttackAbility;
-			}
-			else if (DirectionType == EDirectionType::Down)
-			{
-				if (!IsValid(ChopAttackAbility))
-				{
-					ChopAttackAbility = SpawnAbility(ChopAttackAbilityClass);
-				}
-				CurrentAbility = ChopAttackAbility;
-			}
-			else
-			{
-				if (!IsValid(DropkickAttackAbility))
-				{
-					DropkickAttackAbility = SpawnAbility(DropKickAttackAbilityClass);
-				}
-				CurrentAbility = DropkickAttackAbility;
-			}
-		}
-		//else if (LastAbilityType == EAbilityType::JumpAbility)
-		//{
-		//	//Jump Attack...
-		//}
-		else
-		{
-			if (!IsValid(SpecialAttackAbility))
-			{
-				SpecialAttackAbility = SpawnAbility(SpecialAttackAbilityClass);
-			}
-
-			CurrentAbility = SpecialAttackAbility;
-		}
+		CallSpecialAttackAtMove();
+		return;
 	}
 
-	ExcuteCurrentAbility(Direction);
+	if (!IsValid(SpecialAttackAbility))
+	{
+		SpecialAttackAbility = SpawnAbility(SpecialAttackAbilityClass);
+	}
+
+	AbilityBuffer.CurrentAbility = SpecialAttackAbility;
+	ExcuteCurrentAbility();
 }
 
-void UWitchAbilityComponent::ApplyJumpAttack()
-{
-
-}
-
-void UWitchAbilityComponent::ApplySkillAttack(int32 SkillNum)
+void UWitchAbilityComponent::CallSkillAttack(int32 SkillNum)
 {
 	switch (SkillNum)
 	{
@@ -436,31 +132,303 @@ void UWitchAbilityComponent::ApplySkillAttack(int32 SkillNum)
 		break;
 	}
 
-	CurrentMana -= SkillNum + 1;
-	ExcuteCurrentAbility(Direction);
+	ExcuteCurrentAbility();
 }
 
-void UWitchAbilityComponent::CheckDirection()
+void UWitchAbilityComponent::CallJump()
 {
-	if (Direction.X > 0)
+	if (!IsValid(JumpAbility))
 	{
-		DirectionType = EDirectionType::Left;
-		bIsLeft = true;
+		JumpAbility = SpawnAbility(JumpAbilityClass);
 	}
-	else if (Direction.X < 0)
+
+	AbilityBuffer.CurrentAbility = JumpAbility;
+	ExcuteCurrentAbility();
+}
+
+void UWitchAbilityComponent::CallHit(AActor* DamageCauser)
+{
+	AbilityBuffer.DamageCauser = DamageCauser;
+
+	if (!IsValid(HitAbility))
 	{
-		DirectionType = EDirectionType::Right;
-		bIsLeft = false;
+		HitAbility = SpawnAbility(HitAbilityClass);
 	}
-	else if (Direction.Y > 0)
+
+	AbilityBuffer.CurrentAbility = HitAbility;
+	ExcuteCurrentAbility();
+}
+
+void UWitchAbilityComponent::CallBeginGuard()
+{
+	if (!IsValid(GuardAbility))
 	{
-		DirectionType = EDirectionType::Up;
+		GuardAbility = SpawnAbility(GuardAbilityClass);
 	}
-	else if (Direction.Y < 0)
+
+	AbilityBuffer.CurrentAbility = GuardAbility;
+	ExcuteCurrentAbility();
+}
+
+void UWitchAbilityComponent::CallKeepGuard()
+{
+	if (!IsValid(AbilityBuffer.CurrentAbility))
 	{
-		DirectionType = EDirectionType::Down;
+		return;
+	}
+
+	if (AbilityBuffer.CurrentAbility == GuardAbility)
+	{
+		ActiveTimer();
 	}
 }
+
+void UWitchAbilityComponent::CallEndGuard()
+{
+	if (!IsValid(AbilityBuffer.CurrentAbility))
+	{
+		return;
+	}
+
+	if (AbilityBuffer.CurrentAbility == GuardAbility)
+	{
+		ResponseEndAttack();
+	}
+}
+
+void UWitchAbilityComponent::CallTaunt()
+{
+	if (!IsValid(TauntAbility))
+	{
+		TauntAbility = SpawnAbility(TauntAbilityClass);
+	}
+
+	AbilityBuffer.CurrentAbility = TauntAbility;
+	ExcuteCurrentAbility();
+}
+
+void UWitchAbilityComponent::CallRoll(const FVector2D& DirectionVector)
+{
+	if (!IsValid(RollAbility))
+	{
+		RollAbility = SpawnAbility(RollAbilityClass);
+	}
+
+	AbilityBuffer.CurrentAbility = RollAbility;
+	ExcuteCurrentAbility();
+}
+
+void UWitchAbilityComponent::ResponseEndAttack()
+{
+	if (IsValid(AbilityBuffer.CurrentAbility))
+	{
+		AbilityBuffer.CurrentAbility->UndoAbility(AbilityBuffer);
+	}
+	else
+	{
+		AbilityBuffer.bIsMoveable = true;
+		AbilityBuffer.bIsUseable = true;
+		AbilityBuffer.bIsJumpable = true;
+	}
+
+	GetWorld()->GetTimerManager().UnPauseTimer(BufferTimer);
+}
+
+void UWitchAbilityComponent::PauseBufferTimer()
+{
+	GetWorld()->GetTimerManager().PauseTimer(BufferTimer);
+}
+
+void UWitchAbilityComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (IsValid(GetOwner()))
+	{
+		ParentWitch = Cast<ABaseWitch>(GetOwner());
+	}
+
+	checkf(IsValid(ParentWitch), TEXT("Ability Component : Parent is invalid. Parent == nullptr || Not BaseWitch type"));
+
+	ParentMovementComp = ParentWitch->GetCharacterMovement();
+
+	AbilityBuffer.ParentWitch = ParentWitch;
+	AbilityBuffer.MovementComp = ParentMovementComp;
+}
+
+ABaseWitchAbility* UWitchAbilityComponent::SpawnAbility(UClass* TargetClass)
+{
+	if (!IsValid(ParentWitch))
+	{
+		if (IsValid(GetOwner()))
+		{
+			ParentWitch = Cast<ABaseWitch>(GetOwner());
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
+
+	if (!IsValid(TargetClass))
+	{
+		return nullptr;
+	}
+
+	FActorSpawnParameters SpawnParam;
+	FVector SpawnPos = ParentWitch->GetActorLocation();
+	FRotator SpawnRot = ParentWitch->GetActorRotation();
+
+	TempAbility = GetWorld()->SpawnActor<ABaseWitchAbility>(TargetClass, SpawnPos, SpawnRot, SpawnParam);
+	TempAbility->AttachToActor(ParentWitch, FAttachmentTransformRules::KeepWorldTransform);
+	TempAbility->InitAbility();
+
+	return TempAbility;
+}
+
+void UWitchAbilityComponent::ExcuteCurrentAbility()
+{
+	if (!IsValid(AbilityBuffer.CurrentAbility))
+	{
+		return;
+	}
+
+	bool bIsExcuteable = AbilityBuffer.CurrentAbility->ExcuteAbility(AbilityBuffer);
+
+	if (bIsExcuteable)
+	{
+		AddLastAbilityToArray();
+		ActiveTimer();
+
+		if (AbilityBuffer.CurrentAbility != MoveAbility)
+		{
+			AbilityBuffer.ComandDirection = EDirectionType::None;
+		}
+	}
+	else
+	{
+		if (!AbilityBuffer.LastAbilities.IsEmpty())
+		{
+			AbilityBuffer.CurrentAbility = AbilityBuffer.LastAbilities[0];
+		}
+	}
+}
+
+void UWitchAbilityComponent::ActiveTimer()
+{
+	if (!GetWorld()->GetTimerManager().IsTimerPaused(BufferTimer))
+	{
+		GetWorld()->GetTimerManager().SetTimer(BufferTimer, this, &ThisClass::ClearLastAbilities, BufferActiveTime, false);
+	}
+}
+
+void UWitchAbilityComponent::AddLastAbilityToArray()
+{
+	AbilityBuffer.LastAbilities.Insert(AbilityBuffer.CurrentAbility, 0);
+	RemoveOldAbilityFromArray();
+}
+
+void UWitchAbilityComponent::RemoveOldAbilityFromArray()
+{
+	if (AbilityBuffer.LastAbilities.Num() > 5)
+	{
+		AbilityBuffer.LastAbilities.RemoveAt(5);
+	}
+}
+
+void UWitchAbilityComponent::ClearLastAbilities()
+{
+	AbilityBuffer.LastAbilities.Empty();
+	AbilityBuffer.CurrentAbility = nullptr;
+	AbilityBuffer.MoveValueVector = FVector2D::ZeroVector;
+}
+
+void UWitchAbilityComponent::CallNormalAttackAtMove()
+{
+	switch (AbilityBuffer.ComandDirection)
+	{
+	case EDirectionType::Up:
+
+		if (!IsValid(UpperAttackAbility))
+		{
+			UpperAttackAbility = SpawnAbility(UpperAttackAbilityClass);
+		}
+
+		AbilityBuffer.CurrentAbility = UpperAttackAbility;
+		break;
+
+	case EDirectionType::Down:
+
+		if (!IsValid(LowerAttackAbility))
+		{
+			LowerAttackAbility = SpawnAbility(LowerAttackAbilityClass);
+		}
+
+		AbilityBuffer.CurrentAbility = LowerAttackAbility;
+		break;
+
+	case EDirectionType::Left:
+	case EDirectionType::Right:
+
+		if (!IsValid(DashAttackAbility))
+		{
+			DashAttackAbility = SpawnAbility(DashAttackAbilityClass);
+		}
+
+		AbilityBuffer.CurrentAbility = DashAttackAbility;
+		break;
+	}
+
+	ExcuteCurrentAbility();
+}
+
+void UWitchAbilityComponent::CallNormalAttackAtJump()
+{
+}
+
+void UWitchAbilityComponent::CallSpecialAttackAtMove()
+{
+	switch (AbilityBuffer.ComandDirection)
+	{
+	case EDirectionType::Up:
+
+		if (!IsValid(UppercutAttackAbility))
+		{
+			UppercutAttackAbility = SpawnAbility(UppercutAttackAbilityClass);
+		}
+
+		AbilityBuffer.CurrentAbility = UppercutAttackAbility;
+		break;
+
+	case EDirectionType::Down:
+
+		if (!IsValid(ChopAttackAbility))
+		{
+			ChopAttackAbility = SpawnAbility(ChopAttackAbilityClass);
+		}
+
+		AbilityBuffer.CurrentAbility = ChopAttackAbility;
+		break;
+
+	case EDirectionType::Left:
+	case EDirectionType::Right:
+
+		if (!IsValid(DropkickAttackAbility))
+		{
+			DropkickAttackAbility = SpawnAbility(DropKickAttackAbilityClass);
+		}
+
+		AbilityBuffer.CurrentAbility = DropkickAttackAbility;
+		break;
+	}
+
+	ExcuteCurrentAbility();
+}
+
+void UWitchAbilityComponent::CallSpecialAttackAtJump()
+{
+}
+
 
 
 

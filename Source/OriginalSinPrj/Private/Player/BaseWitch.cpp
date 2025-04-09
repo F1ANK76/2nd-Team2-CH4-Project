@@ -53,26 +53,6 @@ ABaseWitch::ABaseWitch()
 void ABaseWitch::SetWitchState(const EWitchStateType NewState)
 {
 	CurrentState = NewState;
-	
-	/*if (IsValid(WitchAnimInstance))
-	{
-		WitchAnimInstance->SetAnimState(CurrentState);
-	}
-
-	if (IsValid(DressAnimInstance))
-	{
-		DressAnimInstance->SetAnimState(CurrentState);
-	}
-
-	if (IsValid(StockingsAnimInstance))
-	{
-		StockingsAnimInstance->SetAnimState(CurrentState);
-	}
-
-	if (IsValid(ShoesAnimInstance))
-	{
-		ShoesAnimInstance->SetAnimState(CurrentState);
-	}*/
 }
 
 void ABaseWitch::SetWitchDirection(const FVector2D& DirectionVector)
@@ -82,9 +62,15 @@ void ABaseWitch::SetWitchDirection(const FVector2D& DirectionVector)
 
 void ABaseWitch::PlayAnimation(UAnimMontage* Target)
 {
+	if (!IsValid(Target))
+	{
+		return;
+	}
+
 	if (IsValid(WitchAnimInstance))
 	{
 		WitchAnimInstance->Montage_Play(Target);
+		AbilityComp->PauseBufferTimer();
 	}
 
 	if (IsValid(DressAnimInstance))
@@ -100,6 +86,39 @@ void ABaseWitch::PlayAnimation(UAnimMontage* Target)
 	if (IsValid(ShoesAnimInstance))
 	{
 		ShoesAnimInstance->Montage_Play(Target);
+	}
+}
+
+void ABaseWitch::StopAnimation(UAnimMontage* Target)
+{
+	if (!IsValid(Target))
+	{
+		return;
+	}
+
+	if (!WitchAnimInstance->Montage_IsPlaying(Target))
+	{
+		return;
+	}
+
+	if (IsValid(WitchAnimInstance))
+	{
+		WitchAnimInstance->Montage_Stop(0.1f);
+	}
+
+	if (IsValid(DressAnimInstance))
+	{
+		DressAnimInstance->Montage_Stop(0.1f);
+	}
+
+	if (IsValid(StockingsAnimInstance))
+	{
+		StockingsAnimInstance->Montage_Stop(0.1f);
+	}
+
+	if (IsValid(ShoesAnimInstance))
+	{
+		ShoesAnimInstance->Montage_Stop(0.1f);
 	}
 }
 
@@ -144,7 +163,7 @@ void ABaseWitch::RequestMoveToAbility(float Value)
 {
 	if (IsValid(AbilityComp))
 	{
-		AbilityComp->CheckMoveable(FVector2D(Value, 0));
+		AbilityComp->CallMove(FVector2D(Value, 0));
 	}
 }
 
@@ -152,7 +171,7 @@ void ABaseWitch::RequestUpDownToAbility(float Value)
 {
 	if (IsValid(AbilityComp))
 	{
-		AbilityComp->CheckMoveable(FVector2D(0, Value));
+		AbilityComp->CallMove(FVector2D(0, Value));
 	}
 }
 
@@ -160,23 +179,47 @@ void ABaseWitch::RequestJumpToAbility()
 {
 	if (IsValid(AbilityComp))
 	{
-		AbilityComp->CheckJumpable();
+		AbilityComp->CallJump();
 	}
 }
 
-void ABaseWitch::RequestGuardToAbility()
+void ABaseWitch::RequestExcuteGuardToAbility()
 {
+	if (IsValid(AbilityComp))
+	{
+		AbilityComp->CallBeginGuard();
+	}
+}
+
+void ABaseWitch::RequestContinueGuardToAbility()
+{
+	if (IsValid(AbilityComp))
+	{
+		AbilityComp->CallKeepGuard();
+	}
+}
+
+void ABaseWitch::RequestUndoGuardToAbility()
+{
+	if (IsValid(AbilityComp))
+	{
+		AbilityComp->CallEndGuard();
+	}
 }
 
 void ABaseWitch::RequestTauntToAbility()
 {
+	if (IsValid(AbilityComp))
+	{
+		AbilityComp->CallTaunt();
+	}
 }
 
 void ABaseWitch::RequestNormalAttackToAbility()
 {
 	if (IsValid(AbilityComp))
 	{
-		AbilityComp->CheckAttackable(EAttackType::NormalAttack);
+		AbilityComp->CallNormalAttack();
 	}
 }
 
@@ -184,7 +227,7 @@ void ABaseWitch::RequestSpecialAttackToAbility()
 {
 	if (IsValid(AbilityComp))
 	{
-		AbilityComp->CheckAttackable(EAttackType::SpecialAttack);
+		AbilityComp->CallSpecialAttack();
 	}
 }
 
@@ -192,15 +235,15 @@ void ABaseWitch::RequestSkillAttackToAbility(int32 Value)
 {
 	if (IsValid(AbilityComp))
 	{
-		AbilityComp->CheckSkillAttackable(Value);
+		AbilityComp->CallSkillAttack(Value);
 	}
 }
 
-void ABaseWitch::RequestHitToAbility(const FVector& TargetPos)
+void ABaseWitch::RequestHitToAbility(AActor* DamageCauser)
 {
 	if (IsValid(AbilityComp))
 	{
-		AbilityComp->CheckHitable(TargetPos);
+		AbilityComp->CallHit(DamageCauser);
 	}
 }
 
@@ -218,7 +261,7 @@ float ABaseWitch::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 		return 0.0f;
 	}
 
-	RequestHitToAbility(DamageCauser->GetActorLocation());
+	RequestHitToAbility(DamageCauser);
 
 	return 0.0f;
 }
@@ -282,7 +325,9 @@ void ABaseWitch::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 		if (IsValid(TargetAction))
 		{
+			EnhancedInputComponent->BindAction(TargetAction, ETriggerEvent::Started, this, &ThisClass::OnBeginPressedGuardKey);
 			EnhancedInputComponent->BindAction(TargetAction, ETriggerEvent::Triggered, this, &ThisClass::OnPressedGuardKey);
+			EnhancedInputComponent->BindAction(TargetAction, ETriggerEvent::Completed, this, &ThisClass::OnEndPressedGuardKey);
 		}
 
 		TargetAction = WitchController->TauntAction;
@@ -391,9 +436,19 @@ void ABaseWitch::OnPressedSpecialAttackKey(const FInputActionValue& Value)
 	RequestSpecialAttackToAbility();
 }
 
+void ABaseWitch::OnBeginPressedGuardKey(const FInputActionValue& Value)
+{
+	RequestExcuteGuardToAbility();
+}
+
 void ABaseWitch::OnPressedGuardKey(const FInputActionValue& Value)
 {
-	RequestGuardToAbility();
+	RequestContinueGuardToAbility();
+}
+
+void ABaseWitch::OnEndPressedGuardKey(const FInputActionValue& Value)
+{
+	RequestUndoGuardToAbility();
 }
 
 void ABaseWitch::OnPressedTauntKey(const FInputActionValue& Value)

@@ -12,24 +12,6 @@ ABaseWitchAbility::ABaseWitchAbility()
 	//SetReplicateMovement(true);
 }
 
-void ABaseWitchAbility::InitAbility(ABaseWitch* NewParent)
-{
-	ParentWitch = NewParent;
-}
-
-void ABaseWitchAbility::ExcuteAbility(const FVector2D& DirectionVector)
-{
-	if (IsValid(AbilityMontage))
-	{
-		ParentWitch->PlayAnimation(AbilityMontage);
-	}
-}
-
-void ABaseWitchAbility::UndoAbility()
-{
-
-}
-
 const EAbilityType& ABaseWitchAbility::GetAbilityType() const
 {
 	return AbilityType;

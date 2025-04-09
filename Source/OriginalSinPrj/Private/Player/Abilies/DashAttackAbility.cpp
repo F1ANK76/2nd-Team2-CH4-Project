@@ -3,17 +3,20 @@
 
 #include "Player/Abilies/DashAttackAbility.h"
 #include "Player/BaseWitch.h"
+#include "Player/Struct/AbilityDataBuffer.h"
 
-void ADashAttackAbility::InitAbility(ABaseWitch* NewParent)
+void ADashAttackAbility::InitAbility()
 {
-	Super::InitAbility(NewParent);
+	Super::InitAbility();
 
 	AbilityType = EAbilityType::DashAttackAbility;
 }
 
-void ADashAttackAbility::ExcuteAbility(const FVector2D& DirectionValue)
+bool ADashAttackAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 {
-	Super::ExcuteAbility(DirectionValue);
+	Super::ExcuteAbility(Buffer);
 
-	ParentWitch->SetWitchState(EWitchStateType::NormalAttack);
+	Buffer.ParentWitch->SetWitchState(EWitchStateType::NormalAttack);
+
+	return true;
 }

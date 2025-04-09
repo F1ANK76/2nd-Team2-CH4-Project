@@ -24,6 +24,7 @@ public:
 	void SetWitchState(const EWitchStateType NewState);
 	void SetWitchDirection(const FVector2D& DirectionVector);
 	void PlayAnimation(UAnimMontage* Target);
+	void StopAnimation(UAnimMontage* Target);
 
 	const EWitchStateType GetWitchState() const;
 	const ECharacterType GetWitchType() const;
@@ -32,12 +33,14 @@ public:
 	void RequestMoveToAbility(float Value);
 	void RequestUpDownToAbility(float Value);
 	void RequestJumpToAbility();
-	void RequestGuardToAbility();
+	void RequestExcuteGuardToAbility();
+	void RequestContinueGuardToAbility();
+	void RequestUndoGuardToAbility();
 	void RequestTauntToAbility();
 	void RequestNormalAttackToAbility();
 	void RequestSpecialAttackToAbility();
 	void RequestSkillAttackToAbility(int32 Value);
-	void RequestHitToAbility(const FVector& TargetPos);
+	void RequestHitToAbility(AActor* DamageCauser);
 
 protected:
 	UFUNCTION(BlueprintCallable)
@@ -56,7 +59,13 @@ protected:
 	void OnPressedSpecialAttackKey(const FInputActionValue& Value);
 
 	UFUNCTION(BlueprintCallable)
+	void OnBeginPressedGuardKey(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintCallable)
 	void OnPressedGuardKey(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintCallable)
+	void OnEndPressedGuardKey(const FInputActionValue& Value);
 
 	UFUNCTION(BlueprintCallable)
 	void OnPressedTauntKey(const FInputActionValue& Value);

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Player/WitchTypes.h"
+#include "Player/Struct/AbilityDataBuffer.h"
 #include "WitchAbilityComponent.generated.h"
 
 class ABaseWitchAbility;
@@ -19,31 +20,35 @@ class ORIGINALSINPRJ_API UWitchAbilityComponent : public UActorComponent
 public:	
 	UWitchAbilityComponent();
 
-	void CheckMoveable(const FVector2D& Value);
-	void CheckAttackable(const EAttackType AttackType);
-	void CheckSkillAttackable(int32 SkillNum);
-	void CheckJumpable();
-	void CheckHitable(const FVector& ComparePos);
+	void CallMove(const FVector2D& Value);
+	void CallNormalAttack();
+	void CallSpecialAttack();
+	void CallSkillAttack(int32 SkillNum);
+	void CallJump();
+	void CallHit(AActor* DamageCauser);
+	void CallBeginGuard();
+	void CallKeepGuard();
+	void CallEndGuard();
+	void CallTaunt();
 
 	void ResponseEndAttack();
+	void PauseBufferTimer();
 
 protected:
 	virtual void BeginPlay() override;
 
 	ABaseWitchAbility* SpawnAbility(UClass* TargetClass);
-	void ExcuteCurrentAbility(const FVector2D& DirectionVector);
+	void ExcuteCurrentAbility();
 	void ActiveTimer();
 	void AddLastAbilityToArray();
 	void RemoveOldAbilityFromArray();
 	void ClearLastAbilities();
 
-	void ApplyNormalAttack();
-	void ApplySpecialAttack();
-	void ApplyJumpAttack();
-	void ApplySkillAttack(int32 SkillNum);
-
-	void CheckDirection();
-	bool CheckHittedDirection(const FVector& HitActorPos);
+	void CallNormalAttackAtMove();
+	void CallNormalAttackAtJump();
+	void CallSpecialAttackAtMove();
+	void CallSpecialAttackAtJump();
+	void CallRoll(const FVector2D& DirectionVector);
 
 public:
 	// Move
@@ -113,11 +118,17 @@ public:
 	TSubclassOf<ABaseWitchAbility> Skill5AbilityClass = nullptr;
 
 private:
-	TArray<ABaseWitchAbility*> LastAbilities;
-
-	TObjectPtr<ABaseWitchAbility> CurrentAbility = nullptr;
+	UPROPERTY()
 	TObjectPtr<ABaseWitch> ParentWitch = nullptr;
+
+	UPROPERTY()
 	TObjectPtr<UCharacterMovementComponent> ParentMovementComp = nullptr;
+
+	UPROPERTY()
+	FAbilityDataBuffer AbilityBuffer;
+
+	TArray<ABaseWitchAbility*> LastAbilities;
+	TObjectPtr<ABaseWitchAbility> CurrentAbility = nullptr;
 
 	FTimerHandle BufferTimer;
 	float BufferActiveTime = 1.0f;
@@ -131,7 +142,7 @@ private:
 	int32 MaxMana = 5;
 	int32 CurrentMana = 5;
 
-	FVector2D Direction = FVector2D::ZeroVector;
+	FVector2D MovementValue = FVector2D::ZeroVector;
 	bool bIsLeft = false;
 
 	TObjectPtr<ABaseWitchAbility> TempAbility = nullptr;

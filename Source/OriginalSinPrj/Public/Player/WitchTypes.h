@@ -56,18 +56,10 @@ enum class EAbilityType : uint8
 };
 
 UENUM(BlueprintType)
-enum class EAttackType : uint8
-{
-	None = 0,
-	NormalAttack,
-	SpecialAttack,
-	JumpAttack
-};
-
-UENUM(BlueprintType)
 enum class EDirectionType : uint8
 {
-	Left = 0,
+	None = 0,
+	Left,
 	Right,
 	Up,
 	Down

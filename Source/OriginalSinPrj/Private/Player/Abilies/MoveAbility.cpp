@@ -3,45 +3,103 @@
 
 #include "Player/Abilies/MoveAbility.h"
 #include "Player/BaseWitch.h"
+#include "Player/Struct/AbilityDataBuffer.h"
 
 const float AMoveAbility::RotateValue = 360;
 
-void AMoveAbility::InitAbility(ABaseWitch* NewParent)
+void AMoveAbility::InitAbility()
 {
-	Super::InitAbility(NewParent);
+	Super::InitAbility();
 
 	AbilityType = EAbilityType::MoveAbility;
 }
 
-void AMoveAbility::ExcuteAbility(const FVector2D& DirectionValue)
+bool AMoveAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 {
-	Super::ExcuteAbility(DirectionValue);
+	Super::ExcuteAbility(Buffer);
 
-	if (FMath::IsNearlyZero(DirectionValue.X))
+	ExcuteComand(Buffer);
+
+	if (CheckExcuteable(Buffer))
 	{
-		return;
+		ExcuteMove(Buffer);
+		return true;
 	}
 
-	if (DirectionValue.X < 0)
+	return false;
+}
+
+bool AMoveAbility::CheckExcuteable(FAbilityDataBuffer& Buffer)
+{
+	Super::CheckExcuteable(Buffer);
+
+	if (!Buffer.bIsMoveable)
 	{
-		if (bIsLeft)
+		return false;
+	}
+
+	if (FMath::IsNearlyZero(Buffer.MoveValueVector.X))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+void AMoveAbility::ExcuteMove(FAbilityDataBuffer& Buffer)
+{
+	if (Buffer.MoveValueVector.X < 0)
+	{
+		if (Buffer.bIsLeft)
 		{
-			bIsLeft = false;
-			ParentWitch->AddControllerYawInput(RotateValue);
+			Buffer.bIsLeft = false;
+			Buffer.ParentWitch->AddControllerYawInput(RotateValue);
 		}
 
-		ParentWitch->AddMovementInput(GetActorRightVector(), -DirectionValue.X);
+		Buffer.ParentWitch->AddMovementInput(GetActorRightVector(), -Buffer.MoveValueVector.X);
 	}
-	else if (DirectionValue.X > 0)
+	else if (Buffer.MoveValueVector.X > 0)
 	{
-		if (!bIsLeft)
+		if (!Buffer.bIsLeft)
 		{
-			bIsLeft = true;
-			ParentWitch->AddControllerYawInput(RotateValue);
+			Buffer.bIsLeft = true;
+			Buffer.ParentWitch->AddControllerYawInput(RotateValue);
 		}
 
-		ParentWitch->AddMovementInput(GetActorRightVector(), DirectionValue.X);
+		Buffer.ParentWitch->AddMovementInput(GetActorRightVector(), Buffer.MoveValueVector.X);
 	}
 
-	ParentWitch->SetWitchState(EWitchStateType::Move);
+	Buffer.ParentWitch->SetWitchState(EWitchStateType::Move);
+}
+
+void AMoveAbility::ExcuteComand(FAbilityDataBuffer& Buffer)
+{
+	if (FMath::IsNearlyZero(Buffer.MoveValueVector.X))
+	{
+		if (FMath::IsNearlyZero(Buffer.MoveValueVector.Y))
+		{
+			Buffer.ComandDirection = EDirectionType::None;
+			return;
+		}
+
+		if (Buffer.MoveValueVector.Y > 0)
+		{
+			Buffer.ComandDirection = EDirectionType::Up;
+		}
+		else if (Buffer.MoveValueVector.Y < 0)
+		{
+			Buffer.ComandDirection = EDirectionType::Down;
+		}
+	}
+	else
+	{
+		if (Buffer.MoveValueVector.X > 0)
+		{
+			Buffer.ComandDirection = EDirectionType::Left;
+		}
+		else if (Buffer.MoveValueVector.X < 0)
+		{
+			Buffer.ComandDirection = EDirectionType::Right;
+		}
+	}
 }

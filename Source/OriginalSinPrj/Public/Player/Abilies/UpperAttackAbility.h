@@ -13,8 +13,7 @@ class ORIGINALSINPRJ_API AUpperAttackAbility : public ABaseWitchAbility
 	GENERATED_BODY()
 	
 public:
-	virtual void InitAbility(ABaseWitch* NewParent) override;
-	virtual void ExcuteAbility(const FVector2D& DirectionValue) override;
-	
-	
+	virtual void InitAbility() override;
+	virtual bool ExcuteAbility(FAbilityDataBuffer& Buffer) override;
+
 };
