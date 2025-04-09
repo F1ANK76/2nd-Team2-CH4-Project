@@ -4,9 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Player/WitchTypes.h"
 #include "BaseWitch.generated.h"
 
 class AWitchController;
+class UWitchAbilityComponent;
+class UWitchAnimInstance;
+class UBoxComponent;
 struct FInputActionValue;
 
 UCLASS()
@@ -16,6 +20,27 @@ class ORIGINALSINPRJ_API ABaseWitch : public ACharacter
 
 public:
 	ABaseWitch();
+
+	void SetWitchState(const EWitchStateType NewState);
+	void SetWitchDirection(const FVector2D& DirectionVector);
+	void PlayAnimation(UAnimMontage* Target);
+	void StopAnimation(UAnimMontage* Target);
+
+	const EWitchStateType GetWitchState() const;
+	const ECharacterType GetWitchType() const;
+	UBoxComponent* GetDamager(EDirectionType Target) const;
+
+	void RequestMoveToAbility(float Value);
+	void RequestUpDownToAbility(float Value);
+	void RequestJumpToAbility();
+	void RequestExcuteGuardToAbility();
+	void RequestContinueGuardToAbility();
+	void RequestUndoGuardToAbility();
+	void RequestTauntToAbility();
+	void RequestNormalAttackToAbility();
+	void RequestSpecialAttackToAbility();
+	void RequestSkillAttackToAbility(int32 Value);
+	void RequestHitToAbility(AActor* DamageCauser);
 
 protected:
 	UFUNCTION(BlueprintCallable)
@@ -34,7 +59,13 @@ protected:
 	void OnPressedSpecialAttackKey(const FInputActionValue& Value);
 
 	UFUNCTION(BlueprintCallable)
+	void OnBeginPressedGuardKey(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintCallable)
 	void OnPressedGuardKey(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintCallable)
+	void OnEndPressedGuardKey(const FInputActionValue& Value);
 
 	UFUNCTION(BlueprintCallable)
 	void OnPressedTauntKey(const FInputActionValue& Value);
@@ -56,14 +87,52 @@ protected:
 
 
 	virtual void BeginPlay() override;
-	//virtual void Tick(float DeltaTime) override;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-public:
+	void InitAnimInstance();
 
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UWitchAbilityComponent> AbilityComp = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Clothes")
+	TObjectPtr<USkeletalMeshComponent> DressMesh = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Clothes")
+	TObjectPtr<USkeletalMeshComponent> ShoesMesh = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Clothes")
+	TObjectPtr<USkeletalMeshComponent> StockingsMesh = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	TObjectPtr<UStaticMeshComponent> LeftHandItem = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	TObjectPtr<UStaticMeshComponent> RightHandItem = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	TObjectPtr<UStaticMeshComponent> HatItem = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damager")
+	TObjectPtr<UBoxComponent> ForwardDamager = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damager")
+	TObjectPtr<UBoxComponent> BackDamager = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damager")
+	TObjectPtr<UBoxComponent> UpperDamager = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damager")
+	TObjectPtr<UBoxComponent> LowerDamager = nullptr;
 
 protected:
 	TObjectPtr<AWitchController> WitchController = nullptr;
+	TObjectPtr<UWitchAnimInstance> WitchAnimInstance = nullptr;
+	TObjectPtr<UWitchAnimInstance> DressAnimInstance = nullptr;
+	TObjectPtr<UWitchAnimInstance> StockingsAnimInstance = nullptr;
+	TObjectPtr<UWitchAnimInstance> ShoesAnimInstance = nullptr;
 
-	bool bIsJumpable = true;
+	EWitchStateType CurrentState = EWitchStateType::Idle;
+	ECharacterType WitchType = ECharacterType::Witch1; //
 };
