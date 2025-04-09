@@ -5,7 +5,7 @@
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 
-void UResultWidget::InitWidget(UUIHandle* NewUIHandle)
+void UResultWidget::InitWidget(UUISubsystem* NewUIHandle)
 {
 	OpenAnimation = OpenAnim;
 

@@ -12,7 +12,7 @@ void UMapSelectTileWidget::NativeConstruct()
 	MapSelectButton->OnClicked.AddDynamic(this, &ThisClass::HandleButtonClicked);
 }
 
-void UMapSelectTileWidget::InitWidget(UUIHandle* NewUIHandle)
+void UMapSelectTileWidget::InitWidget(UUISubsystem* NewUIHandle)
 {
 	Super::InitWidget(NewUIHandle);
 

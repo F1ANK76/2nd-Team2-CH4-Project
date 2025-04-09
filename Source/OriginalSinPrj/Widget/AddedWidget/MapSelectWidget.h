@@ -16,7 +16,7 @@ class ORIGINALSINPRJ_API UMapSelectWidget : public UBaseWidget
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual void InitWidget(UUIHandle* NewUIHandle) override;
+	virtual void InitWidget(UUISubsystem* NewUIHandle) override;
 
 public:
 	UFUNCTION()

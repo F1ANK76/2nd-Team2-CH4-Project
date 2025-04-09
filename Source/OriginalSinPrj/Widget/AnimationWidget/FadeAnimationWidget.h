@@ -15,7 +15,7 @@ class ORIGINALSINPRJ_API UFadeAnimationWidget : public UBaseWidget
 	GENERATED_BODY()
 	
 public:
-	virtual void InitWidget(UUIHandle* NewUIHandle) override;
+	virtual void InitWidget(UUISubsystem* NewUIHandle) override;
 	//virtual void PlayRemoveAnim(bool bIsNext, ESceneType SceneType = ESceneType::Title) override;
 	virtual void PlayAddAnim() override; //FadeIn
 	virtual void EndRemoveAnim() override;

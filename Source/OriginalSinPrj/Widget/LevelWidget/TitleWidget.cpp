@@ -5,7 +5,7 @@
 #include "Components/Button.h"
 //#include "System/UIHandle.h"
 
-void UTitleWidget::InitWidget(UUIHandle* NewUIHandle)
+void UTitleWidget::InitWidget(UUISubsystem* NewUIHandle)
 {
 	Super::InitWidget(NewUIHandle);
 

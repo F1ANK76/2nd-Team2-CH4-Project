@@ -5,7 +5,7 @@
 #include "Components/Button.h"
 #include "Components/Slider.h"
 
-void UOptionWidget::InitWidget(UUIHandle* NewUIHandle)
+void UOptionWidget::InitWidget(UUISubsystem* NewUIHandle)
 {
 	/*
 	OpenAnimation = OpenOptionAnim;

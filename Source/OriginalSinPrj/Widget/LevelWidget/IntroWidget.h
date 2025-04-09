@@ -13,7 +13,7 @@ class ORIGINALSINPRJ_API UIntroWidget : public UBaseWidget
 	
 
 public:
-    virtual void InitWidget(UUIHandle* NewUIHandle) override;
+    virtual void InitWidget(UUISubsystem* NewUIHandle) override;
 
 private:
     UPROPERTY(Meta = (BindWidget))

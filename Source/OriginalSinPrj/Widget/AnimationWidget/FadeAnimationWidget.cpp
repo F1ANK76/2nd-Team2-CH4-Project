@@ -3,7 +3,7 @@
 
 #include "FadeAnimationWidget.h"
 
-void UFadeAnimationWidget::InitWidget(UUIHandle* NewUIHandle)
+void UFadeAnimationWidget::InitWidget(UUISubsystem* NewUIHandle)
 {
 	OpenAnimation = FadeInAnim;
 	CloseAnimation = FadeOutAnim;

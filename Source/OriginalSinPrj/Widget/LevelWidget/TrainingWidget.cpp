@@ -13,7 +13,7 @@ void UTrainingWidget::NativeConstruct()
 	ToTitleButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveTitle);
 }
 
-void UTrainingWidget::InitWidget(UUIHandle* NewUIHandle)
+void UTrainingWidget::InitWidget(UUISubsystem* NewUIHandle)
 {
 	Super::InitWidget(NewUIHandle);
 

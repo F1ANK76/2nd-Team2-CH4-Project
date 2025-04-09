@@ -11,7 +11,7 @@ void UBaseWidget::NativeConstruct()
 //////////////////////////
 
 
-void UBaseWidget::InitWidget(UUIHandle* uiHandle)
+void UBaseWidget::InitWidget(UUISubsystem* uiHandle)
 {
 	UIHandle = uiHandle;
 	StartAddDelegate.BindDynamic(this, &ThisClass::StartAddAnim);

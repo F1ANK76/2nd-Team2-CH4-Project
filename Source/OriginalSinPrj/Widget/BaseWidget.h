@@ -7,7 +7,7 @@
 #include "BaseWidget.generated.h"
 
 
-class UUIHandle;
+class UUISubsystem;
 enum EWidgetType;
 enum ESceneType;
 
@@ -20,7 +20,7 @@ protected:
     virtual void NativeConstruct() override;
 	
 public:
-	virtual void InitWidget(UUIHandle* uiHandle);
+	virtual void InitWidget(UUISubsystem* uiHandle);
 	virtual void Action();
 	virtual void Update();
 	virtual void PlayUIOpenAnimation();
@@ -78,7 +78,7 @@ protected:
 	TObjectPtr<UWidgetAnimation> OpenAnimation;
 	TObjectPtr<UWidgetAnimation> CloseAnimation;
 
-	TObjectPtr<UUIHandle> UIHandle;
+	TObjectPtr<UUISubsystem> UIHandle;
 	//ESceneType MoveTargetScene = ESceneType::Title;
 	bool bIsPlaying = false;
 

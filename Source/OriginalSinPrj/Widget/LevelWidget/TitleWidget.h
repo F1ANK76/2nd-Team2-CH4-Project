@@ -14,7 +14,7 @@ class ORIGINALSINPRJ_API UTitleWidget : public UBaseWidget
 	GENERATED_BODY()
 
 public:
-	virtual void InitWidget(UUIHandle* NewUIHandle) override;
+	virtual void InitWidget(UUISubsystem* NewUIHandle) override;
 
 private:
 	UFUNCTION()

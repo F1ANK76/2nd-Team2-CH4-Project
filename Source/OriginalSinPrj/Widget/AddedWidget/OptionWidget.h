@@ -6,7 +6,7 @@
 #include "../BaseWidget.h"
 #include "OptionWidget.generated.h"
 
-class UUIHandle;
+class UUISubsystem;
 class UButton;
 class USlider;
 
@@ -16,7 +16,7 @@ class ORIGINALSINPRJ_API UOptionWidget : public UBaseWidget
 	GENERATED_BODY()
 
 public:
-	virtual void InitWidget(UUIHandle* NewUIHandle) override;
+	virtual void InitWidget(UUISubsystem* NewUIHandle) override;
 	virtual void EndRemoveAnim() override;
 
 private:
