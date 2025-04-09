@@ -1,12 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "OnlineSessionSettings.h"
 #include "OriginalSinPrj/Interface/LobbyEvent.h"
+#include "OriginalSinPrj/Interface/SessionManage.h"
 #include "GameFramework/GameState.h"
 #include "MenuGameState.generated.h"
 
 UCLASS()
-class ORIGINALSINPRJ_API AMenuGameState : public AGameState, public ILobbyEvent
+class ORIGINALSINPRJ_API AMenuGameState : public AGameState, public ILobbyEvent, public ISessionManage
 {
 	GENERATED_BODY()
 	
@@ -36,6 +38,18 @@ public: /*---------------------멀티플레이---------------------*/
 
 	UFUNCTION(BlueprintCallable, Category = "Session")
 	void SetIsSessionConnected(bool IsSessionConnected);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void CreateGameSession(const FString& SessionName) override;
+
+	//UFUNCTION(BlueprintCallable)
+	virtual void JoinGameSession(const FOnlineSessionSearchResult& SearchResult) override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void FindGameSessions() override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void DestroyGameSession() override;
 
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_TravelLevel(const FName& LevelName);

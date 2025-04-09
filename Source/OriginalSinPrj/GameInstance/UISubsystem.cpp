@@ -29,6 +29,41 @@ void UUISubsystem::ShowLevel(ELevelType LevelType)
                 CurrentActiveWidget = TitleLevelWidget;
                 break;
 
+            case ELevelType::MatchLevel:
+                LevelName = "MatchLevel";
+                CurrentActiveWidget = MatchLevelWidget;
+                break;
+
+            case ELevelType::LobbyLevel:
+                LevelName = "LobbyLevel";
+                CurrentActiveWidget = LobbyLevelWidget;
+                break;
+
+            case ELevelType::MultiLevel:
+                LevelName = "MultiLevel";
+                CurrentActiveWidget = MultiLevelWidget;
+                break;
+
+            case ELevelType::CooperationLevel:
+                LevelName = "CooperationLevel";
+                CurrentActiveWidget = CooperationLevelWidget;
+                break;
+
+            case ELevelType::SingleLevel:
+                LevelName = "SingleLevel";
+                CurrentActiveWidget = SingleLevelWidget;
+                break;
+
+            case ELevelType::TrainingLevel:
+                LevelName = "TrainingLevel";
+                CurrentActiveWidget = TrainingLevelWidget;
+                break;
+
+            case ELevelType::FarmingLevel:
+                LevelName = "FarmingLevel";
+                CurrentActiveWidget = FarmingLevelWidget;
+                break;
+
             default:
                 UE_LOG(LogTemp, Warning, TEXT("Invalid LevelType"));
                 return;
@@ -54,19 +89,43 @@ void UUISubsystem::OnPostLoadMap(UWorld* LoadedWorld)
 
 void UUISubsystem::CreateWidgets()
 {
-    if (UISettings)
+    if (UISettings->TitleWidgetClass)
     {
-        if (UISettings->TitleWidgetClass)
-        {
-            TitleLevelWidget = CreateWidget<UBaseWidget>(World, UISettings->TitleWidgetClass);
-        }
-        else
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Invalid TitleWidgetClass"));
-        }
+        TitleLevelWidget = CreateWidget<UBaseWidget>(World, UISettings->TitleWidgetClass);
     }
-    else
+
+    if (UISettings->MatchWidgetClass)
     {
-        UE_LOG(LogTemp, Warning, TEXT("Invalid UISettings"));
+        MatchLevelWidget = CreateWidget<UBaseWidget>(World, UISettings->MatchWidgetClass);
+    }
+
+    if (UISettings->LobbyWidgetClass)
+    {
+        LobbyLevelWidget = CreateWidget<UBaseWidget>(World, UISettings->LobbyWidgetClass);
+    }
+
+    if (UISettings->MultiWidgetClass)
+    {
+        MultiLevelWidget = CreateWidget<UBaseWidget>(World, UISettings->MultiWidgetClass);
+    }
+
+    if (UISettings->CooperationWidgetClass)
+    {
+        CooperationLevelWidget = CreateWidget<UBaseWidget>(World, UISettings->CooperationWidgetClass);
+    }
+
+    if (UISettings->SingleWidgetClass)
+    {
+        SingleLevelWidget = CreateWidget<UBaseWidget>(World, UISettings->SingleWidgetClass);
+    }
+
+    if (UISettings->TrainingWidgetClass)
+    {
+        TrainingLevelWidget = CreateWidget<UBaseWidget>(World, UISettings->TrainingWidgetClass);
+    }
+
+    if (UISettings->FarmingWidgetClass)
+    {
+        FarmingLevelWidget = CreateWidget<UBaseWidget>(World, UISettings->FarmingWidgetClass);
     }
 }

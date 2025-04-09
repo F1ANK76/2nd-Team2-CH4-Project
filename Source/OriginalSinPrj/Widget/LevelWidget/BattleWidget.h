@@ -13,5 +13,9 @@ UCLASS()
 class ORIGINALSINPRJ_API UBattleWidget : public UBaseWidget
 {
 	GENERATED_BODY()
+
+	//≈∏¿Ã∏”
+
+	
 	
 };

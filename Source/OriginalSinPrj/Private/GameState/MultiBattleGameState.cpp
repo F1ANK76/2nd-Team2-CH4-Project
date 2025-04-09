@@ -36,6 +36,10 @@ void AMultiBattleGameState::DrawMatch()
 {
 }
 
+void AMultiBattleGameState::Multicast_ApplyDamage_Implementation(AActor* Attacker, float Damage, const FVector& HitLocation)
+{
+}
+
 void AMultiBattleGameState::Multicast_TakeDamage_Implementation(AActor* Victim, float Damage, const FVector& HitLocation)
 {
 }
