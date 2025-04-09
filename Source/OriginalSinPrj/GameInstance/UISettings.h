@@ -15,6 +15,9 @@ class ORIGINALSINPRJ_API UUISettings : public UDeveloperSettings
 	
 public:
 	UPROPERTY(EditAnywhere, Config, Category = "Widgets")
+	TSubclassOf<UBaseWidget> IntroWidgetClass;
+
+	UPROPERTY(EditAnywhere, Config, Category = "Widgets")
 	TSubclassOf<UBaseWidget> TitleWidgetClass;
 
 	UPROPERTY(EditAnywhere, Config, Category = "Widgets")
@@ -37,4 +40,27 @@ public:
 
 	UPROPERTY(EditAnywhere, Config, Category = "Widgets")
 	TSubclassOf<UBaseWidget> FarmingWidgetClass;
+
+	// On/Off Widget
+
+	UPROPERTY(EditAnywhere, Config, Category = "On/Off Widgets")
+	TSubclassOf<UBaseWidget> OptionWidgetClass;
+
+	UPROPERTY(EditAnywhere, Config, Category = "On/Off Widgets")
+	TSubclassOf<UBaseWidget> BuffSelectWidgetClass;
+
+	UPROPERTY(EditAnywhere, Config, Category = "On/Off Widgets")
+	TSubclassOf<UBaseWidget> CharacterSelectWidgetClass;
+
+	UPROPERTY(EditAnywhere, Config, Category = "On/Off Widgets")
+	TSubclassOf<UBaseWidget> GameSettingWidgetClass;
+
+	UPROPERTY(EditAnywhere, Config, Category = "On/Off Widgets")
+	TSubclassOf<UBaseWidget> MapSelectWidgetClass;
+
+	UPROPERTY(EditAnywhere, Config, Category = "On/Off Widgets")
+	TSubclassOf<UBaseWidget> PlayerStateWidgetClass;
+
+	UPROPERTY(EditAnywhere, Config, Category = "On/Off Widgets")
+	TSubclassOf<UBaseWidget> ResultWidgetClass;
 };

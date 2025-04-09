@@ -19,10 +19,17 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 	void ShowLevel(ELevelType LevelType);
+	void ShowWidget(EAddWidgetType WidgetType);
 	void CreateWidgets();
+
+	UFUNCTION(BlueprintCallable)
+	void CloseGame();
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UBaseWidget> CurrentActiveWidget = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBaseWidget> IntroLevelWidget = nullptr;
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UBaseWidget> TitleLevelWidget = nullptr;
@@ -48,7 +55,30 @@ public:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UBaseWidget> FarmingLevelWidget = nullptr;
 
-	UWorld* World;
+	// On/Off Widget
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBaseWidget> OptionWidget = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBaseWidget> BuffSelectWidget = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBaseWidget> CharacterSelectWidget = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBaseWidget> GameSettingWidget = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBaseWidget> MapSelectWidget = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBaseWidget> PlayerStateWidget = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBaseWidget> ResultWidget = nullptr;
+
+	//UWorld* World;
 
 	const UUISettings* UISettings;
 
