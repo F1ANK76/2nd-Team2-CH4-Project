@@ -12,9 +12,26 @@ class ORIGINALSINPRJ_API ABossCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	ABossCharacter();
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* RangeAttackMontage;
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* AreaSpawnWeaponMontage;
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* RushBossAttackMontage;
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayRangeAttackMontage();
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayAreaSpawnWeaponMontage();
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayRushBossAttackMontage();
+	
+	void PlayRangeAttackMontage();
+	void PlayAreaSpawnWeaponMontage();
+	void PlayRushBossAttackMontage();
+	
 	void UpdateFacingDirection(APawn* ClosestPlayer);
 
 private:

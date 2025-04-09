@@ -4,6 +4,7 @@
 
 # Jetbrain Rider specific files
 .idea/
+*.DotSettings.user
 
 # Compiled Object files
 *.slo
