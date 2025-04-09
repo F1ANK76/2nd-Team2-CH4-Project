@@ -3,13 +3,30 @@
 
 #include "Boss/BossController.h"
 #include "Boss/BossCharacter.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 void ABossController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	FindClosestPlayerDelay = 0.2f;
-	TargetPlayerPawn = nullptr;
+	if (HasAuthority())
+	{
+		FindClosestPlayerDelay = 0.2f;
+		TargetPlayerPawn = nullptr;
+
+		if (IsValid(BossBehaviorTree))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Running Behavior Tree!"));
+			RunBehaviorTree(BossBehaviorTree);
+			GetBlackboardComponent()->SetValueAsBool("bIsBattleStart", true);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Running Behavior Tree Failed!!"));
+		}
+	}
 }
 
 void ABossController::BeginPlay()
@@ -18,6 +35,7 @@ void ABossController::BeginPlay()
 
 	if (HasAuthority())
 	{
+		UpdateBossFacingDirection();
 		GetWorld()->GetTimerManager().SetTimer(
 			FindClosestPlayerTimerHandle,
 			this,
@@ -30,18 +48,19 @@ void ABossController::BeginPlay()
 
 void ABossController::UpdateBossFacingDirection()
 {
+	if (!HasAuthority()) return;
 	ABossCharacter* Boss = Cast<ABossCharacter>(GetPawn());
-	if (!IsValid(Boss) || !Boss->HasAuthority()) return;
+	if (!IsValid(Boss)) return;
 
 	TargetPlayerPawn = FindClosestPlayer();
 	if (IsValid(TargetPlayerPawn))
 	{
+		GetBlackboardComponent()->SetValueAsBool("bIsTargetPlayerSet", true);
 		Boss->UpdateFacingDirection(TargetPlayerPawn);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ABossController::UpdateBossFacingDirection : 유효한 플레이어 감지 실패"));
-		return;
+		GetBlackboardComponent()->SetValueAsBool("bIsTargetPlayerSet", false);
 	}
 }
 
@@ -53,17 +72,19 @@ APawn* ABossController::FindClosestPlayer()
 	UWorld* World = GetWorld();
 	if (IsValid(World))
 	{
-		for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
+		TArray<AActor*> Players;
+		UGameplayStatics::GetAllActorsOfClass(World, APawn::StaticClass(), Players);
+
+		for(AActor* Player : Players)
 		{
-			APawn* PlayerPawn = It->Get()->GetPawn();
-			if (IsValid(PlayerPawn))
+			if(!Player->Tags.Contains("Player")) continue;
+
+			float Distance = FVector::Dist(Player->GetActorLocation(), GetPawn()->GetActorLocation());
+
+			if(Distance < MinDistance)
 			{
-				float Distance = FVector::Dist(PlayerPawn->GetActorLocation(), GetPawn()->GetActorLocation());
-				if (Distance < MinDistance)
-				{
-					MinDistance = Distance;
-					ClosestPlayer = PlayerPawn;
-				}
+				MinDistance = Distance;
+				ClosestPlayer = Cast<APawn>(Player);
 			}
 		}
 	}
