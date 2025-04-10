@@ -10,6 +10,10 @@ void UBuffSelectWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
+    BuffButton1->OnClicked.RemoveDynamic(this, &UBuffSelectWidget::OnBuff1Clicked);
+    BuffButton2->OnClicked.RemoveDynamic(this, &UBuffSelectWidget::OnBuff2Clicked);
+    BuffButton3->OnClicked.RemoveDynamic(this, &UBuffSelectWidget::OnBuff3Clicked);
+
     BuffButton1->OnClicked.AddDynamic(this, &UBuffSelectWidget::OnBuff1Clicked);
     BuffButton2->OnClicked.AddDynamic(this, &UBuffSelectWidget::OnBuff2Clicked);
     BuffButton3->OnClicked.AddDynamic(this, &UBuffSelectWidget::OnBuff3Clicked);

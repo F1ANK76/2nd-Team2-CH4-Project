@@ -25,7 +25,7 @@ void UMapSelectWidget::NativeConstruct()
     }
 }
 
-void UMapSelectWidget::InitWidget(UUIHandle* NewUIHandle)
+void UMapSelectWidget::InitWidget(UUISubsystem* NewUIHandle)
 {
     Super::InitWidget(NewUIHandle);
 

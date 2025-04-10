@@ -12,13 +12,15 @@ class ORIGINALSINPRJ_API UIntroWidget : public UBaseWidget
 	GENERATED_BODY()
 	
 
+protected:
+    virtual void NativeConstruct() override;
+
 public:
-    virtual void InitWidget(UUIHandle* NewUIHandle) override;
+
 
 private:
     UPROPERTY(Meta = (BindWidget))
     TObjectPtr<UButton> ToTitleButton;
 
-public:
-    virtual void NativeConstruct() override;
+
 };

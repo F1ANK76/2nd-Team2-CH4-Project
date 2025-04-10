@@ -1,4 +1,7 @@
 #include "GameState/MultiBattleGameState.h"
+#include "TestPlatform.h"
+
+#include "Kismet/GameplayStatics.h"
 
 void AMultiBattleGameState::ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation)
 {
