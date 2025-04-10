@@ -3,6 +3,7 @@
 #include "AudioSubsystem.h"
 #include "AudioDataSettings.h"
 #include "Kismet/GameplayStatics.h"
+#include "Struct/LevelAudioDataStruct.h"
 
 #include "AudioDevice.h"
 
@@ -13,30 +14,37 @@ void UAudioSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	//World = GetGameInstance()->GetWorld();
 
 	AudioDataSettings = GetDefault<UAudioDataSettings>();
+
+    LoadDataTables();
+}
+
+void UAudioSubsystem::LoadDataTables()
+{
+    if (AudioDataSettings)
+    {
+        if (AudioDataSettings->LevelSounds.IsValid())
+        {
+            LevelSoundTable = AudioDataSettings->LevelSounds.LoadSynchronous();
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Invalid LevelSoundTable"));
+        }
+    }
 }
 
 void UAudioSubsystem::PlaySounds(ESoundDataType SoundType, uint8 DetailSoundType)
 {
     if (GetWorld())
     {
-        const TMap<uint8, TSoftObjectPtr<USoundBase>>* TargetSound = nullptr;
+        UDataTable* TargetTable = nullptr;
+        UEnum* EnumPtr = nullptr;
 
         switch (SoundType)
         {
             case ESoundDataType::Level:
-                TargetSound = &AudioDataSettings->LevelSounds;
-                break;
-
-            case ESoundDataType::Monster:
-                TargetSound = &AudioDataSettings->MonsterSounds;
-                break;
-
-            case ESoundDataType::Character:
-                TargetSound = &AudioDataSettings->CharacterSounds;
-                break;
-
-            case ESoundDataType::Boss:
-                TargetSound = &AudioDataSettings->BossSounds;
+                TargetTable = LevelSoundTable;
+                EnumPtr = StaticEnum<ELevelSoundType>();
                 break;
 
             default:
@@ -44,35 +52,49 @@ void UAudioSubsystem::PlaySounds(ESoundDataType SoundType, uint8 DetailSoundType
                 return;
         }
 
-        if (TargetSound && TargetSound->Contains(DetailSoundType))
+        if (TargetTable)
         {
-            TSoftObjectPtr<USoundBase> SoundAsset = (*TargetSound)[DetailSoundType];
+            FName RowName = FName(*EnumPtr->GetNameStringByValue(static_cast<int64>(DetailSoundType)));
 
-            if (USoundBase* Sound = SoundAsset.LoadSynchronous())
+            FString ContextString = TEXT("AudioSubsystem");
+
+            const FLevelAudioDataStruct* FoundRow = TargetTable->FindRow<FLevelAudioDataStruct>(RowName, ContextString);
+
+            if (FoundRow)
             {
-                if (BgmComp && BgmComp->IsPlaying())
+                if (FoundRow->Sound.IsValid())
                 {
-                    BgmComp->Stop();
-                    UE_LOG(LogTemp, Warning, TEXT("Stop Sound"));
-                }
-                
-                BgmComp = UGameplayStatics::CreateSound2D(GetWorld(), Sound, 1.0f);
+                    USoundBase* Sound = FoundRow->Sound.LoadSynchronous();
 
-                if (BgmComp)
-                {
-                    //BgmComp->bAutoDestroy = false;
+                    if (Sound)
+                    {
+                        if (BgmComp && BgmComp->IsPlaying())
+                        {
+                            BgmComp->Stop();
+                            UE_LOG(LogTemp, Warning, TEXT("Stop Sound"));
+                        }
 
-                    BgmComp->Play();
+                        BgmComp = UGameplayStatics::CreateSound2D(GetWorld(), Sound, 1.0f);
+
+                        if (BgmComp)
+                        {
+                            BgmComp->Play();
+                        }
+                        else
+                        {
+                            UE_LOG(LogTemp, Warning, TEXT("Invalid BgmComp"));
+                        }
+                    }
                 }
-                else
-                {
-                    UE_LOG(LogTemp, Warning, TEXT("Failed to Create BgmComp"));
-                }
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("Invalid FoundRow"));
             }
         }
         else
         {
-            UE_LOG(LogTemp, Warning, TEXT("Invalid DetailSoundType"));
+            UE_LOG(LogTemp, Warning, TEXT("Invalid TargetTable"));
         }
     }
 }

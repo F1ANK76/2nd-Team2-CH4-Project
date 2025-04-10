@@ -16,14 +16,5 @@ class ORIGINALSINPRJ_API UAudioDataSettings : public UDeveloperSettings
 
 public:
 	UPROPERTY(EditAnywhere, Config, Category = "Sounds")
-	TMap<uint8, TSoftObjectPtr<USoundBase>> LevelSounds;
-
-	UPROPERTY(EditAnywhere, Config, Category = "Sounds")
-	TMap<uint8, TSoftObjectPtr<USoundBase>> MonsterSounds;
-	
-	UPROPERTY(EditAnywhere, Config, Category = "Sounds")
-	TMap<uint8, TSoftObjectPtr<USoundBase>> CharacterSounds;
-
-	UPROPERTY(EditAnywhere, Config, Category = "Sounds")
-	TMap<uint8, TSoftObjectPtr<USoundBase>> BossSounds;
+	TSoftObjectPtr<UDataTable> LevelSounds;
 };

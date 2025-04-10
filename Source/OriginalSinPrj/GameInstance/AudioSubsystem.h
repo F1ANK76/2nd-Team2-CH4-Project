@@ -17,7 +17,11 @@ class ORIGINALSINPRJ_API UAudioSubsystem : public UGameInstanceSubsystem
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
+	void LoadDataTables();
 	void PlaySounds(ESoundDataType SoundType, uint8 DetailSoundType);
+
+	UPROPERTY()
+	UDataTable* LevelSoundTable;
 
 	UPROPERTY()
 	TObjectPtr<UAudioComponent> BgmComp;
