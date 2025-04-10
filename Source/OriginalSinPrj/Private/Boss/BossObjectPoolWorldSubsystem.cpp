@@ -131,11 +131,23 @@ AWeaponToSpawn* UBossObjectPoolWorldSubsystem::SpawnWeaponToSpawn(const FVector&
 
 ARushBossClone* UBossObjectPoolWorldSubsystem::SpawnRushBossClone(const FVector& Location, const FRotator& Rotation)
 {
-	if (IsValid(PoolConfig->ARushBossCloneClass))
+	if (IsValid(PoolConfig->RushBossCloneClass))
 	{
-		return SpawnPooledActor<ARushBossClone>(PoolConfig->ARushBossCloneClass, Location, Rotation);
+		return SpawnPooledActor<ARushBossClone>(PoolConfig->RushBossCloneClass, Location, Rotation);
 	}
 
 	UE_LOG(LogTemp, Error, TEXT("No RushBossCloneClass in Data Asset"));
+	return nullptr;
+}
+
+ADestructibleObject* UBossObjectPoolWorldSubsystem::SpawnDestructibleObject(const FVector& Location,
+	const FRotator& Rotation)
+{
+	if (IsValid(PoolConfig->DestructibleObjectClass))
+	{
+		return SpawnPooledActor<ADestructibleObject>(PoolConfig->DestructibleObjectClass, Location, Rotation);
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("No DestructibleObjectClass in Data Asset"));
 	return nullptr;
 }

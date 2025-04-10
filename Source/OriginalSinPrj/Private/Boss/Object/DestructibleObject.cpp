@@ -10,7 +10,7 @@ ADestructibleObject::ADestructibleObject()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	//3번 공격하면 파괴
+	//N번 공격하면 파괴
 	HP = 3;
 	bIsActivate = false;
 	
@@ -77,7 +77,7 @@ void ADestructibleObject::OnOverlapBegin(UPrimitiveComponent* OverlappedComponen
 	//파괴
 	if (HP <= 0)
 	{
-		//파괴 이펙트 로직 추가 필요
+		//파괴 이펙트 추가 필요
 
 		IBossPoolableActorInterface::Execute_OnPooledObjectReset(this);
 	}
