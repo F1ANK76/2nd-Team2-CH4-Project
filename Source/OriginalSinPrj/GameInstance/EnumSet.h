@@ -72,3 +72,12 @@ enum class EBossSoundType : uint8
 	Attack = 0,
 	Death
 };
+
+UENUM(BlueprintType)
+enum class EBuffType : uint8
+{
+	ManaUp = 0,
+	AttackUp,
+	DefenseUp,
+	SpeedUp,
+};
