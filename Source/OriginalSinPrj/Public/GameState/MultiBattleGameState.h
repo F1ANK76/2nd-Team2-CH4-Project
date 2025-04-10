@@ -22,6 +22,8 @@ public:
 	virtual void DefeatMatch();
 	virtual void DrawMatch();
 
+private:
+
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation);
 
