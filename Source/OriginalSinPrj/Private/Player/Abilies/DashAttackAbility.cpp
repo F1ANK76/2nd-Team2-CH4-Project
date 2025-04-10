@@ -14,9 +14,14 @@ void ADashAttackAbility::InitAbility()
 
 bool ADashAttackAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 {
-	Super::ExcuteAbility(Buffer);
+	bool ParentResult = Super::ExcuteAbility(Buffer);
 
-	Buffer.ParentWitch->SetWitchState(EWitchStateType::NormalAttack);
+	if (!ParentResult)
+	{
+		return false;
+	}
+
+	Buffer.ParentWitch->PlayEffect(EEffectVisibleType::Right);
 
 	return true;
 }

@@ -11,6 +11,7 @@ class AWitchController;
 class UWitchAbilityComponent;
 class UWitchAnimInstance;
 class UBoxComponent;
+class UNiagaraComponent;
 struct FInputActionValue;
 
 UCLASS()
@@ -21,26 +22,67 @@ class ORIGINALSINPRJ_API ABaseWitch : public ACharacter
 public:
 	ABaseWitch();
 
+	UFUNCTION(NetMulticast, Unreliable)
 	void SetWitchState(const EWitchStateType NewState);
+
+	UFUNCTION(NetMulticast, Unreliable)
 	void SetWitchDirection(const FVector2D& DirectionVector);
+
+	UFUNCTION(NetMulticast, Unreliable)
 	void PlayAnimation(UAnimMontage* Target);
+
+	UFUNCTION(NetMulticast, Unreliable)
 	void StopAnimation(UAnimMontage* Target);
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void PlayEffect(EEffectVisibleType Type);
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void StopEffect();
+
+	void ApplyAttack(AActor* Target, float ApplyValue);
+	void EndAnimNotify();
 
 	const EWitchStateType GetWitchState() const;
 	const ECharacterType GetWitchType() const;
+	const FVector GetHeadLocation() const;
 	UBoxComponent* GetDamager(EDirectionType Target) const;
 
+	UFUNCTION(Server, Unreliable)
 	void RequestMoveToAbility(float Value);
+
+	UFUNCTION(Server, Unreliable)
 	void RequestUpDownToAbility(float Value);
+
+	UFUNCTION(Server, Unreliable)
 	void RequestJumpToAbility();
+
+	UFUNCTION(Server, Unreliable)
 	void RequestExcuteGuardToAbility();
+
+	UFUNCTION(Server, Unreliable)
 	void RequestContinueGuardToAbility();
+
+	UFUNCTION(Server, Unreliable)
 	void RequestUndoGuardToAbility();
+
+	UFUNCTION(Server, Unreliable)
 	void RequestTauntToAbility();
+
+	UFUNCTION(Server, Unreliable)
 	void RequestNormalAttackToAbility();
+
+	UFUNCTION(Server, Unreliable)
 	void RequestSpecialAttackToAbility();
+
+	UFUNCTION(Server, Unreliable)
 	void RequestSkillAttackToAbility(int32 Value);
+
+	UFUNCTION(Server, Unreliable)
 	void RequestHitToAbility(AActor* DamageCauser);
+
+	UFUNCTION(Server, UnReliable)
+	void RequestEndedAnim();
 
 protected:
 	UFUNCTION(BlueprintCallable)
@@ -86,8 +128,11 @@ protected:
 	void OnPressedSkill5Key(const FInputActionValue& Value);
 
 
-	virtual void BeginPlay() override;
+	
+
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	void InitAnimInstance();
@@ -95,6 +140,7 @@ protected:
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UWitchAbilityComponent> AbilityComp = nullptr;
+
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Clothes")
 	TObjectPtr<USkeletalMeshComponent> DressMesh = nullptr;
@@ -105,6 +151,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Clothes")
 	TObjectPtr<USkeletalMeshComponent> StockingsMesh = nullptr;
 
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
 	TObjectPtr<UStaticMeshComponent> LeftHandItem = nullptr;
 
@@ -114,17 +161,19 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
 	TObjectPtr<UStaticMeshComponent> HatItem = nullptr;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damager")
-	TObjectPtr<UBoxComponent> ForwardDamager = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effect")
+	TObjectPtr<UNiagaraComponent> LeftHandEffect = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effect")
+	TObjectPtr<UNiagaraComponent> RightHandEffect = nullptr;
+
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damager")
-	TObjectPtr<UBoxComponent> BackDamager = nullptr;
+	TObjectPtr<UBoxComponent> LeftHandDamager = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damager")
-	TObjectPtr<UBoxComponent> UpperDamager = nullptr;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damager")
-	TObjectPtr<UBoxComponent> LowerDamager = nullptr;
+	TObjectPtr<UBoxComponent> RightHandDamager = nullptr;
 
 protected:
 	TObjectPtr<AWitchController> WitchController = nullptr;

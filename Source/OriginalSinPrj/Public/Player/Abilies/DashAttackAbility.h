@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Player/Abilies/BaseWitchAbility.h"
+#include "Player/Abilies/AttackAbility.h"
 #include "DashAttackAbility.generated.h"
 
 
 UCLASS()
-class ORIGINALSINPRJ_API ADashAttackAbility : public ABaseWitchAbility
+class ORIGINALSINPRJ_API ADashAttackAbility : public AAttackAbility
 {
 	GENERATED_BODY()
 	

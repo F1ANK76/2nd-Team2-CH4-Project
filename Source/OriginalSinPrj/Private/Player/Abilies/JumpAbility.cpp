@@ -21,10 +21,25 @@ bool AJumpAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 		return false;
 	}
 
-	Buffer.ParentWitch->Jump();
+	ResponseJumped(Buffer.ParentWitch);
 	Buffer.ParentWitch->SetWitchState(EWitchStateType::Jump);
 
 	return true;
+}
+
+void AJumpAbility::ResponseJumped_Implementation(ABaseWitch* ParentWitch)
+{
+	if (!IsValid(ParentWitch))
+	{
+		return;
+	}
+
+	if (!ParentWitch->IsLocallyControlled())
+	{
+		return;
+	}
+
+	ParentWitch->Jump();
 }
 
 bool AJumpAbility::CheckExcuteable(FAbilityDataBuffer& Buffer)

@@ -3,25 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Player/Abilies/BaseWitchAbility.h"
+#include "Player/Abilies/AttackAbility.h"
 #include "NormalAttackAbility.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
-class ORIGINALSINPRJ_API ANormalAttackAbility : public ABaseWitchAbility
+class ORIGINALSINPRJ_API ANormalAttackAbility : public AAttackAbility
 {
 	GENERATED_BODY()
 
 public:
 	virtual void InitAbility() override;
 	virtual bool ExcuteAbility(FAbilityDataBuffer& Buffer) override;
-	virtual void UndoAbility(FAbilityDataBuffer& Buffer) override;
-
-protected:
-	virtual bool CheckExcuteable(FAbilityDataBuffer& Buffer) override;
-
-private:
-	float Damage = 5.0f;
 };
