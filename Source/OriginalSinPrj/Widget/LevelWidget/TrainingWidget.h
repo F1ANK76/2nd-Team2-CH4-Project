@@ -16,7 +16,7 @@ class ORIGINALSINPRJ_API UTrainingWidget : public UBaseWidget
 	GENERATED_BODY()
 	
 public:
-	virtual void InitWidget(UUISubsystem* NewUIHandle) override;
+
 	virtual void NativeConstruct() override;
 private:
 	UFUNCTION()

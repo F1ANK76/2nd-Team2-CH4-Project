@@ -16,7 +16,8 @@ class ORIGINALSINPRJ_API UOptionWidget : public UBaseWidget
 	GENERATED_BODY()
 
 public:
-	virtual void InitWidget(UUISubsystem* NewUIHandle) override;
+
+	virtual void NativeConstruct() override;
 	virtual void EndRemoveAnim() override;
 
 private:

@@ -9,6 +9,10 @@
 void UGameSettingWidget::NativeConstruct()
 {
     Super::NativeConstruct();
+    if (FarmingModeCheckBox) FarmingModeCheckBox->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnFarmingCheckBoxChanged);
+    if (BuffModeCheckBox) BuffModeCheckBox->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnBuffCheckBoxChanged);
+    if (LifePointsModeCheckBox) LifePointsModeCheckBox->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnLifePointCheckBoxChanged);
+    if (TimeLimitModeCheckBox) TimeLimitModeCheckBox->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnTimeLimitCheckBoxChanged);
 
     if (FarmingModeCheckBox) FarmingModeCheckBox->OnCheckStateChanged.AddDynamic(this, &UGameSettingWidget::OnFarmingCheckBoxChanged);
     if (BuffModeCheckBox) BuffModeCheckBox->OnCheckStateChanged.AddDynamic(this, &UGameSettingWidget::OnBuffCheckBoxChanged);
@@ -16,8 +20,23 @@ void UGameSettingWidget::NativeConstruct()
     if (TimeLimitModeCheckBox) TimeLimitModeCheckBox->OnCheckStateChanged.AddDynamic(this, &UGameSettingWidget::OnTimeLimitCheckBoxChanged);
 
 
+
+
+    if (LifePointsIncreaseButton) LifePointsIncreaseButton->OnClicked.RemoveDynamic(this, &UGameSettingWidget::OnClickedIncreaseLifePoints);
+    if (LifePointsDecreaseButton) LifePointsDecreaseButton->OnClicked.RemoveDynamic(this, &UGameSettingWidget::OnClickedDecreaseLifePoints);
+
     if (LifePointsIncreaseButton) LifePointsIncreaseButton->OnClicked.AddDynamic(this, &UGameSettingWidget::OnClickedIncreaseLifePoints);
     if (LifePointsDecreaseButton) LifePointsDecreaseButton->OnClicked.AddDynamic(this, &UGameSettingWidget::OnClickedDecreaseLifePoints);
+
+
+
+
+
+    if (CheckBox1) CheckBox1->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnCheckBox1Changed);
+    if (CheckBox2) CheckBox2->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnCheckBox2Changed);
+    if (CheckBox3) CheckBox3->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnCheckBox3Changed);
+    if (CheckBox4) CheckBox4->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnCheckBox4Changed);
+    if (CheckBox5) CheckBox5->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnCheckBox5Changed);
 
     if (CheckBox1) CheckBox1->OnCheckStateChanged.AddDynamic(this, &UGameSettingWidget::OnCheckBox1Changed);
     if (CheckBox2) CheckBox2->OnCheckStateChanged.AddDynamic(this, &UGameSettingWidget::OnCheckBox2Changed);

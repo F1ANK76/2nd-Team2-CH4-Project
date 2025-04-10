@@ -7,7 +7,7 @@ void UBaseWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-
+	UIHandle = GetGameInstance()->GetSubsystem<UUISubsystem>();
 	/*
 	UIHandle = GetGameInstance()->GetSubsystem<UUISubsystem>();
 	StartAddDelegate.BindDynamic(this, &ThisClass::StartAddAnim);
@@ -28,6 +28,7 @@ void UBaseWidget::NativeConstruct()
 
 void UBaseWidget::InitWidget(UUISubsystem* uiHandle)
 {
+	/*
 	UIHandle = uiHandle;
 	StartAddDelegate.BindDynamic(this, &ThisClass::StartAddAnim);
 	EndAddDelegate.BindDynamic(this, &ThisClass::EndAddAnim);
@@ -38,6 +39,7 @@ void UBaseWidget::InitWidget(UUISubsystem* uiHandle)
 	BindToAnimationFinished(OpenAnimation, EndAddDelegate);
 	BindToAnimationStarted(CloseAnimation, StartRemoveDelegate);
 	BindToAnimationFinished(CloseAnimation, EndRemoveDelegate);
+	*/
 }
 
 void UBaseWidget::Action()
@@ -187,7 +189,11 @@ void UBaseWidget::OnClickedMoveTitle()
 	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 	//UIHandle->RequestPlayUISound(EUISoundType::Click);
 	//UIHandle->ClickedMoveToTitle();
+
+	UE_LOG(LogTemp, Warning, TEXT("ShowLevel called - this: %p"), this);
+
 	UIHandle->ShowLevel(ELevelType::TitleLevel);
+
 }
 
 void UBaseWidget::OnClickedQuitGame()
@@ -226,4 +232,10 @@ void UBaseWidget::OnClick_MoveLevel()
 		/*UISubSystem¿¡ ¿äÃ»*/
 		//UISub->RequestLevelChange("LevelName");
 	}
+}
+
+void UBaseWidget::OnClickedOptionButton()
+{
+	UIHandle->ShowWidget(EAddWidgetType::OptionWidget);
+
 }

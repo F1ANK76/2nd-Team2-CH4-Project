@@ -9,17 +9,15 @@
 void UTrainingWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	ToTitleButton->OnClicked.RemoveDynamic(this, &ThisClass::OnClickedMoveTitle);
+	OpenPlayerSettingButton->OnClicked.RemoveDynamic(this, &ThisClass::OnClickedPlayerSettingButton);
 	ToTitleButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveTitle);
 	OpenPlayerSettingButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedPlayerSettingButton);
+
+
+
 }
 
-void UTrainingWidget::InitWidget(UUISubsystem* NewUIHandle)
-{
-	Super::InitWidget(NewUIHandle);
-
-	ToTitleButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveTitle);
-	OpenPlayerSettingButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedPlayerSettingButton);
-}
 
 void UTrainingWidget::OnClickedPlayerSettingButton()
 {

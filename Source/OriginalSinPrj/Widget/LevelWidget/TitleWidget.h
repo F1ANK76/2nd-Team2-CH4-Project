@@ -13,15 +13,9 @@ class ORIGINALSINPRJ_API UTitleWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 
-public:
-	virtual void InitWidget(UUISubsystem* NewUIHandle) override;
 
 public:
 	virtual void NativeConstruct() override;
-
-private:
-	UFUNCTION()
-	void OnClickedOptionButton();
 
 private:
 	UPROPERTY(Meta = (BindWidget))

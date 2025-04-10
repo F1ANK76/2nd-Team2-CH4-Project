@@ -32,7 +32,7 @@ public:
 	virtual void PlayRemoveAnim();
 	//virtual void PlayRemoveAnim(bool bIsNext, ESceneType SceneType = ESceneType::Title);
 
-protected:
+public:
 	UFUNCTION()
 	virtual void StartAddAnim();
 
@@ -66,6 +66,9 @@ protected:
 	UFUNCTION()
 	virtual void OnClick_MoveLevel();
 	
+	UFUNCTION()
+	virtual void OnClickedOptionButton();
+
 	virtual void OnClickedOpenWidget(const EWidgetType WidgetType);
 	virtual void OnClickedCloseWidget(const EWidgetType WidgetType);
 
