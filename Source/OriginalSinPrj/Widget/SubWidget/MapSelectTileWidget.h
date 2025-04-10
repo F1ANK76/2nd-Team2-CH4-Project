@@ -16,7 +16,7 @@ class ORIGINALSINPRJ_API UMapSelectTileWidget : public UMapSelectWidget
 {
 	GENERATED_BODY()
 	
-	virtual void InitWidget(UUIHandle* uiHandle);
+	virtual void InitWidget(UUISubsystem* uiHandle);
 	virtual void NativeConstruct() override;
 
 	//이벤트 디스패쳐

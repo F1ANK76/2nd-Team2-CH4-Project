@@ -1,7 +1,26 @@
 ﻿#include "GameMode/MultiBattleGameMode.h"
 #include "GameState/MultiBattleGameState.h"
+#include "TestPlatform.h"
 
 #include "Kismet/GameplayStatics.h"
+
+AMultiBattleGameMode::AMultiBattleGameMode()
+{
+	GameStateClass = AMultiBattleGameState::StaticClass();
+}
+
+void AMultiBattleGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	CreateTestPlatform(FVector::ZeroVector, FRotator::ZeroRotator);
+}
+
+bool AMultiBattleGameMode::ReadyToStartMatch_Implementation()
+{
+	return true;
+}
+
 
 void AMultiBattleGameMode::ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation)
 {
@@ -41,14 +60,6 @@ void AMultiBattleGameMode::OnDeathMonster(AActor* Monster, const FVector& DeathL
 	}
 }
 
-void AMultiBattleGameMode::StartMatch()
-{
-	if (AMultiBattleGameState* MultiBattleGameState = Cast<AMultiBattleGameState>(UGameplayStatics::GetGameState(this)))
-	{
-		MultiBattleGameState->StartMatch();
-	}
-}
-
 void AMultiBattleGameMode::FinishMatch()
 {
 	if (AMultiBattleGameState* MultiBattleGameState = Cast<AMultiBattleGameState>(UGameplayStatics::GetGameState(this)))
@@ -78,5 +89,35 @@ void AMultiBattleGameMode::DrawMatch()
 	if (AMultiBattleGameState* MultiBattleGameState = Cast<AMultiBattleGameState>(UGameplayStatics::GetGameState(this)))
 	{
 		MultiBattleGameState->DrawMatch();
+	}
+}
+
+/*테스트용*/
+void AMultiBattleGameMode::CreateTestPlatform(FVector SpawnLocation, FRotator SpawnRotator)
+{
+	if (HasAuthority())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("플랫폼 생성"));
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("플랫폼 생성"));
+		}
+		FActorSpawnParameters SpawnParams;
+		// 선택 사항: 소유자 설정 등 필요한 파라미터 설정
+		SpawnParams.Owner = this;
+
+		ATestPlatform* SpawnedActor = GetWorld()->SpawnActor<ATestPlatform>(
+			TestPlatform,
+			SpawnLocation,
+			SpawnRotator,
+			SpawnParams
+		);
+	}
+	else
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("플랫폼 생성 불가"));
+		}
 	}
 }

@@ -2,14 +2,19 @@
 
 
 #include "Boss/BossCharacter.h"
-//#include "BossController.h"
+#include "Boss/BossController.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ABossCharacter::ABossCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	//AIControllerClass = ABossController::StaticClass();
+	MaxHP = 1000;
+	CurrentHP = MaxHP;
+	bIsDead = false;
+	
+	AIControllerClass = ABossController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	bReplicates = true;
@@ -36,11 +41,91 @@ void ABossCharacter::SetFacingDirection(float Direction)
 	if (Direction < 0)
 	{
 		//왼쪽 방향
-		SetActorRotation(FRotator(0.0f, -90.0f, 0.0f));
+		SetActorRotation(FRotator(0.0f, -60.0f, 0.0f));
 	}
 	else
 	{
 		//오른쪽 방향
-		SetActorRotation(FRotator(0.0f, 90.0f, 0.0f));
+		SetActorRotation(FRotator(0.0f, 60.0f, 0.0f));
+	}
+}
+
+void ABossCharacter::MulticastPlayStartBattleMontage_Implementation()
+{
+	if (StartBattleMontage && GetNetMode() != NM_DedicatedServer)
+	{
+		PlayAnimMontage(StartBattleMontage);
+	}
+}
+
+void ABossCharacter::MulticastPlayDeathMontage_Implementation()
+{
+	if (DeathMontage && GetNetMode() != NM_DedicatedServer)
+	{
+		PlayAnimMontage(DeathMontage);
+	}
+}
+
+void ABossCharacter::MulticastPlayRangeAttackMontage_Implementation()
+{
+	if (RangeAttackMontage && GetNetMode() != NM_DedicatedServer)
+	{
+		PlayAnimMontage(RangeAttackMontage);
+	}
+}
+
+void ABossCharacter::MulticastPlayAreaSpawnWeaponMontage_Implementation()
+{
+	if (AreaSpawnWeaponMontage && GetNetMode() != NM_DedicatedServer)
+	{
+		PlayAnimMontage(AreaSpawnWeaponMontage);
+	}
+}
+
+void ABossCharacter::MulticastPlayRushBossAttackMontage_Implementation()
+{
+	if (RushBossAttackMontage && GetNetMode() != NM_DedicatedServer)
+	{
+		PlayAnimMontage(RushBossAttackMontage);
+	}
+}
+
+void ABossCharacter::PlayStartBattleMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayStartBattleMontage();
+	}
+}
+
+void ABossCharacter::PlayDeathMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayDeathMontage();
+	}
+}
+
+void ABossCharacter::PlayRangeAttackMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayRangeAttackMontage();
+	}
+}
+
+void ABossCharacter::PlayAreaSpawnWeaponMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayAreaSpawnWeaponMontage();
+	}
+}
+
+void ABossCharacter::PlayRushBossAttackMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayRushBossAttackMontage();
 	}
 }

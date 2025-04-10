@@ -17,9 +17,6 @@ class ORIGINALSINPRJ_API IMatchManage
 public:
 
 	UFUNCTION(Category = "Match Manage")
-	virtual void StartMatch() = 0;
-
-	UFUNCTION(Category = "Match Manage")
 	virtual void FinishMatch() = 0;
 
 	UFUNCTION(Category = "Match Manage")

@@ -1,9 +1,26 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "DataSubsystem.h"
+#include "AllDataSettings.h"
 
-void UDataSubsystem::SaveData()
+void UDataSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
-	UE_LOG(LogTemp, Warning, TEXT("SaveData!"));
+	Super::Initialize(Collection);
+
+	AllDataSettings = GetDefault<UAllDataSettings>();
+
+    LoadDataTables();
+}
+
+void UDataSubsystem::LoadDataTables()
+{
+    if (AllDataSettings)
+    {
+        if (AllDataSettings->BuffDataTable.IsValid())
+        {
+            BuffDataTable = AllDataSettings->BuffDataTable.LoadSynchronous();
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Invalid BuffDataTable"));
+        }
+    }
 }

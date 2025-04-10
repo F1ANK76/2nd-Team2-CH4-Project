@@ -16,7 +16,7 @@ void UOriginalSinPrjGameInstance::Init()
     // 모든 객체 생성 이후에? 실행이 필요할 수 있음
     if (UISubsystem)
     {
-        UISubsystem->ShowLevel(ELevelType::TitleLevel);
+        UISubsystem->ShowLevel(ELevelType::IntroLevel);
     }
 
     AudioSubsystem = GetSubsystem<UAudioSubsystem>();

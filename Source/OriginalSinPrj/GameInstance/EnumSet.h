@@ -4,16 +4,11 @@
 
 #include "CoreMinimal.h"
 
-
-class ORIGINALSINPRJ_API EnumSet
-{
-
-};
-
 UENUM(BlueprintType)
 enum class ELevelType : uint8
 {
-	TitleLevel = 0,
+	IntroLevel = 0,
+	TitleLevel,
 	MatchLevel,
 	LobbyLevel,
 	MultiLevel,
@@ -21,4 +16,68 @@ enum class ELevelType : uint8
 	SingleLevel,
 	TrainingLevel,
 	FarmingLevel
+};
+
+UENUM(BlueprintType)
+enum class EAddWidgetType : uint8
+{
+	OptionWidget = 0,
+	BuffSelectWidget,
+	CharacterSelectWidget,
+	GameSettingWidget,
+	MapSelectWidget,
+	PlayerStateWidget,
+	ResultWidget
+};
+
+UENUM(BlueprintType)
+enum class ESoundDataType : uint8
+{
+	Level = 0,
+	Monster,
+	Character,
+	Boss
+};
+
+UENUM(BlueprintType)
+enum class ELevelSoundType : uint8
+{
+	TitleSound = 0,
+	MatchSound,
+	LobbySound,
+	MultiSound,
+	CooperationSound,
+	SingleSound,
+	TrainingSound,
+	FarmingSound
+};
+
+UENUM(BlueprintType)
+enum class EMonsterSoundType : uint8
+{
+	Attack = 0,
+	Death
+};
+
+UENUM(BlueprintType)
+enum class ECharacterSoundType : uint8
+{
+	Attack = 0,
+	Death
+};
+
+UENUM(BlueprintType)
+enum class EBossSoundType : uint8
+{
+	Attack = 0,
+	Death
+};
+
+UENUM(BlueprintType)
+enum class EBuffType : uint8
+{
+	ManaUp = 0,
+	AttackUp,
+	DefenseUp,
+	SpeedUp,
 };

@@ -12,22 +12,43 @@ void ULobbyWidget::NativeConstruct()
     Super::NativeConstruct();
 
     if (MapSelectButton)
+    {
+        MapSelectButton->OnClicked.RemoveDynamic(this, &ULobbyWidget::OnClickMapSelect);
         MapSelectButton->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickMapSelect);
+    }
+        
 
     if (CharacterSelectButton)
+    {
+        CharacterSelectButton->OnClicked.RemoveDynamic(this, &ULobbyWidget::OnClickCharacterSelect);
         CharacterSelectButton->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickCharacterSelect);
+    }
+        
 
     if (GameSettingButton)
+    {
+        GameSettingButton->OnClicked.RemoveDynamic(this, &ULobbyWidget::OnClickGameSetting);
         GameSettingButton->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickGameSetting);
+    }
+        
 
     if (QuitButton)
+    {
+        QuitButton->OnClicked.RemoveDynamic(this, &ULobbyWidget::OnClickedMoveTitle);
         QuitButton->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickedMoveTitle);
+    }
 
     if (ReadyButton)
+    {
+        ReadyButton->OnClicked.RemoveDynamic(this, &ULobbyWidget::OnClickReady);
         ReadyButton->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickReady);
+    }
 
     if (GameStartButton)
+    {
+        GameStartButton->OnClicked.RemoveDynamic(this, &ULobbyWidget::OnClickGameStart);
         GameStartButton->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickGameStart);
+    }
 
     // 기본으로 맵 선택만 보이게
     if (MapSelectWidget) MapSelectWidget->SetVisibility(ESlateVisibility::Collapsed);
