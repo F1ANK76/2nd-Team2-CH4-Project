@@ -12,7 +12,7 @@ void UCharacterSelectTileWidget::NativeConstruct()
 	CharacterSelectButton->OnClicked.AddDynamic(this, &ThisClass::HandleButtonClicked);
 }
 
-void UCharacterSelectTileWidget::InitWidget(UUIHandle* NewUIHandle)
+void UCharacterSelectTileWidget::InitWidget(UUISubsystem* NewUIHandle)
 {
 	Super::InitWidget(NewUIHandle);
 

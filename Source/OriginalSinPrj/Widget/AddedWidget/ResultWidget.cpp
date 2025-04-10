@@ -5,12 +5,14 @@
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 
-void UResultWidget::InitWidget(UUIHandle* NewUIHandle)
+void UResultWidget::InitWidget(UUISubsystem* NewUIHandle)
 {
 	OpenAnimation = OpenAnim;
 
 	Super::InitWidget(NewUIHandle);
 
+	MoveNextButton->OnClicked.RemoveDynamic(this, &ThisClass::OnClickedMoveNext);
+	MoveTitleButton->OnClicked.RemoveDynamic(this, &ThisClass::OnClickedMoveTitle);	
 	MoveNextButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveNext);
 	MoveTitleButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveTitle);
 }

@@ -28,7 +28,7 @@ void UCharacterSelectWidget::NativeConstruct()
 }
 
 
-void UCharacterSelectWidget::InitWidget(UUIHandle* NewUIHandle)
+void UCharacterSelectWidget::InitWidget(UUISubsystem* NewUIHandle)
 {
     Super::InitWidget(NewUIHandle);
 
