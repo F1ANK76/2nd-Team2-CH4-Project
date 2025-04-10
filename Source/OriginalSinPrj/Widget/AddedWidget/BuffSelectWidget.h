@@ -76,6 +76,9 @@ protected:
     UFUNCTION()
     void OnBuff3Clicked();
 
+    UFUNCTION()
+    void DeactivateOhterWidgets(int32 SelectedButtonIndex);
+
 private:
     TArray<FBuffInfo> Buffs;
 

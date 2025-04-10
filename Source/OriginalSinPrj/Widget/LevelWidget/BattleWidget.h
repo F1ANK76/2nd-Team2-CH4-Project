@@ -13,7 +13,24 @@ class ORIGINALSINPRJ_API UBattleWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 
+
+protected:
+	virtual void NativeConstruct() override;
+
 	//≈∏¿Ã∏”
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* FarmingModeTimer;
+	
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* TimeLimitModeTimer;
+
+public:
+	UFUNCTION()
+	void UpdateFarmingModeTimerUI(float time);
+
+	UFUNCTION()
+	void UpdateTimerLimitModeTimerUI(float time);
 
 private:
 	//all stage
@@ -24,8 +41,24 @@ private:
 	class UPlayerStateWidget* Player2StateUI;
 
 public:
-	void InitPlayerUI(FPlayerUIData* Player1, FPlayerUIData* Player2);
-	void UpdatePlayerUI(FPlayerUIData* Player1, FPlayerUIData* Player2);
+	UFUNCTION()
+	void InitPlayerUI(FPlayerUIData& Player1, FPlayerUIData& Player2);
+	
+	UFUNCTION()
+	void UpdatePlayerUI(FPlayerUIData& Player1, FPlayerUIData& Player2);
+
+
+	UFUNCTION()
+	void ActiveFarmingModeWidget();
+	UFUNCTION()
+	void ActiveTimeLimitModeWidget();
+
+
+	UFUNCTION()
+	void DeactiveFarmingModeWidget();
+	UFUNCTION()
+	void DeactiveTimeLimitModeWidget();
+
 	FPlayerUIData* Player1Data;
 	FPlayerUIData* Player2Data;
 	

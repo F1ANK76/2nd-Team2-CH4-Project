@@ -47,15 +47,53 @@ void UBuffSelectWidget::InitializeBuffs(const TArray<FBuffInfo>& InBuffs)
 
 void UBuffSelectWidget::OnBuff1Clicked()
 {
+    DeactivateOhterWidgets(1);
+    //play animation
     UE_LOG(LogTemp, Log, TEXT("Buff 1 선택됨: %s"), *Buffs[0].BuffName.ToString());
+    //게임모드 전달
 }
 
 void UBuffSelectWidget::OnBuff2Clicked()
 {
+    DeactivateOhterWidgets(2);
+    //play animation
     UE_LOG(LogTemp, Log, TEXT("Buff 2 선택됨: %s"), *Buffs[1].BuffName.ToString());
+    //게임모드 전달
 }
 
 void UBuffSelectWidget::OnBuff3Clicked()
 {
+    DeactivateOhterWidgets(3);
+    //play animation
     UE_LOG(LogTemp, Log, TEXT("Buff 3 선택됨: %s"), *Buffs[2].BuffName.ToString());
+    //게임모드 전달
 }
+
+void UBuffSelectWidget::DeactivateOhterWidgets(int32 SelectedButtonIndex)
+{
+    //버튼 따닥 눌러서 두개 가져가는 거 방지용.
+    switch (SelectedButtonIndex)
+    {
+    case 1:
+        BuffButton2->SetIsEnabled(false); // 버튼 비활성화 (클릭 안 됨)
+        BuffButton3->SetIsEnabled(false);
+        break;
+
+    case 2:
+        BuffButton1->SetIsEnabled(false);
+        BuffButton3->SetIsEnabled(false);
+        break;
+
+    case 3:
+        BuffButton1->SetIsEnabled(false);
+        BuffButton2->SetIsEnabled(false);
+        break;
+
+    default:
+        break;
+    }
+    BuffButton2->SetIsEnabled(false); // 버튼 비활성화 (클릭 안 됨)
+    BuffButton3->SetIsEnabled(false);  // 버튼 활성화 (클릭 가능)
+
+}
+
