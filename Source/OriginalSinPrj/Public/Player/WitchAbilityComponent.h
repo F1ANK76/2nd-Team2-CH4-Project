@@ -31,7 +31,7 @@ public:
 	void CallEndGuard();
 	void CallTaunt();
 
-	void ResponseEndAttack();
+	void ResponseEndAnim();
 	void PauseBufferTimer();
 
 protected:
@@ -127,23 +127,13 @@ private:
 	UPROPERTY()
 	FAbilityDataBuffer AbilityBuffer;
 
-	TArray<ABaseWitchAbility*> LastAbilities;
-	TObjectPtr<ABaseWitchAbility> CurrentAbility = nullptr;
-
 	FTimerHandle BufferTimer;
 	float BufferActiveTime = 1.0f;
 
-	bool bIsMoveable = true;
-	bool bIsAttackable = true;
-	bool bIsJumpable = true;
-	
-	EDirectionType DirectionType = EDirectionType::Left;
+	bool bIsPlayingAnim = false;
 
 	int32 MaxMana = 5;
 	int32 CurrentMana = 5;
-
-	FVector2D MovementValue = FVector2D::ZeroVector;
-	bool bIsLeft = false;
 
 	TObjectPtr<ABaseWitchAbility> TempAbility = nullptr;
 

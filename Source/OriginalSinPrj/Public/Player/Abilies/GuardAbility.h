@@ -6,9 +6,7 @@
 #include "Player/Abilies/BaseWitchAbility.h"
 #include "GuardAbility.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class ORIGINALSINPRJ_API AGuardAbility : public ABaseWitchAbility
 {

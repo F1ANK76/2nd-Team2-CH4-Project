@@ -6,9 +6,8 @@
 #include "Player/Abilies/BaseWitchAbility.h"
 #include "JumpAbility.generated.h"
 
-/**
- * 
- */
+class ABaseWitch;
+
 UCLASS()
 class ORIGINALSINPRJ_API AJumpAbility : public ABaseWitchAbility
 {
@@ -19,6 +18,8 @@ public:
 	virtual bool ExcuteAbility(FAbilityDataBuffer& Buffer) override;
 	
 protected:
+	UFUNCTION(NetMulticast, UnReliable)
+	void ResponseJumped(ABaseWitch* ParentWitch);
+
 	virtual bool CheckExcuteable(FAbilityDataBuffer& Buffer) override;
-	/*virtual void Tick(float DeltaTime) override;*/
 };

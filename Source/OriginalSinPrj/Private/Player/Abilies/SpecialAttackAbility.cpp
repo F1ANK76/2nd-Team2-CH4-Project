@@ -3,6 +3,9 @@
 
 #include "Player/Abilies/SpecialAttackAbility.h"
 
+void ASpecialAttackAbility::InitAbility()
+{
+	Super::InitAbility();
 
-
-
+	AbilityType = EAbilityType::SpecialAttackAbility;
+}

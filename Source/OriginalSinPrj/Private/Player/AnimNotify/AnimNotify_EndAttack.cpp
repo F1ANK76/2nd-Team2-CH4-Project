@@ -2,12 +2,12 @@
 
 
 #include "Player/AnimNotify/AnimNotify_EndAttack.h"
-#include "Player/WitchAbilityComponent.h"
+#include "Player/BaseWitch.h"
 #include "GameFramework/Character.h"
 
 void UAnimNotify_EndAttack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
-	ACharacter* OwnerActor = Cast<ACharacter>(MeshComp->GetOwner());
+	ABaseWitch* OwnerActor = Cast<ABaseWitch>(MeshComp->GetOwner());
 
 	if (!IsValid(OwnerActor))
 	{
@@ -19,12 +19,5 @@ void UAnimNotify_EndAttack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 		return;
 	}
 
-	UWitchAbilityComponent* AbilityComp = OwnerActor->GetComponentByClass<UWitchAbilityComponent>();
-
-	if (!IsValid(AbilityComp))
-	{
-		return;
-	}
-
-	AbilityComp->ResponseEndAttack();
+	OwnerActor->EndAnimNotify();
 }

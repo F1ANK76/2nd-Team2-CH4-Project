@@ -5,6 +5,7 @@
 #include "Player/BaseWitch.h"
 #include "Player/Struct/AbilityDataBuffer.h"
 
+
 void AUpperAttackAbility::InitAbility()
 {
 	Super::InitAbility();
@@ -14,9 +15,14 @@ void AUpperAttackAbility::InitAbility()
 
 bool AUpperAttackAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 {
-	Super::ExcuteAbility(Buffer);
+	bool ParentResult = Super::ExcuteAbility(Buffer);
 
-	Buffer.ParentWitch->SetWitchState(EWitchStateType::NormalAttack);
+	if (!ParentResult)
+	{
+		return false;
+	}
+
+	Buffer.ParentWitch->PlayEffect(EEffectVisibleType::Right);
 
 	return true;
 }
