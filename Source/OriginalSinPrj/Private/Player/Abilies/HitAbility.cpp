@@ -5,6 +5,12 @@
 #include "Player/BaseWitch.h"
 #include "Player/Struct/AbilityDataBuffer.h"
 
+AHitAbility::AHitAbility() : Super()
+{
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
+}
+
 void AHitAbility::InitAbility()
 {
 	Super::InitAbility();
@@ -21,35 +27,79 @@ bool AHitAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 		return false;
 	}
 
+	UE_LOG(LogTemp, Warning, TEXT("%s : Init Hit Ability Excute"), *Buffer.ParentWitch->GetName());
+
+	Buffer.bIsJumpable = false;
+	Buffer.bIsMoveable = false;
+	Buffer.bIsUseable = false;
 	// TODO : Hit Event
+
+	if (bIsHittedFromLeft)
+	{
+
+	}
+	else
+	{
+
+	}
 
 	Buffer.ParentWitch->SetWitchState(EWitchStateType::Hit);
 	Buffer.ParentWitch->PlayAnimation(AbilityMontage);
 
+	SetActorTickEnabled(true);
+
 	return true;
+}
+
+void AHitAbility::UndoAbility(FAbilityDataBuffer& Buffer)
+{
+	Super::UndoAbility(Buffer);
+
+	/*if (!bCompleteKnock)
+	{
+		return;
+	}*/
+
+	UE_LOG(LogTemp, Warning, TEXT("%s : Init Hit Ability Undo"), *Buffer.ParentWitch->GetName());
+
+	SetActorTickEnabled(false);
+
+	Buffer.bIsJumpable = true;
+	Buffer.bIsMoveable = true;
+	Buffer.bIsUseable = true;
+
+	Buffer.ParentWitch->SetWitchState(EWitchStateType::Idle);
+	Buffer.ParentWitch->StopAnimation(AbilityMontage);
 }
 
 bool AHitAbility::CheckExcuteable(FAbilityDataBuffer& Buffer)
 {
 	Super::CheckExcuteable(Buffer);
 
-	if (!IsValid(Buffer.CurrentAbility))
+	if (Buffer.LastAbilities.IsEmpty())
 	{
 		return true;
 	}
 
-	if (Buffer.CurrentAbility->GetAbilityType() == EAbilityType::RollAbility)
+	if (!IsValid(Buffer.LastAbilities[0]))
+	{
+		return true;
+	}
+
+	if (Buffer.LastAbilities[0]->GetAbilityType() == EAbilityType::RollAbility)
 	{
 		return false;
 	}
 
-	if (Buffer.CurrentAbility->GetAbilityType() == EAbilityType::GuardAbility)
+	if (Buffer.LastAbilities[0]->GetAbilityType() == EAbilityType::GuardAbility)
 	{
 		FVector CauserPos = Buffer.DamageCauser->GetActorLocation();
-		FVector Direction = CauserPos - Buffer.ParentWitch->GetActorLocation();
+		HitDirection = CauserPos - Buffer.ParentWitch->GetActorLocation();
 
-		if (Direction.Y < 0)
+		if (HitDirection.Y < 0)
 		{
+			bIsHittedFromLeft = false;
+
 			if (!Buffer.bIsLeft)
 			{
 				return false;
@@ -57,6 +107,8 @@ bool AHitAbility::CheckExcuteable(FAbilityDataBuffer& Buffer)
 		}
 		else
 		{
+			bIsHittedFromLeft = true;
+
 			if (Buffer.bIsLeft)
 			{
 				return false;
@@ -64,7 +116,13 @@ bool AHitAbility::CheckExcuteable(FAbilityDataBuffer& Buffer)
 		}
 	}
 
-	Buffer.CurrentAbility->UndoAbility(Buffer);
+	Buffer.LastAbilities[0]->UndoAbility(Buffer);
 
 	return true;
+}
+
+void AHitAbility::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
 }

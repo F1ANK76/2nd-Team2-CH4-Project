@@ -38,6 +38,9 @@ public:
 	bool bIsInAir = false;
 
 	UPROPERTY()
+	float KonckGuage = 0.0f;
+
+	UPROPERTY()
 	int32 MaxMana = 5;
 
 	UPROPERTY()
