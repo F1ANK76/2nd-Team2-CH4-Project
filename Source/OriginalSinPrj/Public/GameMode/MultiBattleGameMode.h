@@ -6,6 +6,8 @@
 #include "GameFramework/GameMode.h"
 #include "MultiBattleGameMode.generated.h"
 
+class ALevelObjectManager;
+
 UCLASS()
 class ORIGINALSINPRJ_API AMultiBattleGameMode : public AGameMode, public IBattleEvent, public IMatchManage
 {
@@ -15,8 +17,9 @@ public:
 	AMultiBattleGameMode();
 
 	virtual void BeginPlay() override;
-	virtual bool ReadyToStartMatch_Implementation() override;
 
+	void StartDelay();
+	void StartToSpawnActor();
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;
@@ -42,11 +45,26 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void DrawMatch() override;
 
-	/*테스트용*/
-	UFUNCTION(BlueprintCallable)
-	void CreateTestPlatform(FVector SpawnLocation, FRotator SpawnRotator);
+	void InitializeTempObjects();
+	void SpawnAndDestroyObject();
 
+	/*테스트용*/
+	/*UFUNCTION(BlueprintCallable)
+	void CreateTestPlatform(FVector SpawnLocation, FRotator SpawnRotator);*/
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reveal Actor")
+	TArray<AActor*> ActorArray;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reveal Actor")
+	TSubclassOf<ALevelObjectManager> LevelObjectManagerClass;
 private:
-	UPROPERTY(EditAnywhere, Category = "TestPlatform")
-	TSubclassOf<AActor> TestPlatform;
+
+	UPROPERTY()
+	ALevelObjectManager* LevelObjectManager;
+
+	FTimerHandle ActorRevealTimer;
+	int32 CurrentActorArrayIndex;
+
 };
