@@ -17,4 +17,7 @@ class ORIGINALSINPRJ_API UAudioDataSettings : public UDeveloperSettings
 public:
 	UPROPERTY(EditAnywhere, Config, Category = "Sounds")
 	TSoftObjectPtr<UDataTable> LevelSounds;
+
+	UPROPERTY(EditAnywhere, Config, Category = "Sounds")
+	TSoftObjectPtr<UDataTable> MonsterSounds;
 };
