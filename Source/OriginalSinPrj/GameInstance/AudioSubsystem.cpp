@@ -22,13 +22,9 @@ void UAudioSubsystem::LoadDataTables()
 {
     if (AudioDataSettings)
     {
-        if (AudioDataSettings->LevelSounds.IsValid())
+        if (!AudioDataSettings->LevelSounds.IsNull())
         {
             LevelSoundTable = AudioDataSettings->LevelSounds.LoadSynchronous();
-        }
-        else
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Invalid LevelSoundTable"));
         }
     }
 }
@@ -62,7 +58,7 @@ void UAudioSubsystem::PlaySounds(ESoundDataType SoundType, uint8 DetailSoundType
 
             if (FoundRow)
             {
-                if (FoundRow->Sound.IsValid())
+                if (!FoundRow->Sound.IsNull())
                 {
                     USoundBase* Sound = FoundRow->Sound.LoadSynchronous();
 
@@ -79,12 +75,17 @@ void UAudioSubsystem::PlaySounds(ESoundDataType SoundType, uint8 DetailSoundType
                         if (BgmComp)
                         {
                             BgmComp->Play();
+                            UE_LOG(LogTemp, Warning, TEXT("Play Sound"));
                         }
                         else
                         {
                             UE_LOG(LogTemp, Warning, TEXT("Invalid BgmComp"));
                         }
                     }
+                }
+                else
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("Invalid FoundRow Sound"));
                 }
             }
             else

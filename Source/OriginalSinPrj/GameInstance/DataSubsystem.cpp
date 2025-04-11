@@ -14,13 +14,9 @@ void UDataSubsystem::LoadDataTables()
 {
     if (AllDataSettings)
     {
-        if (AllDataSettings->BuffDataTable.IsValid())
+        if (!AllDataSettings->BuffDataTable.IsNull())
         {
             BuffDataTable = AllDataSettings->BuffDataTable.LoadSynchronous();
-        }
-        else
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Invalid BuffDataTable"));
         }
     }
 }
