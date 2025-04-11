@@ -23,4 +23,6 @@ public:
 	
 	//Open UI animation
 	//close UI animation
+
+private:
 };

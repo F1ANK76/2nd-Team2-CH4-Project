@@ -16,7 +16,6 @@ class ORIGINALSINPRJ_API UMapSelectTileWidget : public UMapSelectWidget
 {
 	GENERATED_BODY()
 	
-	virtual void InitWidget(UUISubsystem* uiHandle);
 	virtual void NativeConstruct() override;
 
 	//이벤트 디스패쳐
@@ -33,8 +32,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile")
 	int32 MyTileIndex;
 
-	
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* MapName;
 
+	UPROPERTY(meta = (BindWidget))
+	class UImage* MapImage;
 	//닫기 UI button
 	//UI Open animation
 	//UI close Animation

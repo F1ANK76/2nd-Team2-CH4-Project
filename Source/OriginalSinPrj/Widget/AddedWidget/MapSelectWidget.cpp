@@ -20,7 +20,6 @@ void UMapSelectWidget::NativeConstruct()
         UMapSelectTileWidget* Tile = Cast<UMapSelectTileWidget>(Widget);
         if (Tile)
         {
-            Tile->OnMapSelectTileClicked.RemoveDynamic(this, &UMapSelectWidget::OnTileClickedFromTile);
             Tile->OnMapSelectTileClicked.AddDynamic(this, &UMapSelectWidget::OnTileClickedFromTile);
         }
     }

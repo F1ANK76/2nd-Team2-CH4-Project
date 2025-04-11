@@ -7,17 +7,18 @@
 
 void UBattleWidget::NativeConstruct()
 {
-    
+    DeactiveFarmingModeWidget();
+    DeactiveTimeLimitModeWidget();
 }
 
-void UBattleWidget::InitPlayerUI(FPlayerUIData& Player1, FPlayerUIData& Player2)
+void UBattleWidget::InitPlayerUI(FPlayerUIData Player1, FPlayerUIData Player2)
 {
     Player1StateUI->InitPlayerState(Player1);
     Player2StateUI->InitPlayerState(Player2);
 }
 
 //GameMode 혹은 Subsystem쪽에서 업데이트 해주면, UI의 값을 바꾸는 함수.
-void UBattleWidget::UpdatePlayerUI(FPlayerUIData& Player1, FPlayerUIData& Player2)
+void UBattleWidget::UpdatePlayerUI(FPlayerUIData Player1, FPlayerUIData Player2)
 {
     Player1StateUI->UpdateStatus(Player1);
     Player2StateUI->UpdateStatus(Player2);
@@ -27,12 +28,18 @@ void UBattleWidget::UpdatePlayerUI(FPlayerUIData& Player1, FPlayerUIData& Player
 
 void UBattleWidget::UpdateFarmingModeTimerUI(float time)
 {
-    FarmingModeTimer->SetText(FText::AsNumber(FMath::RoundToFloat(time)));
+    float RoundedTime = FMath::RoundToFloat(time * 100) / 100.f; // 소수점 둘째 자리까지 반올림
+    int32 Seconds = FMath::FloorToInt(RoundedTime);
+    int32 Decimals = FMath::RoundToInt((RoundedTime - Seconds) * 100); // 소수점 아래 둘째 자리
+
+    FString TimeString = FString::Printf(TEXT("%d:%02d"), Seconds, Decimals);
+    FarmingModeTimer->SetText(FText::FromString(TimeString));
 }
 
 
 void UBattleWidget::UpdateTimerLimitModeTimerUI(float time)
 {
+
     TimeLimitModeTimer->SetText(FText::AsNumber(FMath::RoundToFloat(time)));
 }
 

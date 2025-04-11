@@ -26,10 +26,10 @@ protected:
 	class UTextBlock* TimeLimitModeTimer;
 
 public:
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void UpdateFarmingModeTimerUI(float time);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void UpdateTimerLimitModeTimerUI(float time);
 
 private:
@@ -41,11 +41,11 @@ private:
 	class UPlayerStateWidget* Player2StateUI;
 
 public:
-	UFUNCTION()
-	void InitPlayerUI(FPlayerUIData& Player1, FPlayerUIData& Player2);
+	UFUNCTION(BlueprintCallable)
+	void InitPlayerUI(FPlayerUIData Player1, FPlayerUIData Player2);
 	
-	UFUNCTION()
-	void UpdatePlayerUI(FPlayerUIData& Player1, FPlayerUIData& Player2);
+	UFUNCTION(BlueprintCallable)
+	void UpdatePlayerUI(FPlayerUIData Player1, FPlayerUIData Player2);
 
 
 	UFUNCTION()

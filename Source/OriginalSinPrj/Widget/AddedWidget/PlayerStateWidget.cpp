@@ -14,11 +14,10 @@ void UPlayerStateWidget::InitPlayerState(const FPlayerUIData& Data)
 
     HPBar->SetPercent(1.0f);
     ManaBar->SetPercent(Data.CurrentMana / Data.MaxMana);
-    SpecialBar->SetPercent(Data.CurrentSpecial / Data.MaxSpecial);
+    EXPBar->SetPercent(Data.CurrentEXP/ Data.MaxEXP);
 
-    
-    AirbornePercentText->SetText(FText::AsNumber(Data.AirbornePercent));
-
+    FString PercentString = FString::Printf(TEXT("%d%%"), Data.AirbornePercent);
+    AirbornePercentText->SetText(FText::FromString(PercentString));
 }
 
 
@@ -27,6 +26,8 @@ void UPlayerStateWidget::UpdateStatus(const FPlayerUIData& Data)
     // HP, Mana, Special 같은 실시간 수치만 갱신
     HPBar->SetPercent(Data.CurrentHP / Data.MaxHP);
     ManaBar->SetPercent(Data.CurrentMana / Data.MaxMana);
-    SpecialBar->SetPercent(Data.CurrentSpecial / Data.MaxSpecial);
-    AirbornePercentText->SetText(FText::AsNumber(Data.AirbornePercent));
+    EXPBar->SetPercent(Data.CurrentEXP / Data.MaxEXP);
+
+    FString PercentString = FString::Printf(TEXT("%d%%"), Data.AirbornePercent);
+    AirbornePercentText->SetText(FText::FromString(PercentString));
 }

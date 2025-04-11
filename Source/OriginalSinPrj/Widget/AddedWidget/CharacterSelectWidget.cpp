@@ -23,7 +23,6 @@ void UCharacterSelectWidget::NativeConstruct()
         if (Tile)
         {
             Tile->OnCharacterSelectTileClicked.AddDynamic(this, &UCharacterSelectWidget::OnTileClickedFromTile);
-            Tile->OnCharacterSelectTileClicked.RemoveDynamic(this, &UCharacterSelectWidget::OnTileClickedFromTile);
         }
     }
 }

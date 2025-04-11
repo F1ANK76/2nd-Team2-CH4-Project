@@ -39,6 +39,15 @@ struct FPlayerUIData
 
     UPROPERTY(BlueprintReadWrite)
     int32 AirbornePercent;
+
+    UPROPERTY(BlueprintReadWrite)
+    int32 PlayerLevel;
+
+    UPROPERTY(BlueprintReadWrite)
+    float CurrentEXP;
+
+    UPROPERTY(BlueprintReadWrite)
+    float MaxEXP;
 };
 
 
@@ -70,7 +79,7 @@ protected:
     class UProgressBar* ManaBar;
 
     UPROPERTY(meta = (BindWidget))
-    class UProgressBar* SpecialBar;
+    class UProgressBar* EXPBar;
 
     UPROPERTY(meta = (BindWidget))
     class UTextBlock* AirbornePercentText;
