@@ -1,10 +1,12 @@
 ﻿#include "GameMode/MultiBattleGameMode.h"
 #include "GameState/MultiBattleGameState.h"
-#include "TestPlatform.h"
+#include "LevelObjectManager.h"
 
 #include "Kismet/GameplayStatics.h"
 
 AMultiBattleGameMode::AMultiBattleGameMode()
+	: CurrentActorArrayIndex(0)
+	, LevelObjectManager(nullptr)
 {
 	GameStateClass = AMultiBattleGameState::StaticClass();
 }
@@ -12,13 +14,30 @@ AMultiBattleGameMode::AMultiBattleGameMode()
 void AMultiBattleGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	CreateTestPlatform(FVector::ZeroVector, FRotator::ZeroRotator);
+	//CreateTestPlatform(FVector::ZeroVector, FRotator::ZeroRotator);
+
+	LevelObjectManager = GetWorld()->SpawnActor<ALevelObjectManager>(LevelObjectManagerClass);
+
+	StartDelay();
 }
 
-bool AMultiBattleGameMode::ReadyToStartMatch_Implementation()
+void AMultiBattleGameMode::StartDelay()
 {
-	return true;
+	FTimerHandle DelayTimer;
+
+	GetWorldTimerManager().SetTimer(
+		DelayTimer,
+		this,
+		&AMultiBattleGameMode::StartToSpawnActor,
+		1.0f,
+		false
+	);
+}
+
+void AMultiBattleGameMode::StartToSpawnActor()
+{
+	InitializeTempObjects();
+	LevelObjectManager->SpawnDeathZone();
 }
 
 
@@ -92,32 +111,42 @@ void AMultiBattleGameMode::DrawMatch()
 	}
 }
 
-/*테스트용*/
-void AMultiBattleGameMode::CreateTestPlatform(FVector SpawnLocation, FRotator SpawnRotator)
+void AMultiBattleGameMode::InitializeTempObjects()
 {
-	if (HasAuthority())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("플랫폼 생성"));
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("플랫폼 생성"));
-		}
-		FActorSpawnParameters SpawnParams;
-		// 선택 사항: 소유자 설정 등 필요한 파라미터 설정
-		SpawnParams.Owner = this;
-
-		ATestPlatform* SpawnedActor = GetWorld()->SpawnActor<ATestPlatform>(
-			TestPlatform,
-			SpawnLocation,
-			SpawnRotator,
-			SpawnParams
-		);
-	}
-	else
-	{
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("플랫폼 생성 불가"));
-		}
-	}
+	LevelObjectManager->InitializeTempObjects();
 }
+
+void AMultiBattleGameMode::SpawnAndDestroyObject()
+{
+	LevelObjectManager->SpawnAndDestroyObject();
+}
+
+/*테스트용*/
+//void AMultiBattleGameMode::CreateTestPlatform(FVector SpawnLocation, FRotator SpawnRotator)
+//{
+//	if (HasAuthority())
+//	{
+//		UE_LOG(LogTemp, Warning, TEXT("플랫폼 생성"));
+//		if (GEngine)
+//		{
+//			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("플랫폼 생성"));
+//		}
+//		FActorSpawnParameters SpawnParams;
+//		// 선택 사항: 소유자 설정 등 필요한 파라미터 설정
+//		SpawnParams.Owner = this;
+//
+//		ATestPlatform* SpawnedActor = GetWorld()->SpawnActor<ATestPlatform>(
+//			TestPlatform,
+//			SpawnLocation,
+//			SpawnRotator,
+//			SpawnParams
+//		);
+//	}
+//	else
+//	{
+//		if (GEngine)
+//		{
+//			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("플랫폼 생성 불가"));
+//		}
+//	}
+//}

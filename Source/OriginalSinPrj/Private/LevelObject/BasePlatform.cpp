@@ -1,40 +1,42 @@
-#include "TestPlatform.h"
+#include "LevelObject/BasePlatform.h"
+
 
 #include "Net/UnrealNetwork.h"
 #include "Components/BoxComponent.h"
 
-ATestPlatform::ATestPlatform()
+ABasePlatform::ABasePlatform()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	SetReplicates(true);
+	bReplicates = true;
+	bAlwaysRelevant = true;
 
 	Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
 	RootComponent = Scene;
 
 	Box = CreateDefaultSubobject<UBoxComponent>(TEXT("Box"));
 	Box->SetupAttachment(RootComponent);
-	Box->InitBoxExtent(FVector(50.0f, 50.0f, 50.0f));
+	Box->InitBoxExtent(FVector(50.0f, 50.0f, 10.0f));
 
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	StaticMesh->SetupAttachment(RootComponent);
 }
 
-void ATestPlatform::BeginPlay()
+void ABasePlatform::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
-void ATestPlatform::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void ABasePlatform::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ATestPlatform, Scene);
-	DOREPLIFETIME(ATestPlatform, Box);
-	DOREPLIFETIME(ATestPlatform, StaticMesh);
+	DOREPLIFETIME(ABasePlatform, Scene);
+	DOREPLIFETIME(ABasePlatform, Box);
+	DOREPLIFETIME(ABasePlatform, StaticMesh);
 }
 
-void ATestPlatform::Tick(float DeltaTime)
+void ABasePlatform::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
