@@ -12,7 +12,7 @@
 
 AFarmingGameMode::AFarmingGameMode()
 {
-    bUseSeamlessTravel = false; // Seamless Travel 활성화
+    bUseSeamlessTravel = true; // Seamless Travel 활성화
     PlayerControllerClass = AWitchController::StaticClass();
 }
 
@@ -27,9 +27,31 @@ void AFarmingGameMode::StartPlay()
 
 void AFarmingGameMode::BeginPlay()
 {
-    Super::BeginPlay();
-    //뭐 이런저런 처리를 하고....
+    Super::BeginPlay(); 
+    UE_LOG(LogTemp, Warning, TEXT("GameMode beginPlay"));
+
+    if (NetMode == NM_Standalone)
+    {
+        InitPlayerUI();
+        FTimerHandle TimerHandle;
+        GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
+            {
+                StartGame();
+            }), 5.0f, false);
+    }
+    else
+    {
+        InitPlayerUI();
+        FTimerHandle TimerHandle;
+        GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
+            {
+                StartGame();
+            }), 5.0f, false);
+    }
 }
+
+
+
 
 void AFarmingGameMode::StartGame()
 {
@@ -66,15 +88,10 @@ void AFarmingGameMode::EndGame()
 void AFarmingGameMode::SpawnInitialMonsters()
 {
     UWorld* World = GetWorld();
-    if (!World || !MonsterBlueprintClass) return;
+    if (!World || !MonsterBlueprintClass || MonsterSpawnLocations.Num() == 0) return;
 
-    for (int i = 0; i < MaxMonsterCount; ++i)
+    for (const FVector& SpawnLocation : MonsterSpawnLocations)
     {
-        FVector SpawnLocation = FVector(
-            FMath::RandRange(-1000.f, 1000.f), // X축 랜덤
-            FMath::RandRange(-1000.f, 1000.f), // Y축 랜덤
-            100.f                              // Z는 고정
-        );
         FRotator SpawnRotation = FRotator::ZeroRotator;
 
         FActorSpawnParameters SpawnParams;
@@ -83,49 +100,49 @@ void AFarmingGameMode::SpawnInitialMonsters()
         AActor* SpawnedMonster = World->SpawnActor<AActor>(MonsterBlueprintClass, SpawnLocation, SpawnRotation, SpawnParams);
         if (SpawnedMonster)
         {
-            // 필요한 초기화 코드 (예: 태그 설정 등)
+            ActiveMonsters.Add(SpawnLocation, SpawnedMonster);
+            CurrentMonsterCount++;
         }
-
-        CurrentMonsterCount++;
     }
-
-
-    /*
-    for (int i = 0; i < MaxMonsterCount; ++i)
-    {
-        // 예시: 맵에 지정된 위치에서 스폰
-        // GetWorld()->SpawnActor<AFarmingEnemy>(SpawnLocation, SpawnRotation);
-        CurrentMonsterCount++;
-    }
-    */
 }
 
-//6마리중 2마리까지 떨어졌을 때 모자란 애들 추가 소환하는 함수
 void AFarmingGameMode::SpawnMissingMonsters()
 {
     UE_LOG(LogTemp, Warning, TEXT("Monster Spawned"));
     UWorld* World = GetWorld();
     if (!World || !MonsterBlueprintClass) return;
-    int32 ToSpawn = MaxMonsterCount - CurrentMonsterCount;
-    for (int32 i = 0; i < ToSpawn; ++i)
+
+    for (const FVector& SpawnLocation : MonsterSpawnLocations)
     {
-        // 스폰 로직
-        FVector SpawnLocation = FVector(
-            FMath::RandRange(-1000.f, 1000.f), // X축 랜덤
-            FMath::RandRange(-1000.f, 1000.f), // Y축 랜덤
-            100.f                              // Z는 고정
-        );
-        FRotator SpawnRotation = FRotator::ZeroRotator;
+        AActor** FoundMonsterPtr = ActiveMonsters.Find(SpawnLocation);
+        bool bNeedToSpawn = false;
 
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-        AActor* SpawnedMonster = World->SpawnActor<AActor>(MonsterBlueprintClass, SpawnLocation, SpawnRotation, SpawnParams);
-        if (SpawnedMonster)
+        if (FoundMonsterPtr == nullptr)
         {
-            // 필요한 초기화 코드 (예: 태그 설정 등)
+            bNeedToSpawn = true;
         }
-        CurrentMonsterCount++;
+        else
+        {
+            AActor* FoundMonster = *FoundMonsterPtr;
+            if (!IsValid(FoundMonster))
+            {
+                bNeedToSpawn = true;
+            }
+        }
+
+        if (bNeedToSpawn)
+        {
+            FRotator SpawnRotation = FRotator::ZeroRotator;
+            FActorSpawnParameters SpawnParams;
+            SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+            AActor* SpawnedMonster = World->SpawnActor<AActor>(MonsterBlueprintClass, SpawnLocation, SpawnRotation, SpawnParams);
+            if (SpawnedMonster)
+            {
+                ActiveMonsters.Add(SpawnLocation, SpawnedMonster);
+                CurrentMonsterCount++;
+            }
+        }
     }
 }
 
@@ -135,11 +152,25 @@ void AFarmingGameMode::HandleMonsterKilled(AController* Killer)
 {
     CurrentMonsterCount--;
 
+    // 죽은 몬스터를 ActiveMonsters 목록에서 제거
+    for (auto It = ActiveMonsters.CreateIterator(); It; ++It)
+    {
+        AActor* Monster = It.Value();
+        
+        if (!IsValid(Monster))
+        {
+            It.RemoveCurrent();
+            break;
+        }
+    }
+
+    // 몬스터 2마리 이하일 때 리스폰
     if (CurrentMonsterCount <= 2)
     {
         SpawnMissingMonsters();
     }
 
+    // 경험치 지급
     if (AFarmingGameState* GS = GetGameState<AFarmingGameState>())
     {
         if (APlayerController* PC = Cast<APlayerController>(Killer))
@@ -149,8 +180,7 @@ void AFarmingGameMode::HandleMonsterKilled(AController* Killer)
     }
 }
 
-
-void AFarmingGameMode::HandleRoundEnded()
+void AFarmingGameMode::HandleFarmingModeEnded()
 {
     // 라운드 전환 처리 (맵 이동, 다음 단계 준비 등)
 }
@@ -159,7 +189,7 @@ void AFarmingGameMode::HandleRoundEnded()
 void AFarmingGameMode::PostLogin(APlayerController* NewPlayer)
 {
     Super::PostLogin(NewPlayer);
-
+    UE_LOG(LogTemp, Warning, TEXT("PostLogin Called"));
     if (DefaultCharacterClass)
     {
         SpawnPlayerByCharacterType(DefaultCharacterClass, NewPlayer); // 여기!
@@ -167,11 +197,99 @@ void AFarmingGameMode::PostLogin(APlayerController* NewPlayer)
 
     if (AFarmingGameState* GS = GetGameState<AFarmingGameState>())
     {
-        GS->ShowUI(NewPlayer);
+        //GS->ShowUI(NewPlayer);
     }
 }
 
-  
+
+void AFarmingGameMode::PostSeamlessTravel()
+{
+    UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Called"));
+    Super::PostSeamlessTravel();  // 기본 SeamlessTravel 처리
+
+    NetMode = GetNetMode(); // 멀티 싱글 로직 분기
+    if (NetMode == NM_Standalone)
+    {
+        // 싱글플레이용 초기화
+        UE_LOG(LogTemp, Warning, TEXT("[FarmingGameMode] SinglePlay"));
+
+        if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+        {
+            // 직접 캐릭터 스폰
+            if (DefaultCharacterClass)
+            {
+                SpawnPlayerByCharacterType(DefaultCharacterClass, PC);
+            }
+        }
+    }
+    else
+    {
+        // 멀티플레이 (서버 기준)
+        UE_LOG(LogTemp, Warning, TEXT("[FarmingGameMode] MultiPlay"));
+
+        //멀티플레이 로직
+        SpawnPlayers();
+        int index = 0;
+        // 클라이언트의 컨트롤러와 캐릭터를 매칭시킴
+
+        for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+        {
+            APlayerController* PC = Cast<APlayerController>(*It);
+            if (PC)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("Controller Detected: %s"), *GetNameSafe(PC));
+                // 서버에서 클라이언트의 Pawn을 확인하고 Possess 처리
+                FTimerHandle TimerHandle;
+                GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this, PC, index]()
+                    {
+                        HandleClientPossession(PC, index);
+                    }), 1.0f, false);
+                index++;
+            }
+        }
+    }
+
+
+
+   
+    UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Done"));
+}
+
+
+void AFarmingGameMode::HandleClientPossession(APlayerController* PC, int index)
+{
+    UE_LOG(LogTemp, Warning, TEXT("Client Possess start %s"), *GetNameSafe(PC));
+    if (PC && SpawnedCharacters.Num() > 0)
+    {
+        APawn* PawnToPossess = SpawnedCharacters[index];
+
+        if (PawnToPossess && IsValid(PawnToPossess))
+        {
+            // 기존 컨트롤러가 있으면 UnPossess 처리
+            APlayerController* OldPC = PawnToPossess->GetController<APlayerController>();
+            if (OldPC)
+            {
+                OldPC->UnPossess();  // 기존 컨트롤러에서 Pawn을 해제
+            }
+            // 새로운 컨트롤러가 해당 Pawn을 Possess하도록 처리
+            PC->Possess(PawnToPossess);
+            PC->ClientRestart(PawnToPossess); // 클라쪽에 제대로 상태 적용
+
+
+            UE_LOG(LogTemp, Warning, TEXT("Client Possessed Pawn: %s by %s"),
+                *GetNameSafe(PawnToPossess), *GetNameSafe(PC));
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Pawn to possess is not valid."));
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("PlayerController is invalid or no spawned characters."));
+    }
+    UE_LOG(LogTemp, Warning, TEXT("Client Possess ended %s"), *GetNameSafe(PC));
+}
 
 
 void AFarmingGameMode::SpawnPlayerByCharacterType(UClass* SpawnClass, APlayerController* PlayerController)
@@ -188,7 +306,7 @@ void AFarmingGameMode::SpawnPlayerByCharacterType(UClass* SpawnClass, APlayerCon
     SpawnParam.Owner = PlayerController;
     SpawnParam.Instigator = PlayerController->GetPawn();
 
-    ABaseWitch* PlayerCharacter = GetWorld()->SpawnActor<ABaseWitch>(SpawnClass, StartPos, FRotator::ZeroRotator, SpawnParam);
+    ABaseWitch* PlayerCharacter = GetWorld()->SpawnActor<ABaseWitch>(SpawnClass, PlayerSpawnLocations[0], FRotator::ZeroRotator, SpawnParam);
     if (!PlayerCharacter) return;
 
     if (PlayerController->GetPawn())
@@ -207,3 +325,67 @@ void AFarmingGameMode::SpawnPlayerByCharacterType(UClass* SpawnClass, APlayerCon
     UE_LOG(LogTemp, Warning, TEXT("PlayerController after possess: %s"), *GetNameSafe(PlayerController->GetPawn()));
 }
 
+void AFarmingGameMode::SpawnPlayers()
+{
+    // 캐릭터 타입 정의 (예: 기본 캐릭터 클래스)
+    TArray<UClass*> CharacterClasses = { DefaultCharacterClass, DefaultCharacterClass };
+
+    for (int32 i = 0; i < CharacterClasses.Num(); ++i)
+    {
+        UClass* SpawnClass = CharacterClasses[i];
+
+        if (HasAuthority() && IsValid(SpawnClass))
+        {
+            // 플레이어 시작 지점 찾기
+            AActor* StartActor = FindPlayerStart(nullptr);  // 특정 플레이어의 시작 지점 찾기
+            if (!StartActor) continue;
+
+            FVector StartPos = StartActor->GetActorLocation();
+
+            FActorSpawnParameters SpawnParam;
+            SpawnParam.Owner = nullptr;  // 기본값으로 설정
+            SpawnParam.Instigator = nullptr;  // 기본값으로 설정
+
+            // 캐릭터 생성
+            ABaseWitch* SpawnedCharacter = GetWorld()->SpawnActor<ABaseWitch>(SpawnClass, PlayerSpawnLocations[i], FRotator::ZeroRotator, SpawnParam);
+
+            if (SpawnedCharacter)
+            {
+                SpawnedCharacters.Add(SpawnedCharacter);
+                UE_LOG(LogTemp, Warning, TEXT("Spawned Pawn: %s"), *GetNameSafe(SpawnedCharacter));
+            }
+        }
+    }
+
+    // SpawnedCharacters 배열로 생성된 캐릭터들을 확인할 수 있습니다.
+    for (ABaseWitch* Character : SpawnedCharacters)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Managed Character: %s"), *GetNameSafe(Character));
+    }
+}
+
+
+
+void AFarmingGameMode::PossessCharacter(APlayerController* PC, APawn* PawnToPossess)
+{
+    if (!PC || !PawnToPossess) return;
+
+    PawnToPossess->SetOwner(PC);
+    PC->Possess(PawnToPossess);
+
+    UE_LOG(LogTemp, Warning, TEXT("Possessed Pawn: %s by Controller: %s"), *GetNameSafe(PawnToPossess), *GetNameSafe(PC));
+}
+
+
+void AFarmingGameMode::InitPlayerUI()
+{
+    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+    {
+        APlayerController* PlayerController = Cast<APlayerController>(*It);
+        if (PlayerController)
+        {
+            // 컨트롤러에서 직접 UI 띄우는 함수 호출 
+            //PlayerController->ShowUI(EAddWidgetType::BattleWidget);
+        }
+    }
+}

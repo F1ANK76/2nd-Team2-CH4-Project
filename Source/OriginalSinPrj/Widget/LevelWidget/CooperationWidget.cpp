@@ -135,20 +135,20 @@ void UCooperationWidget::DeactivateAllWidgets()
 
 //GameMode 혹은 Subsystem쪽에서 초기화 해주면, 자동으로 UI설정값이 들어가게 되는 함수.
 
-void UCooperationWidget::InitPlayerUI(FPlayerUIData* Player1, FPlayerUIData* Player2)
+void UCooperationWidget::InitPlayerUI(FPlayerData* Player1, FPlayerData* Player2)
 {
     Player1StateUI->InitPlayerState(*Player1);
     Player2StateUI->InitPlayerState(*Player2);
 }
 
 //GameMode 혹은 Subsystem쪽에서 업데이트 해주면, UI의 값을 바꾸는 함수.
-void UCooperationWidget::UpdatePlayerUI(FPlayerUIData* Player1, FPlayerUIData* Player2)
+void UCooperationWidget::UpdatePlayerUI(FPlayerData* Player1, FPlayerData* Player2)
 {
     Player1StateUI->UpdateStatus(*Player1);
     Player2StateUI->UpdateStatus(*Player2);
 }
 
-void UCooperationWidget::InitEnemyUI(FPlayerUIData* Enemy1, FPlayerUIData* Enemy2, FPlayerUIData* Enemy3, FPlayerUIData* Enemy4)
+void UCooperationWidget::InitEnemyUI(FPlayerData* Enemy1, FPlayerData* Enemy2, FPlayerData* Enemy3, FPlayerData* Enemy4)
 {
     Enemy1StateUI->InitPlayerState(*Enemy1);
     Enemy2StateUI->InitPlayerState(*Enemy2);
@@ -156,7 +156,7 @@ void UCooperationWidget::InitEnemyUI(FPlayerUIData* Enemy1, FPlayerUIData* Enemy
     Enemy4StateUI->InitPlayerState(*Enemy4);
 }
 
-void UCooperationWidget::UpdateEnemyUI(FPlayerUIData* Enemy1, FPlayerUIData* Enemy2, FPlayerUIData* Enemy3, FPlayerUIData* Enemy4)
+void UCooperationWidget::UpdateEnemyUI(FPlayerData* Enemy1, FPlayerData* Enemy2, FPlayerData* Enemy3, FPlayerData* Enemy4)
 {
     Enemy1StateUI->UpdateStatus(*Enemy1);
     Enemy2StateUI->UpdateStatus(*Enemy2);

@@ -6,7 +6,7 @@
 #include "../BaseWidget.h"
 #include "BattleWidget.generated.h"
 
-struct FPlayerUIData; //임시 선언// 나중에 Data구조로 따로 빼야됨.
+struct FPlayerData; //임시 선언// 나중에 Data구조로 따로 빼야됨.
 
 UCLASS()
 class ORIGINALSINPRJ_API UBattleWidget : public UBaseWidget
@@ -42,10 +42,10 @@ private:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void InitPlayerUI(FPlayerUIData Player1, FPlayerUIData Player2);
+	void InitPlayerUI(FPlayerData Player1, FPlayerData Player2);
 	
 	UFUNCTION(BlueprintCallable)
-	void UpdatePlayerUI(FPlayerUIData Player1, FPlayerUIData Player2);
+	void UpdatePlayerUI(FPlayerData Player1, FPlayerData Player2);
 
 
 	UFUNCTION()
@@ -59,7 +59,7 @@ public:
 	UFUNCTION()
 	void DeactiveTimeLimitModeWidget();
 
-	FPlayerUIData* Player1Data;
-	FPlayerUIData* Player2Data;
+	FPlayerData* Player1Data;
+	FPlayerData* Player2Data;
 	
 };

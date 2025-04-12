@@ -1,55 +1,24 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "GameState/FarmingGameState.h"
 #include "Net/UnrealNetwork.h"
 #include "GameMode/FarmingGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "Player/BaseWitch.h"
+
 AFarmingGameState::AFarmingGameState()
 {
     PrimaryActorTick.bCanEverTick = true;
     bIsFarmingStarted = false;
-    // 초기값 (예: 1분)
     TimeRemaining = 60.0f;
     bReplicates = true;
-
-    //싱글 / 멀티 분기 나누기
-    //싱글 -> 포스트
-    //멀티에서는 이미 로그인이라 포스트 로그인 호출 불가능 -> 처리 필요 -> 포스트 심리스
-
-
-
 }
 
-void AFarmingGameState::ShowUI(APlayerController* PlayerController)
-    {
-        if (PlayerController && PlayerController->IsLocalController()) // 로컬 컨트롤러인지 확인
-        {
-            UBattleWidget* Widget = CreateWidget<UBattleWidget>(PlayerController, BattleWidgetClass);
-            if (Widget)
-            {
-                Widget->AddToViewport(); // 위젯을 화면에 띄우기
-                Widget->ActiveFarmingModeWidget(); // UI 활성화
-            }
-        }
-    }
-
+// ShowUI는 서버에서 호출할 필요 없으므로 삭제 예정
 void AFarmingGameState::BeginPlay()
 {
     Super::BeginPlay();
-    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-    {
-        APlayerController* PlayerController = Cast<APlayerController>(*It);
-        if (PlayerController)
-        {
-            ShowUI(PlayerController); // UI 띄우는 함수 호출
-        }
-    }
-
+    UE_LOG(LogTemp, Warning, TEXT("GameState BeginPlay"));
 }
-
 
 void AFarmingGameState::Tick(float DeltaSeconds)
 {
@@ -61,7 +30,6 @@ void AFarmingGameState::Tick(float DeltaSeconds)
         {
             TimeRemaining -= DeltaSeconds;
             TimeRemaining = FMath::Max(TimeRemaining, 0.0f);
-            UE_LOG(LogTemp, Warning, TEXT("TimeRemaining: %f"), TimeRemaining);
             if (TimeRemaining <= 0.0f)
             {
                 EndFarmingMode();
@@ -75,100 +43,114 @@ void AFarmingGameState::StartFarmingMode()
     if (HasAuthority())
     {
         bIsFarmingStarted = true;
+
+
+        for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+        {
+            APlayerController* PlayerController = Cast<APlayerController>(*It);
+            if (PlayerController)
+            {
+                if (PlayerController && !PlayerInfos.Contains(PlayerController))
+                {
+                    FPlayerData InitData; ///어디서든 받아오기
+                    PlayerInfos.Add(PlayerController, InitData);
+                }
+            }
+        }
+
+        InitPlayerInfo();
+
         UE_LOG(LogTemp, Warning, TEXT("Farming Mode Started!"));
     }
 }
 
-
-
 void AFarmingGameState::EndFarmingMode()
 {
-    // 다음 라운드 시작 or 결과 화면 전환 등 처리
-    UE_LOG(LogTemp, Warning, TEXT("FarmingMode Ended "));
+    bIsFarmingStarted = false;
+    UE_LOG(LogTemp, Warning, TEXT("Farming Mode Ended"));
 }
 
 
+
+// 몬스터 죽을 때 경험치를 추가하는 함수
 void AFarmingGameState::AddExperienceToPlayer(APlayerController* Player, int32 Amount)
 {
-    /*
-    if (!PlayerInfos.Contains(Player))
+    if (Player)
     {
-        PlayerInfos.Add(Player, FPlayerFarmingInfo());
-    }
+        // PlayerInfos에서 플레이어 정보 찾기
+        FPlayerData* PlayerData = PlayerInfos.Find(Player);
 
-    FPlayerFarmingInfo& Info = PlayerInfos[Player];
-    Info.Experience += Amount;
-    CheckLevelUp(Player);\
-    */
-}
-
-
-void AFarmingGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    
-    DOREPLIFETIME(AFarmingGameState, bIsFarmingStarted);
-    DOREPLIFETIME(AFarmingGameState, TimeRemaining);
-    DOREPLIFETIME(AFarmingGameState, PlayerInfos);
-}
-
-
-
-UBattleWidget* AFarmingGameState::GetBattleWidgetFromController(APlayerController* PlayerController)
-{
-    if (PlayerController)
-    {
-        // 커스텀 PlayerController에서 위젯을 찾는 방법
-        // 예를 들어, PlayerController가 'APlayerController' 클래스에서 상속된 클래스일 경우
-        APlayerController* CustomPC = Cast<APlayerController>(PlayerController);
-        if (CustomPC)
+        if (PlayerData)
         {
-            //return CustomPC->GetCurrentBattleWidget(); // 위젯을 반환하는 함수 호출
+            PlayerData->CurrentEXP += Amount;
+            CheckLevelUp(Player);
+            UpdatePlayerUIInfo(); // UI 갱신
         }
     }
-    return nullptr;
 }
-
-
-
 
 void AFarmingGameState::CheckLevelUp(APlayerController* Player)
 {
-    //FPlayerFarmingInfo& Info = PlayerInfos[Player];
-    /*
-    while (Info.Experience >= 100)
+    if (Player)
     {
-        Info.Experience -= 100;
-        Info.Level++;
-    }
-    */
-    /*
-    // UI 업데이트
-    if (Player->IsLocalController())
-    {
-        if (UBattleWidget* Widget = GetBattleWidgetFromController(Player))
-        {
-            FPlayerUIData UIData;
-            UIData.Experience = Info.Experience;
-            UIData.Level = Info.Level;
+        FPlayerData& Info = PlayerInfos[Player];
 
-            // 두 명의 플레이어 UI가 있을 경우, 구분해서 전달 (여기선 단일 예시로)
-            Widget->UpdatePlayerUI(UIData, UIData);
+        while (Info.CurrentEXP >= 100)
+        {
+            Info.CurrentEXP -= 100;
+            Info.PlayerLevel++;
         }
     }
-    */
 }
 
 
 
 
-APlayerController* AFarmingGameState::GetPlayerController() const
+// 게임 시작 시, 플레이어 정보를 초기화하는 함수
+void AFarmingGameState::InitPlayerInfo()
 {
-    UWorld* World = GetWorld();
-    if (!World) return nullptr;
+    PlayerInfos.Empty(); // 기존 정보 삭제
 
-    // 일반적으로 로컬 플레이어는 0번 인덱스
-    return UGameplayStatics::GetPlayerController(World, 0);
+    // 각 플레이어 정보 초기화
+    /*
+    플레이어의 정보를 받아오고 맵에 저장하기.
+    */
+}
+
+// 게임 시작 시, 플레이어 정보를 초기화하는 함수
+void AFarmingGameState::UpdatePlayerInfo()
+{
+
+    // 각 플레이어 정보 초기화
+    /*
+    
+    */
+}
+
+void AFarmingGameState::InitPlayerUIInfo()
+{
+    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+    {
+        APlayerController* PlayerController = Cast<APlayerController>(*It);
+        if (PlayerController)
+        {
+            //Player에게 UI정보 바꾸라고 명령.
+            //여기에 있는 PlayerInfo 활용해서...
+        }
+    }
+}
+
+void AFarmingGameState::UpdatePlayerUIInfo()
+{
+    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+    {
+        APlayerController* PlayerController = Cast<APlayerController>(*It);
+        if (PlayerController)
+        {
+            //Player에게 UI정보 바꾸라고 명령.
+            //여기에 있는 PlayerInfo 활용해서...
+        }
+    }
 }
 
 void AFarmingGameState::SetPlayerPawn(ABaseWitch* InPawn)
@@ -176,7 +158,11 @@ void AFarmingGameState::SetPlayerPawn(ABaseWitch* InPawn)
     PlayerPawnRef = InPawn;
 }
 
-ABaseWitch* AFarmingGameState::GetPlayerPawn() const
+
+void AFarmingGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-    return PlayerPawnRef;
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+    DOREPLIFETIME(AFarmingGameState, bIsFarmingStarted); 
+    DOREPLIFETIME(AFarmingGameState, TimeRemaining);
 }
