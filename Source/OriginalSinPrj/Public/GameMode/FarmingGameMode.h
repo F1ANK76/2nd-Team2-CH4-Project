@@ -105,7 +105,7 @@ protected:
 
     
 public:
-    virtual void StartMatch() override {};
+    
     virtual void FinishMatch() override {};
     virtual void VictoryMatch() override {};
     virtual void DefeatMatch() override {};
