@@ -1,6 +1,8 @@
 ﻿#include "GameMode/MultiBattleGameMode.h"
 #include "GameState/MultiBattleGameState.h"
 #include "LevelObjectManager.h"
+#include "SpawnManager.h"
+#include "Player/Controller/WitchController.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -17,7 +19,7 @@ void AMultiBattleGameMode::BeginPlay()
 	//CreateTestPlatform(FVector::ZeroVector, FRotator::ZeroRotator);
 
 	LevelObjectManager = GetWorld()->SpawnActor<ALevelObjectManager>(LevelObjectManagerClass);
-
+	SpawnManager = GetWorld()->SpawnActor<ASpawnManager>(SpawnManagerClass);
 	StartDelay();
 }
 
@@ -29,7 +31,7 @@ void AMultiBattleGameMode::StartDelay()
 		DelayTimer,
 		this,
 		&AMultiBattleGameMode::StartToSpawnActor,
-		1.0f,
+		2.0f,
 		false
 	);
 }
@@ -38,6 +40,31 @@ void AMultiBattleGameMode::StartToSpawnActor()
 {
 	InitializeTempObjects();
 	LevelObjectManager->SpawnDeathZone();
+
+	// 테스트 
+	SpawnPlayer();
+}
+
+void AMultiBattleGameMode::SpawnPlayer()
+{
+	float DeltaY = 100.0f;
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		APlayerController* PC = It->Get();
+		if (PC)
+		{
+			if (AWitchController* WitchController = Cast<AWitchController>(PC))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("컨트롤러 할당, 플레이어 스폰"))
+				SpawnManager->SpawnPlayer(WitchController, FVector(0.0f, 0.0f + DeltaY, 100.0f));
+				DeltaY += 100.0f;
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("컨트롤러 캐스팅 실패"))
+			}
+		}
+	}
 }
 
 
