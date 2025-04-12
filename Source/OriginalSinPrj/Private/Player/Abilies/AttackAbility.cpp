@@ -30,7 +30,6 @@ void AAttackAbility::UndoAbility(FAbilityDataBuffer& Buffer)
 	Super::UndoAbility(Buffer);
 
 	Buffer.ParentWitch->StopAnimation(AbilityMontage);
-	Buffer.ParentWitch->StopEffect();
 
 	Buffer.bIsJumpable = true;
 	Buffer.bIsMoveable = true;

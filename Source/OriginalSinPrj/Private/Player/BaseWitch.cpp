@@ -12,6 +12,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Engine/DamageEvents.h"
+#include "Player/Projectile/BaseProjectile.h"
 
 ABaseWitch::ABaseWitch()
 {
@@ -78,10 +79,14 @@ void ABaseWitch::PlayAnimation_Implementation(UAnimMontage* Target)
 		return;
 	}
 
+	if (IsLocallyControlled())
+	{
+		RequestPauseTimer();
+	}
+
 	if (IsValid(WitchAnimInstance))
 	{
 		WitchAnimInstance->Montage_Play(Target);
-		AbilityComp->PauseBufferTimer();
 	}
 
 	if (IsValid(DressAnimInstance))
@@ -158,6 +163,50 @@ void ABaseWitch::StopEffect_Implementation()
 	RightHandEffect->Deactivate();
 }
 
+void ABaseWitch::SetDamagerEnabledByType(EEffectVisibleType DamagerType, bool bIsActive)
+{
+	switch (DamagerType)
+	{
+	case EEffectVisibleType::Left:
+		SetDamagerEnabled(LeftHandDamager, bIsActive);
+		break;
+
+	case EEffectVisibleType::Right:
+		SetDamagerEnabled(RightHandDamager, bIsActive);
+		break;
+
+	case EEffectVisibleType::Both:
+		SetDamagerEnabled(LeftHandDamager, bIsActive);
+		SetDamagerEnabled(RightHandDamager, bIsActive);
+		break;
+	}
+}
+
+void ABaseWitch::SetDamagerEnabled(UBoxComponent* Target, bool bIsActive)
+{
+	if (bIsActive)
+	{
+		Target->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	}
+	else
+	{
+		Target->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+void ABaseWitch::PlayMelleAttack(EEffectVisibleType Type, float DamageValue)
+{
+	Damage = DamageValue;
+	SetDamagerEnabledByType(Type, true);
+}
+
+void ABaseWitch::StopMelleAttack()
+{
+	SetDamagerEnabledByType(EEffectVisibleType::Both, false);
+	bIsActivedOverlap = false;
+	Damage = 0.0f;
+}
+
 void ABaseWitch::ApplyAttack(AActor* Target, float ApplyValue)
 {
 	if (!IsValid(Target))
@@ -179,6 +228,16 @@ void ABaseWitch::EndAnimNotify()
 	}
 }
 
+void ABaseWitch::PauseTimer()
+{
+	AbilityComp->PauseBufferTimer();
+}
+
+void ABaseWitch::RequestPauseTimer_Implementation()
+{
+	AbilityComp->PauseBufferTimer();
+}
+
 const EWitchStateType ABaseWitch::GetWitchState() const
 {
 	return CurrentState;
@@ -192,25 +251,6 @@ const ECharacterType ABaseWitch::GetWitchType() const
 const FVector ABaseWitch::GetHeadLocation() const
 {
 	return HatItem->GetComponentLocation();
-}
-
-UBoxComponent* ABaseWitch::GetDamager(EDirectionType Target) const
-{
-	switch (Target)
-	{
-	case EDirectionType::Left:
-		return LeftHandDamager;
-		break;
-
-	case EDirectionType::Right:
-		return RightHandDamager;
-		break;
-
-	default:
-		checkNoEntry();
-		break;
-	}
-	return nullptr;
 }
 
 void ABaseWitch::RequestMoveToAbility_Implementation(float Value)
@@ -293,11 +333,11 @@ void ABaseWitch::RequestSkillAttackToAbility_Implementation(int32 Value)
 	}
 }
 
-void ABaseWitch::RequestHitToAbility_Implementation(AActor* DamageCauser)
+void ABaseWitch::RequestHitToAbility_Implementation(AActor* DamageCauser, float DamageValue)
 {
 	if (IsValid(AbilityComp))
 	{
-		AbilityComp->CallHit(DamageCauser);
+		AbilityComp->CallHit(DamageCauser, DamageValue);
 	}
 }
 
@@ -305,6 +345,7 @@ void ABaseWitch::RequestEndedAnim_Implementation()
 {
 	if (IsValid(AbilityComp))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Request Ended Anim"));
 		AbilityComp->ResponseEndAnim();
 	}
 }
@@ -315,10 +356,46 @@ void ABaseWitch::BeginPlay()
 	
 	InitAnimInstance();
 	StopEffect();
+	StopMelleAttack();
+
+	LeftHandDamager->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
+	RightHandDamager->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
+}
+
+void ABaseWitch::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (bIsActivedOverlap)
+	{
+		return;
+	}
+
+	if (!IsValid(OtherActor))
+	{
+		return;
+	}
+
+	if (OtherActor == this)
+	{
+		return;
+	}
+
+	if (OtherActor->GetClass() == ABaseProjectile::StaticClass())
+	{
+		return;
+	}
+
+	bIsActivedOverlap = true;
+	ApplyAttack(OtherActor, Damage);
 }
 
 float ABaseWitch::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	if (!HasAuthority())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s : Has not Authority"), *GetName());
+		return 0.0f;
+	}
+
 	if (!IsValid(DamageCauser))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s : Take Damage. But DamageCauser is invalid"), *GetName());
@@ -327,7 +404,8 @@ float ABaseWitch::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 
 	UE_LOG(LogTemp, Warning, TEXT("%s : TakeDamage. Causer = %s, Value = %f"), *GetName(), *DamageCauser->GetName(), DamageAmount);
 
-	RequestHitToAbility(DamageCauser);
+	AbilityComp->CallHit(DamageCauser, DamageAmount);
+	//RequestHitToAbility(DamageCauser);
 
 	return 0.0f;
 }

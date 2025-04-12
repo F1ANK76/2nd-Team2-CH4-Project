@@ -40,13 +40,19 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void StopEffect();
 
+	void PlayMelleAttack(EEffectVisibleType Type, float DamageValue);
+	void StopMelleAttack();
+
 	void ApplyAttack(AActor* Target, float ApplyValue);
 	void EndAnimNotify();
+	void PauseTimer();
+
+	UFUNCTION(Server, Reliable)
+	void RequestPauseTimer();
 
 	const EWitchStateType GetWitchState() const;
 	const ECharacterType GetWitchType() const;
 	const FVector GetHeadLocation() const;
-	UBoxComponent* GetDamager(EDirectionType Target) const;
 
 	UFUNCTION(Server, Unreliable)
 	void RequestMoveToAbility(float Value);
@@ -79,9 +85,9 @@ public:
 	void RequestSkillAttackToAbility(int32 Value);
 
 	UFUNCTION(Server, Unreliable)
-	void RequestHitToAbility(AActor* DamageCauser);
+	void RequestHitToAbility(AActor* DamageCauser, float DamageValue);
 
-	UFUNCTION(Server, UnReliable)
+	UFUNCTION(Server, Reliable)
 	void RequestEndedAnim();
 
 protected:
@@ -127,8 +133,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void OnPressedSkill5Key(const FInputActionValue& Value);
 
+	UFUNCTION()
+	virtual void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -136,6 +143,8 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	void InitAnimInstance();
+	void SetDamagerEnabledByType(EEffectVisibleType DamagerType, bool bIsActive);
+	void SetDamagerEnabled(UBoxComponent* Target, bool bIsActive);
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -184,4 +193,7 @@ protected:
 
 	EWitchStateType CurrentState = EWitchStateType::Idle;
 	ECharacterType WitchType = ECharacterType::Witch1; //
+
+	bool bIsActivedOverlap = false;
+	float Damage = 0.0f;
 };

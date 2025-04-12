@@ -46,7 +46,7 @@ public:
 	TObjectPtr<USceneComponent> SceneComp = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-	float DefaultDamage = 0;
+	float DefaultDamage = 5.0f;
 
 protected:
 	UPROPERTY()
