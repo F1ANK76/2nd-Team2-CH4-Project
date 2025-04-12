@@ -134,6 +134,7 @@ void AFarmingGameState::InitPlayerUIInfo()
         APlayerController* PlayerController = Cast<APlayerController>(*It);
         if (PlayerController)
         {
+            //UISubSystem이나 gameInstance에게 UI 띄우라고 명령
             //Player에게 UI정보 바꾸라고 명령.
             //여기에 있는 PlayerInfo 활용해서...
         }

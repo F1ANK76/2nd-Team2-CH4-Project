@@ -7,6 +7,7 @@
 #include "OriginalSinPrj/Interface/BattleEvent.h"
 #include "OriginalSinPrj/Interface/MatchManage.h"
 #include "../Player/BaseWitch.h"
+#include "GameState/FarmingGameState.h"
 #include "../Widget/LevelWidget/BattleWidget.h"
 #include "FarmingGameMode.generated.h"
 
@@ -21,7 +22,7 @@ public:
     AFarmingGameMode();
     virtual void StartPlay() override; // BeginPlay보다 먼저 호출
     virtual void BeginPlay() override; // 게임을 시작할 준비가 되면 호출
-
+    TObjectPtr<AFarmingGameState> FarmingGameState = nullptr;
     //Added GameMode Function
     //Control Game Function
 public:
@@ -96,7 +97,7 @@ protected:
     void InitPlayerUI();
 
     //싱글 전용
-    void PostLogin(APlayerController* NewPlayer); // 처음 플레이어가 로그인 하면... 싱글 전용
+    void PostLogin(APlayerController* NewPlayer); // 처음 플레이어가 로그인 하면... 테스트용...
 
     //멀티 전용
 

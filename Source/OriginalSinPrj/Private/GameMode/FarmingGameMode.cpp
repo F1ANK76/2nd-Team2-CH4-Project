@@ -14,6 +14,7 @@ AFarmingGameMode::AFarmingGameMode()
 {
     bUseSeamlessTravel = true; // Seamless Travel 활성화
     PlayerControllerClass = AWitchController::StaticClass();
+
 }
 
 
@@ -29,6 +30,7 @@ void AFarmingGameMode::BeginPlay()
 {
     Super::BeginPlay(); 
     UE_LOG(LogTemp, Warning, TEXT("GameMode beginPlay"));
+    FarmingGameState = GetGameState<AFarmingGameState>();
 
     if (NetMode == NM_Standalone)
     {
@@ -60,15 +62,15 @@ void AFarmingGameMode::StartGame()
     
     //시작 신호가 오면...
     
-    if (AFarmingGameState* GS = GetGameState<AFarmingGameState>())
+    if (FarmingGameState)
     {
-        GS->StartFarmingMode();
+        FarmingGameState->StartFarmingMode();
     }
     //몬스터 소환하면서,
     SpawnInitialMonsters();
 
     //타이머 작동 시키고...
-    if (AFarmingGameState* GS = GetGameState<AFarmingGameState>())
+    if (FarmingGameState)
     {
 
     }
@@ -171,11 +173,11 @@ void AFarmingGameMode::HandleMonsterKilled(AController* Killer)
     }
 
     // 경험치 지급
-    if (AFarmingGameState* GS = GetGameState<AFarmingGameState>())
+    if (FarmingGameState)
     {
         if (APlayerController* PC = Cast<APlayerController>(Killer))
         {
-            GS->AddExperienceToPlayer(PC, 20);
+            FarmingGameState->AddExperienceToPlayer(PC, 20);
         }
     }
 }
@@ -379,13 +381,7 @@ void AFarmingGameMode::PossessCharacter(APlayerController* PC, APawn* PawnToPoss
 
 void AFarmingGameMode::InitPlayerUI()
 {
-    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-    {
-        APlayerController* PlayerController = Cast<APlayerController>(*It);
-        if (PlayerController)
-        {
-            // 컨트롤러에서 직접 UI 띄우는 함수 호출 
-            //PlayerController->ShowUI(EAddWidgetType::BattleWidget);
-        }
-    }
+    //GameState에 명령 내리기....
+    //AFarmingState::InitPlayerUIInfo();
+    
 }

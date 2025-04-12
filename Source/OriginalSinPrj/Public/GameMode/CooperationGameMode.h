@@ -6,6 +6,7 @@
 #include "GameFramework/GameMode.h"
 #include "../Player/BaseWitch.h"
 #include "../Widget/LevelWidget/CooperationWidget.h"
+#include "GameState/CooperationGameState.h"
 #include "CooperationGameMode.generated.h"
 
 
@@ -13,6 +14,7 @@ UCLASS()
 class ORIGINALSINPRJ_API ACooperationGameMode : public AGameMode
 {
 	GENERATED_BODY()
+
     //GameMode Default Function
 public:
     ACooperationGameMode();
@@ -27,6 +29,23 @@ public:
     void EndGame();
     
 public:
+    TObjectPtr<ACooperationGameState> CooperationGameState = nullptr;
+
+    int32 StageIndex = 1;
+
+    bool bIsStage1Cleared;
+    bool bIsStage2Cleared;
+    bool bIsStage3Cleared;
+
+    UFUNCTION(BlueprintCallable)
+    void ReadyStage1(); //Stage1 세팅 트리거
+
+    UFUNCTION(BlueprintCallable)
+    void ReadyStage2(); //Stage2 세팅 트리거
+
+    UFUNCTION(BlueprintCallable)
+    void ReadyStage3(); //Stage3 세팅 트리거
+
     UFUNCTION(BlueprintCallable)
     void StartStage1(); //Stage1 시작 트리거
     
@@ -36,6 +55,7 @@ public:
     UFUNCTION(BlueprintCallable)
     void StartStage3(); //Stage3 시작 트리거
     
+    UFUNCTION(BlueprintCallable)
     void EndStage1(); //Stage1 종료 트리거
     
     UFUNCTION(BlueprintCallable)
@@ -44,10 +64,15 @@ public:
     UFUNCTION(BlueprintCallable)
     void EndStage3(); //Stage3 종료 트리거
     
+    //스테이지 시작마다 플레이어 위치 정해진 곳에 조정하기
+    void SetPlayerLocation(int CurrentStageIndex);
+
     //각 Stage 종료 후 매끄럽게 장면을 전환하기 위한 함수 필요
-    void TravelNextScene();
+    void MoveNextStage(int CurrentStageIndex);
 
+    void RequestTurnOnBuffSelectUI();
 
+    void ApplyBuffToBothPlayer();
 
     UFUNCTION(BlueprintCallable)
     void HandleMonsterKilled(AController* Killer); //몬스터가 죽으면 이걸 호출
@@ -71,6 +96,11 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> PlayerSpawnLocations;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+    TArray<FVector> PlayerSettingLocations;
+
+    void CheckUntilAllPlayerSelectBuff(); // 모든 플레이어가 버프를 선택했는지 보고 대기하는 함수.
+
     // 캐릭터 생성 함수
     void SpawnPlayers();
 
@@ -79,6 +109,10 @@ public:
     void HandleClientPossession(APlayerController* PC, int index);
 
     TSubclassOf<APlayerController> PlayerControllerClass;
+
+    void SetPlayerUnReady(ACharacter* PlayerChar);
+
+    void SetPlayerReady(ACharacter* PlayerChar);
 
 
     // Stage1
@@ -90,7 +124,7 @@ public:
 
     TMap<FVector, AActor*> ActiveMonsters;
 
-    void SpawnInitialMonsters();
+    void SpawnMonsters();
 
     int32 CurrentMonsterCount = 0;
     const int32 MaxMonsterCount = 6;
@@ -105,6 +139,9 @@ public:
     //TSubclassOf<AEnemySpawner> EnemySpawner;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> EnemySpawnLocations;
+
+    UPROPERTY(EditAnywhere, Category = "Spawning")
+    TSubclassOf<AActor> EnemyBlueprintClass;
 
     TMap<FVector, AActor*> ActiveEnemies;
 

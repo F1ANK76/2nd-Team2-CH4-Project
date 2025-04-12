@@ -16,9 +16,15 @@ class ORIGINALSINPRJ_API ACooperationGameState : public AGameState
 	GENERATED_BODY()
 
 public:
-
     /*
-    AFarmingGameState();
+    UPROPERTY(Replicated)
+    bool bPlayer1SelectedBuff = false;
+
+    UPROPERTY(Replicated)
+    bool bPlayer2SelectedBuff = false;
+    */
+    /*
+    ACooperationGameState();
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaSeconds) override;
 
@@ -26,10 +32,12 @@ public:
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     UPROPERTY(Replicated)
-    bool bIsFarmingStarted;
+    bool bIsStage3Started;
 
     UPROPERTY(Replicated, BlueprintReadOnly)
-    float TimeRemaining;
+    float Timer;
+
+    void TurnOnTimer(); //보스전 타이머 켜기
 
     // Player 정보 관리
     UPROPERTY(BlueprintReadOnly)
@@ -41,11 +49,17 @@ public:
     void InitPlayerUIInfo();
     void UpdatePlayerUIInfo();
 
+    void RequestPlayerToOpenBuffUI();//플레이어에게 버프 선택 UI 열도록 시키기
+
+    void ReceiveSelectedBuff(EBuffType Bufftype); // 플레이어 UI에서 선택된 버프 내용 받기
+    
+    void ApplyBuffStat(EBuffType Bufftype); // 게임모드가 허락해준 버프 적용시키기
+
     void AddExperienceToPlayer(APlayerController* Player, int32 Amount);
 
-    void StartFarmingMode();
 
-    void EndFarmingMode(); // 0초 됐을 때 처리할 함수
+
+
 private:
 
     UPROPERTY(EditDefaultsOnly, Category = "UI")
