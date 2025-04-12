@@ -4,6 +4,8 @@
 #include "Engine/DataTable.h"
 #include "CharacterDataStruct.generated.h"
 
+class ABaseWitch;
+
 USTRUCT(BlueprintType)
 struct ORIGINALSINPRJ_API FCharacterDataStruct : public FTableRowBase
 {
@@ -15,4 +17,7 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TSoftObjectPtr<UTexture2D> PortraitImage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<ABaseWitch> WitchClass;
 };
