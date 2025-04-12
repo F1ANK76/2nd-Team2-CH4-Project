@@ -146,15 +146,16 @@ void UWitchAbilityComponent::CallJump()
 	ExcuteCurrentAbility();
 }
 
-void UWitchAbilityComponent::CallHit(AActor* DamageCauser)
+void UWitchAbilityComponent::CallHit(AActor* DamageCauser, float DamageValue)
 {
 	AbilityBuffer.DamageCauser = DamageCauser;
+	AbilityBuffer.AddedGuage = DamageValue;
 
 	if (!IsValid(HitAbility))
 	{
 		HitAbility = SpawnAbility(HitAbilityClass);
 	}
-
+	
 	AbilityBuffer.CurrentAbility = HitAbility;
 	ExcuteCurrentAbility();
 }
@@ -220,24 +221,23 @@ void UWitchAbilityComponent::CallRoll(const FVector2D& DirectionVector)
 
 void UWitchAbilityComponent::ResponseEndAnim()
 {
+	bIsPlayingAnim = false;
+	UE_LOG(LogTemp, Warning, TEXT("Response End Anim"));
 	if (IsValid(AbilityBuffer.CurrentAbility))
 	{
 		AbilityBuffer.CurrentAbility->UndoAbility(AbilityBuffer);
-	}
-	else
-	{
-		AbilityBuffer.bIsMoveable = true;
-		AbilityBuffer.bIsUseable = true;
-		AbilityBuffer.bIsJumpable = true;
+		UE_LOG(LogTemp, Warning, TEXT("Undo Ability %s"), *AbilityBuffer.CurrentAbility->GetName());
+		if (AbilityBuffer.CurrentAbility == JumpAbility)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Undo Target Ability is Jump Ability"));
+			GetWorld()->GetTimerManager().ClearTimer(BufferTimer);
+			ClearLastAbilities();
+		}
 	}
 
 	if (GetWorld()->GetTimerManager().TimerExists(BufferTimer))
 	{
 		GetWorld()->GetTimerManager().UnPauseTimer(BufferTimer);
-	}
-	else
-	{
-		bIsPlayingAnim = false;
 	}
 }
 
@@ -253,6 +253,29 @@ void UWitchAbilityComponent::PauseBufferTimer()
 	}
 }
 
+//void UWitchAbilityComponent::GetMoveCompFromClient_Implementation()
+//{
+//	if (!IsValid(ParentWitch))
+//	{
+//		return;
+//	}
+//
+//	if (!ParentWitch->IsLocallyControlled())
+//	{
+//		return;
+//	}
+//
+//	if (IsValid(ParentMovementComp))
+//	{
+//		SetMoveCompToServer(ParentMovementComp);
+//	}
+//}
+//
+//void UWitchAbilityComponent::SetMoveCompToServer_Implementation(UCharacterMovementComponent* NewMoveComp)
+//{
+//	AbilityBuffer.MovementComp = NewMoveComp;
+//}
+
 void UWitchAbilityComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -264,8 +287,8 @@ void UWitchAbilityComponent::BeginPlay()
 
 	checkf(IsValid(ParentWitch), TEXT("Ability Component : Parent is invalid. Parent == nullptr || Not BaseWitch type"));
 
-	ParentMovementComp = ParentWitch->GetCharacterMovement();
 
+	ParentMovementComp = ParentWitch->GetCharacterMovement();
 	AbilityBuffer.ParentWitch = ParentWitch;
 	AbilityBuffer.MovementComp = ParentMovementComp;
 }
@@ -410,6 +433,7 @@ void UWitchAbilityComponent::CallNormalAttackAtMove()
 
 void UWitchAbilityComponent::CallNormalAttackAtJump()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Call Normal Jump Attack"));
 }
 
 void UWitchAbilityComponent::CallSpecialAttackAtMove()
@@ -453,6 +477,7 @@ void UWitchAbilityComponent::CallSpecialAttackAtMove()
 
 void UWitchAbilityComponent::CallSpecialAttackAtJump()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Call Special Jump Attack"));
 }
 
 

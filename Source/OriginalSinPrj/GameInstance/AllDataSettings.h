@@ -17,4 +17,7 @@ class ORIGINALSINPRJ_API UAllDataSettings : public UDeveloperSettings
 public:
     UPROPERTY(EditAnywhere, Config, Category = "Buff")
     TSoftObjectPtr<UDataTable> BuffDataTable;
+
+    UPROPERTY(EditAnywhere, Config, Category = "CharacterData")
+    TSoftObjectPtr<UDataTable> CharacterDataTable;
 };

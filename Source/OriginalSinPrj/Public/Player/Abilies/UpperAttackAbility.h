@@ -15,4 +15,5 @@ class ORIGINALSINPRJ_API AUpperAttackAbility : public AAttackAbility
 public:
 	virtual void InitAbility() override;
 	virtual bool ExcuteAbility(FAbilityDataBuffer& Buffer) override;
+	virtual void UndoAbility(FAbilityDataBuffer& Buffer) override;
 };

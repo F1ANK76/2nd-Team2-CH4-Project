@@ -32,7 +32,7 @@ bool AUppercutAttackAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 	{
 		FVector NewLocation = Buffer.ParentWitch->GetActorLocation();
 
-		NewLocation.Z -= 90;
+		NewLocation.Z -= 80;
 
 		if (Buffer.bIsLeft)
 		{

@@ -23,6 +23,15 @@ bool AUpperAttackAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 	}
 
 	Buffer.ParentWitch->PlayEffect(EEffectVisibleType::Right);
+	Buffer.ParentWitch->PlayMelleAttack(EEffectVisibleType::Right, DamageValue);
 
 	return true;
+}
+
+void AUpperAttackAbility::UndoAbility(FAbilityDataBuffer& Buffer)
+{
+	Super::UndoAbility(Buffer);
+
+	Buffer.ParentWitch->StopMelleAttack();
+	Buffer.ParentWitch->StopEffect();
 }
