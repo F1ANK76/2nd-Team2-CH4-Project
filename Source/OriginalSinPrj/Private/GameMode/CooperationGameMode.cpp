@@ -259,6 +259,8 @@ void ACooperationGameMode::CheckUntilAllPlayerSelectBuff()
 
     
     if (!IsValid(CooperationGameState)) return;
+
+    //이 함수 내에 머물면서 계속 조건을 테스트 하는 방법을 찾아야한다.
     /*
     while (!CooperationGameState->bPlayer1SelectedBuff || !CooperationGameState->bPlayer2SelectedBuff)
     {

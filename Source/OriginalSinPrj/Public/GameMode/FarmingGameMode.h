@@ -93,7 +93,6 @@ protected:
 
     ENetMode NetMode;
 
-
     void InitPlayerUI();
 
     //½Ì±Û Àü¿ë
