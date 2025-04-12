@@ -21,5 +21,8 @@ public:
 	UPROPERTY()
 	UDataTable* BuffDataTable;
 
+	UPROPERTY()
+	UDataTable* CharacterDataTable;
+
 	const UAllDataSettings* AllDataSettings;
 };

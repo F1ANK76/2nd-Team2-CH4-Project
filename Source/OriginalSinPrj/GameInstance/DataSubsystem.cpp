@@ -1,6 +1,6 @@
 #include "DataSubsystem.h"
 #include "AllDataSettings.h"
-
+#include "Struct/CharacterDataStruct.h"
 void UDataSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
@@ -14,13 +14,14 @@ void UDataSubsystem::LoadDataTables()
 {
     if (AllDataSettings)
     {
-        if (AllDataSettings->BuffDataTable.IsValid())
+        if (!AllDataSettings->BuffDataTable.IsNull())
         {
             BuffDataTable = AllDataSettings->BuffDataTable.LoadSynchronous();
         }
-        else
+
+        if (!AllDataSettings->CharacterDataTable.IsNull())
         {
-            UE_LOG(LogTemp, Warning, TEXT("Invalid BuffDataTable"));
+            CharacterDataTable = AllDataSettings->CharacterDataTable.LoadSynchronous();
         }
     }
 }

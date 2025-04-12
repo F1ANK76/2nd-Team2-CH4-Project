@@ -100,7 +100,7 @@ void UUISubsystem::OnPostLoadMap(UWorld* LoadedWorld)
             // BGM 재생 호출 시점 변경은 필요할 수도 있음, 레벨 전환시 기존에 재생되던 BGM은 전부 날아감
             if (CurrentActiveWidget == IntroLevelWidget)
             {
-                AudioSubsystem->PlaySounds(ESoundDataType::Level, static_cast<uint8>(ELevelSoundType::TitleSound));
+                AudioSubsystem->PlayBGM(ELevelSoundType::TitleSound);
             }
 
             // 필요 레벨별 재생..

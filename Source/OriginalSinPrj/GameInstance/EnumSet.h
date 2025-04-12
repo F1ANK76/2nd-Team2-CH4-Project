@@ -31,9 +31,8 @@ enum class EAddWidgetType : uint8
 };
 
 UENUM(BlueprintType)
-enum class ESoundDataType : uint8
+enum class ESfxSoundType : uint8
 {
-	Level = 0,
 	Monster,
 	Character,
 	Boss
