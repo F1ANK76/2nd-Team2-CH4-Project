@@ -40,6 +40,8 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void StopEffect();
 
+	void PlayEffect_Implementation(EEffectVisibleType Type);
+
 	void ApplyAttack(AActor* Target, float ApplyValue);
 	void EndAnimNotify();
 
