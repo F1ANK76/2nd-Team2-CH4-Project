@@ -93,7 +93,6 @@ protected:
 
     ENetMode NetMode;
 
-
     void InitPlayerUI();
 
     //½Ì±Û Àü¿ë
@@ -105,7 +104,7 @@ protected:
 
     
 public:
-    virtual void StartMatch() override {};
+    
     virtual void FinishMatch() override {};
     virtual void VictoryMatch() override {};
     virtual void DefeatMatch() override {};
