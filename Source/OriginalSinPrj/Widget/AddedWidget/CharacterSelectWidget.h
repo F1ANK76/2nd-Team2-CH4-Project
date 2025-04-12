@@ -15,7 +15,6 @@ class ORIGINALSINPRJ_API UCharacterSelectWidget : public UBaseWidget
 	
 public:
 	virtual void NativeConstruct() override;
-	virtual void InitWidget(UUISubsystem* NewUIHandle) override;
 
 public:
 	UFUNCTION()
