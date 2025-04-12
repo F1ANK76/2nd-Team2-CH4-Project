@@ -25,6 +25,7 @@ enum class EWitchStateType : uint8
 	Guard,
 	Roll,
 	Taunt,
+	Attack,
 	NormalAttack,
 	SpecialAttack,
 	SkillAttack
@@ -63,6 +64,14 @@ enum class EDirectionType : uint8
 	Right,
 	Up,
 	Down
+};
+
+UENUM(BlueprintType)
+enum class EEffectVisibleType : uint8
+{
+	Left = 0,
+	Right,
+	Both
 };
 
 UCLASS()

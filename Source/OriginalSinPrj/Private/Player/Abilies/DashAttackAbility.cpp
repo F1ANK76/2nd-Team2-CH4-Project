@@ -14,9 +14,23 @@ void ADashAttackAbility::InitAbility()
 
 bool ADashAttackAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 {
-	Super::ExcuteAbility(Buffer);
+	bool ParentResult = Super::ExcuteAbility(Buffer);
 
-	Buffer.ParentWitch->SetWitchState(EWitchStateType::NormalAttack);
+	if (!ParentResult)
+	{
+		return false;
+	}
+
+	Buffer.ParentWitch->PlayEffect(EEffectVisibleType::Right);
+	Buffer.ParentWitch->PlayMelleAttack(EEffectVisibleType::Right, DamageValue);
 
 	return true;
+}
+
+void ADashAttackAbility::UndoAbility(FAbilityDataBuffer& Buffer)
+{
+	Super::UndoAbility(Buffer);
+
+	Buffer.ParentWitch->StopMelleAttack();
+	Buffer.ParentWitch->StopEffect();
 }

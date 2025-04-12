@@ -8,6 +8,11 @@
 #include "Player/WitchAnimInstance.h"
 #include "Player/WitchAbilityComponent.h"
 #include "Components/BoxComponent.h"
+#include <Kismet/GameplayStatics.h>
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+#include "Engine/DamageEvents.h"
+#include "Player/Projectile/BaseProjectile.h"
 
 ABaseWitch::ABaseWitch()
 {
@@ -17,60 +22,71 @@ ABaseWitch::ABaseWitch()
 	StockingsMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Stokings"));
 	ShoesMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Shoes"));
 
-	/*LeftHandItem = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftHand"));
+	LeftHandItem = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftHand"));
 	RightHandItem = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightHand"));
-	HatItem = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hat"));*/
+	HatItem = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hat"));
 
 	AbilityComp = CreateDefaultSubobject<UWitchAbilityComponent>(TEXT("Ability Component"));
 
-	ForwardDamager = CreateDefaultSubobject<UBoxComponent>(TEXT("Forward Damager"));
-	BackDamager = CreateDefaultSubobject<UBoxComponent>(TEXT("Back Damager"));
-	UpperDamager = CreateDefaultSubobject<UBoxComponent>(TEXT("Upper Damager"));
-	LowerDamager = CreateDefaultSubobject<UBoxComponent>(TEXT("Lower Damager"));
+	LeftHandDamager = CreateDefaultSubobject<UBoxComponent>(TEXT("Left Hand Damager"));
+	RightHandDamager = CreateDefaultSubobject<UBoxComponent>(TEXT("Right Hand Damager"));
+
+	LeftHandEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Left Hand Effect"));
+	RightHandEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Right Hand Effect"));
 
 	checkf(IsValid(GetMesh()), TEXT("Skeletal Mesh is invalid"));
 
-	DressMesh->SetupAttachment(GetMesh());
-	StockingsMesh->SetupAttachment(GetMesh());
-	ShoesMesh->SetupAttachment(GetMesh());
+	USkeletalMeshComponent* MainMesh = GetMesh();
 
-	ForwardDamager->SetupAttachment(GetMesh());
-	BackDamager->SetupAttachment(GetMesh());
-	UpperDamager->SetupAttachment(GetMesh());
-	LowerDamager->SetupAttachment(GetMesh());
+	DressMesh->SetupAttachment(MainMesh);
+	StockingsMesh->SetupAttachment(MainMesh);
+	ShoesMesh->SetupAttachment(MainMesh);
 
-	ForwardDamager->SetGenerateOverlapEvents(true);
-	BackDamager->SetGenerateOverlapEvents(true);
-	UpperDamager->SetGenerateOverlapEvents(true);
-	LowerDamager->SetGenerateOverlapEvents(true);
+	LeftHandItem->SetupAttachment(MainMesh, (FName)"LeftHand");
+	RightHandItem->SetupAttachment(MainMesh, (FName)"RightHand");
+	HatItem->SetupAttachment(MainMesh, (FName)"Head");
 
-	ForwardDamager->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-	BackDamager->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-	UpperDamager->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-	LowerDamager->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	LeftHandEffect->SetupAttachment(LeftHandItem);
+	RightHandEffect->SetupAttachment(RightHandItem);
+
+	LeftHandDamager->SetupAttachment(LeftHandItem);
+	RightHandDamager->SetupAttachment(RightHandItem);
+
+	LeftHandDamager->SetGenerateOverlapEvents(true);
+	RightHandDamager->SetGenerateOverlapEvents(true);
+
+	LeftHandDamager->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	RightHandDamager->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+
+	Tags.Add((FName)"Player");
 }
 
-void ABaseWitch::SetWitchState(const EWitchStateType NewState)
+void ABaseWitch::SetWitchState_Implementation(const EWitchStateType NewState)
 {
 	CurrentState = NewState;
 }
 
-void ABaseWitch::SetWitchDirection(const FVector2D& DirectionVector)
+void ABaseWitch::SetWitchDirection_Implementation(const FVector2D& DirectionVector)
 {
 	
 }
 
-void ABaseWitch::PlayAnimation(UAnimMontage* Target)
+void ABaseWitch::PlayAnimation_Implementation(UAnimMontage* Target)
 {
 	if (!IsValid(Target))
 	{
+		EndAnimNotify();
 		return;
+	}
+
+	if (IsLocallyControlled())
+	{
+		RequestPauseTimer();
 	}
 
 	if (IsValid(WitchAnimInstance))
 	{
 		WitchAnimInstance->Montage_Play(Target);
-		AbilityComp->PauseBufferTimer();
 	}
 
 	if (IsValid(DressAnimInstance))
@@ -89,7 +105,7 @@ void ABaseWitch::PlayAnimation(UAnimMontage* Target)
 	}
 }
 
-void ABaseWitch::StopAnimation(UAnimMontage* Target)
+void ABaseWitch::StopAnimation_Implementation(UAnimMontage* Target)
 {
 	if (!IsValid(Target))
 	{
@@ -122,6 +138,106 @@ void ABaseWitch::StopAnimation(UAnimMontage* Target)
 	}
 }
 
+void ABaseWitch::PlayEffect_Implementation(EEffectVisibleType Type)
+{
+	switch (Type)
+	{
+	case EEffectVisibleType::Left:
+		LeftHandEffect->Activate(true);
+		break;
+
+	case EEffectVisibleType::Right:
+		RightHandEffect->Activate(true);
+		break;
+
+	case EEffectVisibleType::Both:
+		LeftHandEffect->Activate(true);
+		RightHandEffect->Activate(true);
+		break;
+	}
+}
+
+void ABaseWitch::StopEffect_Implementation()
+{
+	LeftHandEffect->Deactivate();
+	RightHandEffect->Deactivate();
+}
+
+void ABaseWitch::SetDamagerEnabledByType(EEffectVisibleType DamagerType, bool bIsActive)
+{
+	switch (DamagerType)
+	{
+	case EEffectVisibleType::Left:
+		SetDamagerEnabled(LeftHandDamager, bIsActive);
+		break;
+
+	case EEffectVisibleType::Right:
+		SetDamagerEnabled(RightHandDamager, bIsActive);
+		break;
+
+	case EEffectVisibleType::Both:
+		SetDamagerEnabled(LeftHandDamager, bIsActive);
+		SetDamagerEnabled(RightHandDamager, bIsActive);
+		break;
+	}
+}
+
+void ABaseWitch::SetDamagerEnabled(UBoxComponent* Target, bool bIsActive)
+{
+	if (bIsActive)
+	{
+		Target->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	}
+	else
+	{
+		Target->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+void ABaseWitch::PlayMelleAttack(EEffectVisibleType Type, float DamageValue)
+{
+	Damage = DamageValue;
+	SetDamagerEnabledByType(Type, true);
+}
+
+void ABaseWitch::StopMelleAttack()
+{
+	SetDamagerEnabledByType(EEffectVisibleType::Both, false);
+	bIsActivedOverlap = false;
+	Damage = 0.0f;
+}
+
+void ABaseWitch::ApplyAttack(AActor* Target, float ApplyValue)
+{
+	if (!IsValid(Target))
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("%s : Apply Attack To Target %s. Apply Value = %f"), *GetName(), *Target->GetName(), ApplyValue);
+	UGameplayStatics::ApplyDamage(Target, ApplyValue, GetController(), this, UDamageType::StaticClass());
+
+	Target->TakeDamage(ApplyValue, FDamageEvent(), GetController(), this);
+}
+
+void ABaseWitch::EndAnimNotify()
+{
+	if (IsLocallyControlled())
+	{
+		RequestEndedAnim();
+	}
+}
+
+void ABaseWitch::PauseTimer()
+{
+	AbilityComp->PauseBufferTimer();
+}
+
+void ABaseWitch::RequestPauseTimer_Implementation()
+{
+	AbilityComp->PauseBufferTimer();
+}
+
 const EWitchStateType ABaseWitch::GetWitchState() const
 {
 	return CurrentState;
@@ -132,34 +248,12 @@ const ECharacterType ABaseWitch::GetWitchType() const
 	return WitchType;
 }
 
-UBoxComponent* ABaseWitch::GetDamager(EDirectionType Target) const
+const FVector ABaseWitch::GetHeadLocation() const
 {
-	switch (Target)
-	{
-	case EDirectionType::Left:
-		return BackDamager;
-		break;
-
-	case EDirectionType::Right:
-		return ForwardDamager;
-		break;
-
-	case EDirectionType::Up:
-		return UpperDamager;
-		break;
-
-	case EDirectionType::Down:
-		return LowerDamager;
-		break;
-
-	default:
-		checkNoEntry();
-		break;
-	}
-	return nullptr;
+	return HatItem->GetComponentLocation();
 }
 
-void ABaseWitch::RequestMoveToAbility(float Value)
+void ABaseWitch::RequestMoveToAbility_Implementation(float Value)
 {
 	if (IsValid(AbilityComp))
 	{
@@ -167,7 +261,7 @@ void ABaseWitch::RequestMoveToAbility(float Value)
 	}
 }
 
-void ABaseWitch::RequestUpDownToAbility(float Value)
+void ABaseWitch::RequestUpDownToAbility_Implementation(float Value)
 {
 	if (IsValid(AbilityComp))
 	{
@@ -175,7 +269,7 @@ void ABaseWitch::RequestUpDownToAbility(float Value)
 	}
 }
 
-void ABaseWitch::RequestJumpToAbility()
+void ABaseWitch::RequestJumpToAbility_Implementation()
 {
 	if (IsValid(AbilityComp))
 	{
@@ -183,7 +277,7 @@ void ABaseWitch::RequestJumpToAbility()
 	}
 }
 
-void ABaseWitch::RequestExcuteGuardToAbility()
+void ABaseWitch::RequestExcuteGuardToAbility_Implementation()
 {
 	if (IsValid(AbilityComp))
 	{
@@ -191,7 +285,7 @@ void ABaseWitch::RequestExcuteGuardToAbility()
 	}
 }
 
-void ABaseWitch::RequestContinueGuardToAbility()
+void ABaseWitch::RequestContinueGuardToAbility_Implementation()
 {
 	if (IsValid(AbilityComp))
 	{
@@ -199,7 +293,7 @@ void ABaseWitch::RequestContinueGuardToAbility()
 	}
 }
 
-void ABaseWitch::RequestUndoGuardToAbility()
+void ABaseWitch::RequestUndoGuardToAbility_Implementation()
 {
 	if (IsValid(AbilityComp))
 	{
@@ -207,7 +301,7 @@ void ABaseWitch::RequestUndoGuardToAbility()
 	}
 }
 
-void ABaseWitch::RequestTauntToAbility()
+void ABaseWitch::RequestTauntToAbility_Implementation()
 {
 	if (IsValid(AbilityComp))
 	{
@@ -215,7 +309,7 @@ void ABaseWitch::RequestTauntToAbility()
 	}
 }
 
-void ABaseWitch::RequestNormalAttackToAbility()
+void ABaseWitch::RequestNormalAttackToAbility_Implementation()
 {
 	if (IsValid(AbilityComp))
 	{
@@ -223,7 +317,7 @@ void ABaseWitch::RequestNormalAttackToAbility()
 	}
 }
 
-void ABaseWitch::RequestSpecialAttackToAbility()
+void ABaseWitch::RequestSpecialAttackToAbility_Implementation()
 {
 	if (IsValid(AbilityComp))
 	{
@@ -231,7 +325,7 @@ void ABaseWitch::RequestSpecialAttackToAbility()
 	}
 }
 
-void ABaseWitch::RequestSkillAttackToAbility(int32 Value)
+void ABaseWitch::RequestSkillAttackToAbility_Implementation(int32 Value)
 {
 	if (IsValid(AbilityComp))
 	{
@@ -239,11 +333,20 @@ void ABaseWitch::RequestSkillAttackToAbility(int32 Value)
 	}
 }
 
-void ABaseWitch::RequestHitToAbility(AActor* DamageCauser)
+void ABaseWitch::RequestHitToAbility_Implementation(AActor* DamageCauser, float DamageValue)
 {
 	if (IsValid(AbilityComp))
 	{
-		AbilityComp->CallHit(DamageCauser);
+		AbilityComp->CallHit(DamageCauser, DamageValue);
+	}
+}
+
+void ABaseWitch::RequestEndedAnim_Implementation()
+{
+	if (IsValid(AbilityComp))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Request Ended Anim"));
+		AbilityComp->ResponseEndAnim();
 	}
 }
 
@@ -252,16 +355,57 @@ void ABaseWitch::BeginPlay()
 	Super::BeginPlay();
 	
 	InitAnimInstance();
+	StopEffect();
+	StopMelleAttack();
+
+	LeftHandDamager->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
+	RightHandDamager->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
+}
+
+void ABaseWitch::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (bIsActivedOverlap)
+	{
+		return;
+	}
+
+	if (!IsValid(OtherActor))
+	{
+		return;
+	}
+
+	if (OtherActor == this)
+	{
+		return;
+	}
+
+	if (OtherActor->GetClass() == ABaseProjectile::StaticClass())
+	{
+		return;
+	}
+
+	bIsActivedOverlap = true;
+	ApplyAttack(OtherActor, Damage);
 }
 
 float ABaseWitch::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	if (!IsValid(DamageCauser))
+	if (!HasAuthority())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("%s : Has not Authority"), *GetName());
 		return 0.0f;
 	}
 
-	RequestHitToAbility(DamageCauser);
+	if (!IsValid(DamageCauser))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s : Take Damage. But DamageCauser is invalid"), *GetName());
+		return 0.0f;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("%s : TakeDamage. Causer = %s, Value = %f"), *GetName(), *DamageCauser->GetName(), DamageAmount);
+
+	AbilityComp->CallHit(DamageCauser, DamageAmount);
+	//RequestHitToAbility(DamageCauser);
 
 	return 0.0f;
 }
@@ -410,7 +554,7 @@ void ABaseWitch::InitAnimInstance()
 void ABaseWitch::OnPressedMoveKey(const FInputActionValue& Value)
 {
 	float MoveValue = Value.Get<float>();
-
+	
 	RequestMoveToAbility(MoveValue);
 }
 

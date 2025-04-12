@@ -3,8 +3,6 @@
 
 #include "Player/Abilies/NormalAttackAbility.h"
 #include "Player/BaseWitch.h"
-#include "Components/BoxComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Player/Struct/AbilityDataBuffer.h"
 
 void ANormalAttackAbility::InitAbility()
@@ -16,44 +14,15 @@ void ANormalAttackAbility::InitAbility()
 
 bool ANormalAttackAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 {
-	Super::ExcuteAbility(Buffer);
+	bool ParentResult = Super::ExcuteAbility(Buffer);
 
-	if (!CheckExcuteable(Buffer))
+	if (!ParentResult)
 	{
 		return false;
 	}
 
-	Buffer.bIsJumpable = false;
-	Buffer.bIsMoveable = false;
-	Buffer.bIsUseable = false;
-	Buffer.ParentWitch->SetWitchState(EWitchStateType::NormalAttack);
-	
-	UBoxComponent* Damager = Buffer.ParentWitch->GetDamager(EDirectionType::Right);
-
-	if (!IsValid(Damager))
-	{
-		return false;
-	}
-
-	Buffer.ParentWitch->PlayAnimation(AbilityMontage);
-
-	TArray<AActor*> HittedActors;
-	Damager->GetOverlappingActors(HittedActors);
-
-	if (HittedActors.IsEmpty())
-	{
-		return false;
-	}
-
-	for (AActor* HittedActor : HittedActors)
-	{
-		if (HittedActor == Buffer.ParentWitch)
-		{
-			continue;
-		}
-
-		UGameplayStatics::ApplyDamage(HittedActor, Damage, Buffer.ParentWitch->GetController(), Buffer. ParentWitch, UDamageType::StaticClass());
-	}
+	Buffer.ParentWitch->PlayEffect(EEffectVisibleType::Right);
+	Buffer.ParentWitch->PlayMelleAttack(EEffectVisibleType::Right, DamageValue);
 
 	return true;
 }
@@ -62,21 +31,6 @@ void ANormalAttackAbility::UndoAbility(FAbilityDataBuffer& Buffer)
 {
 	Super::UndoAbility(Buffer);
 
-	Buffer.ParentWitch->StopAnimation(AbilityMontage);
-
-	Buffer.bIsJumpable = true;
-	Buffer.bIsMoveable = true;
-	Buffer.bIsUseable = true;
-}
-
-bool ANormalAttackAbility::CheckExcuteable(FAbilityDataBuffer& Buffer)
-{
-	Super::CheckExcuteable(Buffer);
-
-	if (!Buffer.bIsUseable)
-	{
-		return false;
-	}
-
-	return true;
+	Buffer.ParentWitch->StopMelleAttack();
+	Buffer.ParentWitch->StopEffect();
 }

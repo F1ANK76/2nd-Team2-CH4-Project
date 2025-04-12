@@ -3,18 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Player/Abilies/BaseWitchAbility.h"
+#include "Player/Abilies/AttackAbility.h"
 #include "SpecialAttackAbility.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
-class ORIGINALSINPRJ_API ASpecialAttackAbility : public ABaseWitchAbility
+class ORIGINALSINPRJ_API ASpecialAttackAbility : public AAttackAbility
 {
 	GENERATED_BODY()
 	
-	
+public:
+	virtual void InitAbility() override;
 	
 	
 };

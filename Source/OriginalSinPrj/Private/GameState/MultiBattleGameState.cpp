@@ -1,4 +1,20 @@
-#include "GameState/MultiBattleGameState.h"
+﻿#include "GameState/MultiBattleGameState.h"
+
+#include "Net/UnrealNetwork.h"
+#include "Kismet/GameplayStatics.h"
+
+AMultiBattleGameState::AMultiBattleGameState()
+{
+}
+
+void AMultiBattleGameState::BeginPlay()
+{
+}
+
+void AMultiBattleGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+}
 
 void AMultiBattleGameState::ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation)
 {
@@ -13,10 +29,6 @@ void AMultiBattleGameState::OnDeathPlayer(ACharacter* Player, const FVector& Dea
 }
 
 void AMultiBattleGameState::OnDeathMonster(AActor* Monster, const FVector& DeathLocation)
-{
-}
-
-void AMultiBattleGameState::StartMatch()
 {
 }
 

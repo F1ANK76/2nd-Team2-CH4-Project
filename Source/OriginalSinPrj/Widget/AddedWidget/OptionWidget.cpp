@@ -5,6 +5,8 @@
 #include "Components/Button.h"
 #include "Components/Slider.h"
 
+#include "../GameInstance/AudioSubsystem.h"
+
 void UOptionWidget::NativeConstruct()
 {
     Super::NativeConstruct();
@@ -53,6 +55,14 @@ void UOptionWidget::OnClickedBGMVolume(float Value)
 	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 	//UIHandle->ClickedBGMVolume(Value);
 	//UIHandle->RequestPlayUISound(EUISoundType::Click);
+
+	if (UGameInstance* GameInstance = GetGameInstance())
+	{
+		if (UAudioSubsystem* AudioSubsystem = GameInstance->GetSubsystem<UAudioSubsystem>())
+		{
+			AudioSubsystem->SetAndApplyMasterVolume(Value);
+		}
+	}
 }
 
 void UOptionWidget::OnClickedEffectVolume(float Value)

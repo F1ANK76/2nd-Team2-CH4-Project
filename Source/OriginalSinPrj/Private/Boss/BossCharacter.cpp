@@ -10,6 +10,10 @@ ABossCharacter::ABossCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
+	MaxHP = 1000;
+	CurrentHP = MaxHP;
+	bIsDead = false;
+	
 	AIControllerClass = ABossController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
@@ -46,6 +50,22 @@ void ABossCharacter::SetFacingDirection(float Direction)
 	}
 }
 
+void ABossCharacter::MulticastPlayStartBattleMontage_Implementation()
+{
+	if (StartBattleMontage && GetNetMode() != NM_DedicatedServer)
+	{
+		PlayAnimMontage(StartBattleMontage);
+	}
+}
+
+void ABossCharacter::MulticastPlayDeathMontage_Implementation()
+{
+	if (DeathMontage && GetNetMode() != NM_DedicatedServer)
+	{
+		PlayAnimMontage(DeathMontage);
+	}
+}
+
 void ABossCharacter::MulticastPlayRangeAttackMontage_Implementation()
 {
 	if (RangeAttackMontage && GetNetMode() != NM_DedicatedServer)
@@ -67,6 +87,22 @@ void ABossCharacter::MulticastPlayRushBossAttackMontage_Implementation()
 	if (RushBossAttackMontage && GetNetMode() != NM_DedicatedServer)
 	{
 		PlayAnimMontage(RushBossAttackMontage);
+	}
+}
+
+void ABossCharacter::PlayStartBattleMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayStartBattleMontage();
+	}
+}
+
+void ABossCharacter::PlayDeathMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayDeathMontage();
 	}
 }
 

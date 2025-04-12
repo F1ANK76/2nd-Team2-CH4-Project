@@ -12,15 +12,21 @@ class ORIGINALSINPRJ_API AMultiBattleGameState : public AGameState, public IBatt
 	GENERATED_BODY()
 	
 public:
-	virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation);
-	virtual void TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation);
-	virtual void OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation);
-	virtual void OnDeathMonster(AActor* Monster, const FVector& DeathLocation);
-	virtual void StartMatch();
-	virtual void FinishMatch();
-	virtual void VictoryMatch();
-	virtual void DefeatMatch();
-	virtual void DrawMatch();
+	AMultiBattleGameState();
+
+	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;
+	virtual void TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation) override;
+	virtual void OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation) override;
+	virtual void OnDeathMonster(AActor* Monster, const FVector& DeathLocation) override;
+	virtual void FinishMatch() override;
+	virtual void VictoryMatch() override;
+	virtual void DefeatMatch() override;
+	virtual void DrawMatch() override;
+
+private:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation);
