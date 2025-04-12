@@ -77,6 +77,7 @@ void UAudioSubsystem::PlayBGM(ELevelSoundType SoundType)
 
 void UAudioSubsystem::PlaySFX(ESfxSoundType SoundType, uint8 DetailSoundType)
 {
+    // 위치에 따른 소리 재생 필요, UI 사운드만 처리 가능
     switch (SoundType)
     {
         case ESfxSoundType::Monster:
@@ -107,10 +108,4 @@ void UAudioSubsystem::SetAndApplyMasterVolume(float NewVolume)
             BgmComp->SetPaused(true);
         }
     }
-    // Test Code
-    //else
-    //{
-    //    UE_LOG(LogTemp, Warning, TEXT("TitleSound TitleSound Play"));
-    //    PlayBGM(ELevelSoundType::TitleSound);
-    //}
 }
