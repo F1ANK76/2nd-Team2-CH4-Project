@@ -4,6 +4,7 @@
 #include "Player/Abilies/MoveAbility.h"
 #include "Player/BaseWitch.h"
 #include "Player/Struct/AbilityDataBuffer.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 const float AMoveAbility::RotateValue = 360;
@@ -24,6 +25,12 @@ bool AMoveAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 	if (CheckExcuteable(Buffer))
 	{
 		ExcuteMove(Buffer);
+
+		if (Buffer.MovementComp->IsFalling())
+		{
+			return false;
+		}
+
 		return true;
 	}
 

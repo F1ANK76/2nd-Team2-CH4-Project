@@ -40,7 +40,7 @@ void ABasePlatform::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FRotator DeltaRotation(0.0f, 10.0f * DeltaTime, 0.0f);
-	AddActorLocalRotation(DeltaRotation);
+	/*FRotator DeltaRotation(0.0f, 10.0f * DeltaTime, 0.0f);
+	AddActorLocalRotation(DeltaRotation);*/
 }
 

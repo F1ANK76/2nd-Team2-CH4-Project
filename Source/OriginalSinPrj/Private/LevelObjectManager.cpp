@@ -4,8 +4,8 @@
 
 ALevelObjectManager::ALevelObjectManager()
 	: PoolSize(12)
-	, ObjectDistance(100.f)
-	, ObjectZLocation(0.f)
+	, ObjectDistance(300.f)
+	, ObjectZLocation(300.f)
 	, TempObjectSize(4)
 	, PoolIndex(4)
 {
@@ -21,7 +21,7 @@ void ALevelObjectManager::BeginPlay()
 	{
 		for (int i = 0; i < PoolSize; i++)
 		{
-			FVector NewActorLocation(400.0f, 0.0f, ObjectZLocation);
+			FVector NewActorLocation(10.0f, 0.0f, ObjectZLocation);
 			FVector NewActorScale(1.0f, 1.0f, 1.0f);
 			FRotator NewActorRotator(0.0f, 0.0f, 0.0f);
 			FTransform NewActorTransform(NewActorRotator, NewActorLocation, NewActorScale);

@@ -17,7 +17,6 @@ class ORIGINALSINPRJ_API UCharacterSelectTileWidget : public UCharacterSelectWid
 {
 	GENERATED_BODY()
 	
-	virtual void InitWidget(UUISubsystem* uiHandle);
 	virtual void NativeConstruct() override;
 	//이벤트 디스패쳐
 public:
@@ -32,6 +31,12 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile")
 	int32 MyTileIndex;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* CharacterName;
+
+	UPROPERTY(meta = (BindWidget))
+	class UImage* CharacterImage;
 
 	//버튼 달기
 	//이미지 UI

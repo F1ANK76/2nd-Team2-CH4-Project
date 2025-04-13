@@ -41,7 +41,7 @@ bool ADropKickAttackAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 			NewRotation.Yaw = 90;
 		}
 		
-		NewLocation.Z = 0;
+		NewLocation.Z -= 90;
 
 		ProjectileObj->SetActorLocation(NewLocation);
 		ProjectileObj->SetActorRotation(NewRotation);

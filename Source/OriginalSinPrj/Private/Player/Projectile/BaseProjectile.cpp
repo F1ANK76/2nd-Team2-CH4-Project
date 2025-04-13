@@ -69,39 +69,31 @@ void ABaseProjectile::BeginPlay()
 
 void ABaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s : Begin Overlap"), *this->GetName());
-
 	if (bActiveOverlapEvent)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s : Be Actived Overlap Event"), *this->GetName());
 		return;
 	}
 
 	if (!IsValid(OtherActor))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s : Other Actor is invalie"), *this->GetName());
 		return;
 	}
 
 	if (OtherActor == this)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s : Other Actor is Projectile"), *this->GetName());
 		return;
 	}
 
 	if (!IsValid(ParentWitch))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s : Parent Witch is invalie"), *this->GetName());
 		return;
 	}
 
 	if (OtherActor == ParentWitch)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s : Other Actor is Parent Witch. Parent Witch is %s"), *this->GetName(), *OtherActor->GetName());
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("%s : Active Overlap Event"), *this->GetName());
 	bActiveOverlapEvent = true;
 	ParentWitch->ApplyAttack(OtherActor, DefaultDamage);
 	bActiveOverlapEvent = false;

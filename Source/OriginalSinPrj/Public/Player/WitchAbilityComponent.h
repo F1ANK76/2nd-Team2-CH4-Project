@@ -25,7 +25,7 @@ public:
 	void CallSpecialAttack();
 	void CallSkillAttack(int32 SkillNum);
 	void CallJump();
-	void CallHit(AActor* DamageCauser);
+	void CallHit(AActor* DamageCauser, float DamageValue);
 	void CallBeginGuard();
 	void CallKeepGuard();
 	void CallEndGuard();
@@ -33,6 +33,12 @@ public:
 
 	void ResponseEndAnim();
 	void PauseBufferTimer();
+
+	/*UFUNCTION(Client, Reliable)
+	void GetMoveCompFromClient();
+
+	UFUNCTION(Server, Reliable)
+	void SetMoveCompToServer(UCharacterMovementComponent* NewMoveComp);*/
 
 protected:
 	virtual void BeginPlay() override;
@@ -137,26 +143,63 @@ private:
 
 	TObjectPtr<ABaseWitchAbility> TempAbility = nullptr;
 
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> MoveAbility = nullptr;
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> JumpAbility = nullptr;
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> GuardAbility = nullptr;
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> RollAbility = nullptr;
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> TauntAbility = nullptr;
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> HitAbility = nullptr;
 
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> NormalAttackAbility = nullptr;
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> UpperAttackAbility = nullptr;
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> LowerAttackAbility = nullptr;
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> DashAttackAbility = nullptr;
 
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> SpecialAttackAbility = nullptr;
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> UppercutAttackAbility = nullptr;
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> ChopAttackAbility = nullptr;
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> DropkickAttackAbility = nullptr;
 
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> Skill1Ability = nullptr;
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> Skill2Ability = nullptr;
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> Skill3Ability = nullptr;
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> Skill4Ability = nullptr;
+
+	UPROPERTY()
 	TObjectPtr<ABaseWitchAbility> Skill5Ability = nullptr;
 };

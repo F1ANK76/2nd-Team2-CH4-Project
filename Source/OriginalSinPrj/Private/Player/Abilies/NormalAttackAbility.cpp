@@ -22,6 +22,15 @@ bool ANormalAttackAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 	}
 
 	Buffer.ParentWitch->PlayEffect(EEffectVisibleType::Right);
+	Buffer.ParentWitch->PlayMelleAttack(EEffectVisibleType::Right, DamageValue);
 
 	return true;
+}
+
+void ANormalAttackAbility::UndoAbility(FAbilityDataBuffer& Buffer)
+{
+	Super::UndoAbility(Buffer);
+
+	Buffer.ParentWitch->StopMelleAttack();
+	Buffer.ParentWitch->StopEffect();
 }

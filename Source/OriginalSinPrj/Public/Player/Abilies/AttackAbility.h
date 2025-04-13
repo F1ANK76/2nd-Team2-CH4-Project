@@ -31,4 +31,7 @@ public:
 protected:
 	UPROPERTY()
 	TObjectPtr<ABaseProjectile> ProjectileObj = nullptr;
+
+	UPROPERTY()
+	float DamageValue = 5.0f;
 };
