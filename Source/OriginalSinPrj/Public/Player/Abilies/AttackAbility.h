@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Player/Abilies/BaseWitchAbility.h"
+#include "Player/Struct/ProjectileDataBuffer.h"
 #include "AttackAbility.generated.h"
 
 class ABaseProjectile;
@@ -19,19 +20,66 @@ public:
 	
 protected:
 	virtual bool CheckExcuteable(FAbilityDataBuffer& Buffer) override;
-	virtual void SpawnProjectile(FAbilityDataBuffer& Buffer);
+	virtual void SpawnProjectile(FAbilityDataBuffer& Buffer) {};
+
+	void ExcuteAttackByType(const FAbilityDataBuffer& Buffer);
+	void UndoAttackByType(const FAbilityDataBuffer& Buffer);
+
+	void ExcuteMelleAttack(const FAbilityDataBuffer& Buffer);
+	void ExcuteSpawnAttack(const FAbilityDataBuffer& Buffer);
+	void ExcuteSkillAttack(const FAbilityDataBuffer& Buffer);
+
+	void UndoMelleAttack(const FAbilityDataBuffer& Buffer);
+	void UndoSpawnAttack(const FAbilityDataBuffer& Buffer);
+	void UndoSkillAttack(const FAbilityDataBuffer& Buffer);
+
+	void UpdateProjectileData(const FAbilityDataBuffer& Buffer);
+	void CalculateProjectilePos(ABaseWitch* Parent);
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Attack")
+	EAttackType AttackType = EAttackType::Melle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Attack")
 	TSubclassOf<ABaseProjectile> ProjectileClass = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-	float DelayTime = 0.0f;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Melle")
+	EEffectVisibleType MelleType = EEffectVisibleType::Right;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Projectile")
+	float MoveDelayTime = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Projectile")
+	float AttackDelayTime = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Projectile")
+	float VisibleDelayTime = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Projectile")
+	float DeactiveDelayTime = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Projectile")
+	float MoveSpeed = 500.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Projectile")
+	float DefaultDamage = 5;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Projectile")
+	FVector MoveDirection = FVector::ZeroVector;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Projectile")
+	FVector AddedLocation = FVector::ZeroVector;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Projectile")
+	EPivotType PivotType = EPivotType::Body;
+
+
 protected:
 	UPROPERTY()
 	TObjectPtr<ABaseProjectile> ProjectileObj = nullptr;
 
 	UPROPERTY()
-	float DamageValue = 5.0f;
+	FProjectileDataBuffer ProjectileData;
+
+	FVector SpawnLocation = FVector::ZeroVector;
 };

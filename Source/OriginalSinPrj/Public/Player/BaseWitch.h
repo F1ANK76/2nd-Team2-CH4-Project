@@ -26,9 +26,6 @@ public:
 	void SetWitchState(const EWitchStateType NewState);
 
 	UFUNCTION(NetMulticast, Unreliable)
-	void SetWitchDirection(const FVector2D& DirectionVector);
-
-	UFUNCTION(NetMulticast, Unreliable)
 	void PlayAnimation(UAnimMontage* Target);
 
 	UFUNCTION(NetMulticast, Unreliable)
@@ -40,19 +37,8 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void StopEffect();
 
-	void PlayMelleAttack(EEffectVisibleType Type, float DamageValue);
-	void StopMelleAttack();
-
-	void ApplyAttack(AActor* Target, float ApplyValue);
-	void EndAnimNotify();
-	void PauseTimer();
-
-	UFUNCTION(Server, Reliable)
-	void RequestPauseTimer();
-
-	const EWitchStateType GetWitchState() const;
-	const ECharacterType GetWitchType() const;
-	const FVector GetHeadLocation() const;
+	UFUNCTION(NetMulticast, Reliable)
+	void SetMeshResponseToChanel(ECollisionChannel Chanel, ECollisionResponse Response);
 
 	UFUNCTION(Server, Unreliable)
 	void RequestMoveToAbility(float Value);
@@ -89,6 +75,21 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void RequestEndedAnim();
+
+	UFUNCTION(Server, Reliable)
+	void RequestPauseTimer();
+
+	void PlayMelleAttack(EEffectVisibleType Type, float DamageValue);
+	void StopMelleAttack();
+
+	void ApplyAttack(AActor* Target, float ApplyValue);
+	void EndAnimNotify();
+	void PauseTimer();
+
+	const EWitchStateType GetWitchState() const;
+	const ECharacterType GetWitchType() const;
+	const FVector GetHeadLocation() const;
+	const FVector GetFootLocation() const;
 
 protected:
 	UFUNCTION(BlueprintCallable)
@@ -136,9 +137,7 @@ protected:
 	UFUNCTION()
 	virtual void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -150,6 +149,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UWitchAbilityComponent> AbilityComp = nullptr;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UCapsuleComponent> HitCollision = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USkeletalMeshComponent> MainMesh = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Clothes")
 	TObjectPtr<USkeletalMeshComponent> DressMesh = nullptr;
@@ -169,6 +173,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
 	TObjectPtr<UStaticMeshComponent> HatItem = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	TObjectPtr<UStaticMeshComponent> FootItem = nullptr;
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effect")
