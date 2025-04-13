@@ -29,9 +29,9 @@ protected:
 	virtual bool CheckExcuteable(FAbilityDataBuffer& Buffer) { return true; };
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Montage")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability Settings")
 	TObjectPtr<UAnimMontage> AbilityMontage = nullptr;
 
-protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability Settings")
 	EAbilityType AbilityType = EAbilityType::None;
 };

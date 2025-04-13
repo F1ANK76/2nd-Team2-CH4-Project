@@ -222,14 +222,14 @@ void UWitchAbilityComponent::CallRoll(const FVector2D& DirectionVector)
 void UWitchAbilityComponent::ResponseEndAnim()
 {
 	bIsPlayingAnim = false;
-	UE_LOG(LogTemp, Warning, TEXT("Response End Anim"));
+	//UE_LOG(LogTemp, Warning, TEXT("Response End Anim"));
 	if (IsValid(AbilityBuffer.CurrentAbility))
 	{
 		AbilityBuffer.CurrentAbility->UndoAbility(AbilityBuffer);
-		UE_LOG(LogTemp, Warning, TEXT("Undo Ability %s"), *AbilityBuffer.CurrentAbility->GetName());
+		//UE_LOG(LogTemp, Warning, TEXT("Undo Ability %s"), *AbilityBuffer.CurrentAbility->GetName());
 		if (AbilityBuffer.CurrentAbility == JumpAbility)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Undo Target Ability is Jump Ability"));
+			//UE_LOG(LogTemp, Warning, TEXT("Undo Target Ability is Jump Ability"));
 			GetWorld()->GetTimerManager().ClearTimer(BufferTimer);
 			ClearLastAbilities();
 		}
@@ -252,29 +252,6 @@ void UWitchAbilityComponent::PauseBufferTimer()
 		bIsPlayingAnim = true;
 	}
 }
-
-//void UWitchAbilityComponent::GetMoveCompFromClient_Implementation()
-//{
-//	if (!IsValid(ParentWitch))
-//	{
-//		return;
-//	}
-//
-//	if (!ParentWitch->IsLocallyControlled())
-//	{
-//		return;
-//	}
-//
-//	if (IsValid(ParentMovementComp))
-//	{
-//		SetMoveCompToServer(ParentMovementComp);
-//	}
-//}
-//
-//void UWitchAbilityComponent::SetMoveCompToServer_Implementation(UCharacterMovementComponent* NewMoveComp)
-//{
-//	AbilityBuffer.MovementComp = NewMoveComp;
-//}
 
 void UWitchAbilityComponent::BeginPlay()
 {
@@ -327,6 +304,7 @@ void UWitchAbilityComponent::ExcuteCurrentAbility()
 {
 	if (!IsValid(AbilityBuffer.CurrentAbility))
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("Current Ability is invalid"));
 		return;
 	}
 
@@ -334,6 +312,7 @@ void UWitchAbilityComponent::ExcuteCurrentAbility()
 
 	if (bIsExcuteable)
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("Current Ability Excute Sucessed. %s"), *AbilityBuffer.CurrentAbility->GetName());
 		if (AbilityBuffer.CurrentAbility != MoveAbility)
 		{
 			AbilityBuffer.ComandDirection = EDirectionType::None;
@@ -347,6 +326,7 @@ void UWitchAbilityComponent::ExcuteCurrentAbility()
 		if (!AbilityBuffer.LastAbilities.IsEmpty())
 		{
 			AbilityBuffer.CurrentAbility = AbilityBuffer.LastAbilities[0];
+			//UE_LOG(LogTemp, Warning, TEXT("Current Ability Excute Fail. Back Last %s"), *AbilityBuffer.CurrentAbility->GetName());
 		}
 	}
 }
