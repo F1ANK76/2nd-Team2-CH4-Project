@@ -34,12 +34,6 @@ public:
 	void ResponseEndAnim();
 	void PauseBufferTimer();
 
-	/*UFUNCTION(Client, Reliable)
-	void GetMoveCompFromClient();
-
-	UFUNCTION(Server, Reliable)
-	void SetMoveCompToServer(UCharacterMovementComponent* NewMoveComp);*/
-
 protected:
 	virtual void BeginPlay() override;
 
@@ -134,8 +128,8 @@ private:
 	FAbilityDataBuffer AbilityBuffer;
 
 	FTimerHandle BufferTimer;
-	float BufferActiveTime = 1.0f;
 
+	float BufferActiveTime = 1.0f;
 	bool bIsPlayingAnim = false;
 
 	int32 MaxMana = 5;

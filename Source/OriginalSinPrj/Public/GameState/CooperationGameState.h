@@ -9,6 +9,9 @@
 #include "../Player/BaseWitch.h"
 #include "CooperationGameState.generated.h"
 
+struct FBuffType;
+class ACooperationGameMode;
+
 
 UCLASS()
 class ORIGINALSINPRJ_API ACooperationGameState : public AGameState
@@ -16,20 +19,22 @@ class ORIGINALSINPRJ_API ACooperationGameState : public AGameState
 	GENERATED_BODY()
 
 public:
-    /*
-    UPROPERTY(Replicated)
-    bool bPlayer1SelectedBuff = false;
-
-    UPROPERTY(Replicated)
-    bool bPlayer2SelectedBuff = false;
-    */
-    /*
     ACooperationGameState();
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaSeconds) override;
 
 
+    ACooperationGameMode* CooperationGameGameMode;
+
+    UPROPERTY(Replicated)
+    bool bPlayer1SelectedBuff = false;
+
+    UPROPERTY(Replicated)
+    bool bPlayer2SelectedBuff = false;
+
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+  
 
     UPROPERTY(Replicated)
     bool bIsStage3Started;
@@ -43,6 +48,10 @@ public:
     UPROPERTY(BlueprintReadOnly)
     TMap<APlayerController*, FPlayerData> PlayerInfos;
 
+    //플레이어 컨트롤러 저장해놓기
+    UPROPERTY()
+    TArray<TWeakObjectPtr<APlayerController>> PlayerControllerSet;
+    void RegisterInitialController(APlayerController* PC);
 
     void InitPlayerInfo();
     void UpdatePlayerInfo();
@@ -51,9 +60,16 @@ public:
 
     void RequestPlayerToOpenBuffUI();//플레이어에게 버프 선택 UI 열도록 시키기
 
-    void ReceiveSelectedBuff(EBuffType Bufftype); // 플레이어 UI에서 선택된 버프 내용 받기
+    void ReceiveSelectedBuff(APlayerController* player, FBuffType* Bufftype); // 플레이어 UI에서 선택된 버프 내용 받고 어디다가 저장시켜놓자.
     
-    void ApplyBuffStat(EBuffType Bufftype); // 게임모드가 허락해준 버프 적용시키기
+    FBuffType* Player1Stage1SelectedBuff;
+    FBuffType* Player2Stage1SelectedBuff;
+
+    FBuffType* Player1Stage2SelectedBuff;
+    FBuffType* Player2Stage2SelectedBuff;
+    
+
+    void ApplyBuffStat(); // 게임모드가 허락해준 버프 적용시키기
 
     void AddExperienceToPlayer(APlayerController* Player, int32 Amount);
 
@@ -63,7 +79,7 @@ public:
 private:
 
     UPROPERTY(EditDefaultsOnly, Category = "UI")
-    TSubclassOf<class UBattleWidget> BattleWidgetClass; // UI 클래스
+    TSubclassOf<class UCooperationWidget> CooperationWidgetClass; // UI 클래스
 
 
     FTimerHandle TimerHandle;
@@ -74,5 +90,5 @@ public:
 private:
     UPROPERTY()
     ABaseWitch* PlayerPawnRef;
-	*/
+	
 };
