@@ -33,6 +33,7 @@ enum class EAddWidgetType : uint8
 UENUM(BlueprintType)
 enum class ESfxSoundType : uint8
 {
+	UI,
 	Monster,
 	Character,
 	Boss

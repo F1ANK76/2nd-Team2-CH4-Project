@@ -75,13 +75,13 @@ void UAudioSubsystem::PlayBGM(ELevelSoundType SoundType)
     }
 }
 
-void UAudioSubsystem::PlaySFX(ESfxSoundType SoundType, uint8 DetailSoundType)
+void UAudioSubsystem::PlaySFX(ESfxSoundType SoundType, uint8 DetailSoundType, FVector Location)
 {
     // 위치에 따른 소리 재생 필요, UI 사운드만 처리 가능
     switch (SoundType)
     {
         case ESfxSoundType::Monster:
-            PlaySFXByType<EMonsterSoundType, FMonsterAudioDataStruct>(GetWorld(), MonsterSoundTable, DetailSoundType);
+            PlaySFXByType<EMonsterSoundType, FMonsterAudioDataStruct>(GetWorld(), MonsterSoundTable, DetailSoundType, Location);
             break;
 
         default:
