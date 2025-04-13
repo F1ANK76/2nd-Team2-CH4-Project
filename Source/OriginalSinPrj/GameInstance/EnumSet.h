@@ -80,4 +80,16 @@ enum class EBuffType : uint8
 	AttackUp,
 	DefenseUp,
 	SpeedUp,
+	AvoidanceUp,
+	RespawnInvincible,
+	CircleUp,
+	LifePointUp,
+	DoubleJump,
+	AttackSpeedUp,
+	AttackDelayDown,
+	Stealth,
+	Parachute,
+	EnemyCircleDown,
+	ProjectileSizeUp,
+	AttackRangeUp
 };
