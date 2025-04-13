@@ -45,6 +45,8 @@ void ABossController::BeginPlay()
 		FindPlatforms();
 		
 		UpdateBossFacingDirection();
+
+		//가까운 플레이어 위치 바라봄
 		GetWorld()->GetTimerManager().SetTimer(
 			FindClosestPlayerTimerHandle,
 			this,
@@ -52,7 +54,21 @@ void ABossController::BeginPlay()
 			FindClosestPlayerDelay,
 			true
 		);
+
+		//40초마다 특수패턴공격
+		GetWorld()->GetTimerManager().SetTimer(
+			SpecialAttackTriggerTimerHandle,
+			this,
+			&ABossController::TriggerSpecialAttack,
+			CanSpecialAttackDelay,
+			true);
 	}
+}
+
+void ABossController::SetOneMinusDestructibleObjectCount()
+{
+	DestructibleObjectCount -= 1;
+	GetBlackboardComponent()->SetValueAsInt("DestructibleObjectCount", DestructibleObjectCount);
 }
 
 void ABossController::UpdateBossFacingDirection()
@@ -133,12 +149,29 @@ void ABossController::EndBattle()
 
 	GetWorldTimerManager().ClearTimer(FindClosestPlayerTimerHandle);
 	GetWorldTimerManager().ClearTimer(ObjectSpawnTimerHandle);
+	GetWorldTimerManager().ClearTimer(SpecialAttackTriggerTimerHandle);
 	GetBlackboardComponent()->SetValueAsBool("bIsBattleStart", false);
 	if (IsValid(BrainComponent))
 	{
 		BrainComponent->StopLogic(TEXT("Boss Battle Ended"));
 	}
+}
+
+void ABossController::TriggerSpecialAttack()
+{
+	GetBlackboardComponent()->SetValueAsBool("bCanSpecialAttack", true);
 	
+	GetWorld()->GetTimerManager().SetTimer(
+		ResetSpecialFlagTimerHandle,
+		this,
+		&ABossController::ResetSpecialAttackFlag,
+		5.0f,
+		false);
+}
+
+void ABossController::ResetSpecialAttackFlag()
+{
+	GetBlackboardComponent()->SetValueAsBool("bCanSpecialAttack", false);
 }
 
 void ABossController::FindPlatforms()
@@ -200,7 +233,12 @@ void ABossController::SpawnDestructibleObject()
 	if (bHit)
 	{
 		FVector SpawnLocation = HitResult.ImpactPoint + FVector(0, 0, 50.0f);
-		PoolWorldSubsystem->SpawnDestructibleObject(SpawnLocation, FRotator::ZeroRotator);
+		ADestructibleObject* DestructibleObject = PoolWorldSubsystem->SpawnDestructibleObject(SpawnLocation, FRotator::ZeroRotator);
+		if (IsValid(DestructibleObject))
+		{
+			DestructibleObject->SetBossControllerCache(this);
+		}
 		DestructibleObjectCount++;
+		GetBlackboardComponent()->SetValueAsInt("DestructibleObjectCount", DestructibleObjectCount);
 	}
 }

@@ -19,17 +19,18 @@ class ORIGINALSINPRJ_API ABossController : public AAIController
 public:
 	FVector GetTargetPlayerPawnLocation() const { return TargetPlayerPawn->GetActorLocation(); }
 	APawn* GetTargetPlayerPawn() const { return TargetPlayerPawn; }
-	
+	void SetOneMinusDestructibleObjectCount();
+
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void BeginPlay() override;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Boss | Property")
 	float FindClosestPlayerDelay = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "DestructibleObject")
 	TSubclassOf<ADestructibleObject> DestructibleObjectClass;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "DestructibleObject | Property")
 	float DestructibleObjectSpawnDelay;
 
@@ -47,6 +48,9 @@ private:
 	APawn* TargetPlayerPawn;
 	FTimerHandle FindClosestPlayerTimerHandle;
 	FTimerHandle ObjectSpawnTimerHandle;
+	FTimerHandle SpecialAttackTriggerTimerHandle;
+	FTimerHandle ResetSpecialFlagTimerHandle;
+	
 	//DestructibleObject
 	int32 DestructibleObjectCount;
 	TArray<FName> TargetPlatformTags;
@@ -58,6 +62,9 @@ private:
 	void StartBattle();
 	void EndBattle();
 
+	void TriggerSpecialAttack();
+	void ResetSpecialAttackFlag();
+	
 	//DestructibleObject
 	void FindPlatforms();
 	void SpawnDestructibleObject();

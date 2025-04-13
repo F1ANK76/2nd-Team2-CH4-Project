@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "DestructibleObject.generated.h"
 
+class ABossController;
 class USphereComponent;
 
 UCLASS()
@@ -16,6 +17,8 @@ class ORIGINALSINPRJ_API ADestructibleObject : public AActor, public IBossPoolab
 
 public:
 	ADestructibleObject();
+
+	void SetBossControllerCache(ABossController* InBossController) { BossController = InBossController; }
 
 protected:
 	virtual void BeginPlay() override;
@@ -46,10 +49,11 @@ protected:
 		int32 OtherBodyIndex,
 		bool bFromSweep,
 		const FHitResult& SweepResult);
-	
+
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetActive(bool bIsActive);
 
 private:
 	bool bIsActivate;
+	ABossController* BossController;
 };

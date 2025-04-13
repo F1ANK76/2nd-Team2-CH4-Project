@@ -3,6 +3,7 @@
 
 #include "Boss/Object/DestructibleObject.h"
 
+#include "Boss/BossController.h"
 #include "Components/SphereComponent.h"
 
 
@@ -51,7 +52,8 @@ void ADestructibleObject::OnPooledObjectSpawn_Implementation()
 void ADestructibleObject::OnPooledObjectReset_Implementation()
 {
 	if (!HasAuthority()) return;
-	
+
+	BossController->SetOneMinusDestructibleObjectCount();
 	bIsActivate = false;
 	MulticastSetActive(bIsActivate);
 }

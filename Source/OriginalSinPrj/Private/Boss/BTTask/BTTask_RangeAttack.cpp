@@ -8,10 +8,6 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Boss/BossObjectPoolWorldSubsystem.h"
 
-UBTTask_RangeAttack::UBTTask_RangeAttack()
-{
-}
-
 EBTNodeResult::Type UBTTask_RangeAttack::ExecuteTask(UBehaviorTreeComponent& BTComponent, uint8* NodeMemory)
 {
 	BossController = Cast<ABossController>(BTComponent.GetAIOwner());
