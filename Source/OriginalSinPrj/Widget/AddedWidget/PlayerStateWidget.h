@@ -12,7 +12,7 @@ class UImage;
 class UProgressBar;
 
 USTRUCT(BlueprintType)
-struct FPlayerUIData
+struct FPlayerData
 {
     GENERATED_BODY()
 
@@ -39,6 +39,15 @@ struct FPlayerUIData
 
     UPROPERTY(BlueprintReadWrite)
     int32 AirbornePercent;
+
+    UPROPERTY(BlueprintReadWrite)
+    int32 PlayerLevel;
+
+    UPROPERTY(BlueprintReadWrite)
+    float CurrentEXP;
+
+    UPROPERTY(BlueprintReadWrite)
+    float MaxEXP;
 };
 
 
@@ -52,8 +61,8 @@ class ORIGINALSINPRJ_API UPlayerStateWidget : public UBaseWidget
 	
 
 public:
-    void InitPlayerState(const FPlayerUIData& Data);
-    void UpdateStatus(const FPlayerUIData& Data); // 실시간 업데이트 용
+    void InitPlayerState(const FPlayerData& Data);
+    void UpdateStatus(const FPlayerData& Data); // 실시간 업데이트 용
 
 protected:
     // 위젯 참조
@@ -70,8 +79,12 @@ protected:
     class UProgressBar* ManaBar;
 
     UPROPERTY(meta = (BindWidget))
-    class UProgressBar* SpecialBar;
+    class UProgressBar* EXPBar;
 
     UPROPERTY(meta = (BindWidget))
     class UTextBlock* AirbornePercentText;
+
+    UPROPERTY(meta = (BindWidget))
+    class UTextBlock* PlayerLevel;
+    
 };

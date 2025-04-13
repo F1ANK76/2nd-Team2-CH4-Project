@@ -33,6 +33,7 @@ enum class EAddWidgetType : uint8
 UENUM(BlueprintType)
 enum class ESfxSoundType : uint8
 {
+	UI,
 	Monster,
 	Character,
 	Boss
@@ -79,4 +80,16 @@ enum class EBuffType : uint8
 	AttackUp,
 	DefenseUp,
 	SpeedUp,
+	AvoidanceUp,
+	RespawnInvincible,
+	CircleUp,
+	LifePointUp,
+	DoubleJump,
+	AttackSpeedUp,
+	AttackDelayDown,
+	Stealth,
+	Parachute,
+	EnemyCircleDown,
+	ProjectileSizeUp,
+	AttackRangeUp
 };

@@ -19,14 +19,12 @@ public:
 	virtual void UndoAbility(FAbilityDataBuffer& Buffer) override;
 
 protected:
-	UFUNCTION(NetMulticast, Reliable)
-	void ResponseKnocked(APawn* Target, const FVector& MoveValue);
-
 	virtual bool CheckExcuteable(FAbilityDataBuffer& Buffer) override;
 	virtual void Tick(float DeltaTime) override;
 
 	void CalculateHitDirection(const FVector& Compare, const FVector& Target);
 	void CalculateKnockTargetPos(FAbilityDataBuffer& Buffer);
+	void CalculateStartedFalling();
 	void OnEndedKnock();
 
 public:
@@ -36,7 +34,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hit")
 	float KnockDistanceZ = 50.0f;
 
-	UPROPERTY(EditANywhere, BlueprintReadWrite, Category = "Hit")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hit")
 	float KnockSpeed = 500.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hit")
@@ -49,12 +47,11 @@ protected:
 	UPROPERTY()
 	TObjectPtr<ABaseWitch> Parent = nullptr;
 
-	FVector AddedKnock = FVector::ZeroVector;
-
 	EDirectionType HitDirection = EDirectionType::None;
-	FVector StartPos = FVector::ZeroVector;
 	FVector KnockDistance = FVector::ZeroVector;
 
-	float CurrentTime = 0.0f;
-	bool bIsTopHeight = false;
+	FString PreMoveState = "";
+	bool bIsStartedKnock = false;
+	bool bIsFalling = false;
+	float StartPosZ = 0.0f;
 };

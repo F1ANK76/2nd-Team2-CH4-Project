@@ -6,14 +6,31 @@
 #include "../BaseWidget.h"
 #include "BattleWidget.generated.h"
 
-struct FPlayerUIData; //임시 선언// 나중에 Data구조로 따로 빼야됨.
+struct FPlayerData; //임시 선언// 나중에 Data구조로 따로 빼야됨.
 
 UCLASS()
 class ORIGINALSINPRJ_API UBattleWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 
+
+protected:
+	virtual void NativeConstruct() override;
+
 	//타이머
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* FarmingModeTimer;
+	
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* TimeLimitModeTimer;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void UpdateFarmingModeTimerUI(float time);
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateTimerLimitModeTimerUI(float time);
 
 private:
 	//all stage
@@ -24,9 +41,25 @@ private:
 	class UPlayerStateWidget* Player2StateUI;
 
 public:
-	void InitPlayerUI(FPlayerUIData* Player1, FPlayerUIData* Player2);
-	void UpdatePlayerUI(FPlayerUIData* Player1, FPlayerUIData* Player2);
-	FPlayerUIData* Player1Data;
-	FPlayerUIData* Player2Data;
+	UFUNCTION(BlueprintCallable)
+	void InitPlayerUI(FPlayerData Player1, FPlayerData Player2);
+	
+	UFUNCTION(BlueprintCallable)
+	void UpdatePlayerUI(FPlayerData Player1, FPlayerData Player2);
+
+
+	UFUNCTION()
+	void ActiveFarmingModeWidget();
+	UFUNCTION()
+	void ActiveTimeLimitModeWidget();
+
+
+	UFUNCTION()
+	void DeactiveFarmingModeWidget();
+	UFUNCTION()
+	void DeactiveTimeLimitModeWidget();
+
+	FPlayerData* Player1Data;
+	FPlayerData* Player2Data;
 	
 };

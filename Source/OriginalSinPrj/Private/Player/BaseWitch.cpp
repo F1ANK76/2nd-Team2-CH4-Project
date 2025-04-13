@@ -13,6 +13,7 @@
 #include "NiagaraComponent.h"
 #include "Engine/DamageEvents.h"
 #include "Player/Projectile/BaseProjectile.h"
+#include "Components/CapsuleComponent.h"
 
 ABaseWitch::ABaseWitch()
 {
@@ -25,6 +26,7 @@ ABaseWitch::ABaseWitch()
 	LeftHandItem = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftHand"));
 	RightHandItem = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightHand"));
 	HatItem = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hat"));
+	FootItem = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Foot"));
 
 	AbilityComp = CreateDefaultSubobject<UWitchAbilityComponent>(TEXT("Ability Component"));
 
@@ -36,7 +38,10 @@ ABaseWitch::ABaseWitch()
 
 	checkf(IsValid(GetMesh()), TEXT("Skeletal Mesh is invalid"));
 
-	USkeletalMeshComponent* MainMesh = GetMesh();
+	MainMesh = GetMesh();
+	HitCollision = Cast<UCapsuleComponent>(GetRootComponent());
+
+	checkf(IsValid(HitCollision), TEXT("Root Component is not Capsule Component"));
 
 	DressMesh->SetupAttachment(MainMesh);
 	StockingsMesh->SetupAttachment(MainMesh);
@@ -45,6 +50,7 @@ ABaseWitch::ABaseWitch()
 	LeftHandItem->SetupAttachment(MainMesh, (FName)"LeftHand");
 	RightHandItem->SetupAttachment(MainMesh, (FName)"RightHand");
 	HatItem->SetupAttachment(MainMesh, (FName)"Head");
+	FootItem->SetupAttachment(MainMesh, (FName)"Foot");
 
 	LeftHandEffect->SetupAttachment(LeftHandItem);
 	RightHandEffect->SetupAttachment(RightHandItem);
@@ -64,11 +70,6 @@ ABaseWitch::ABaseWitch()
 void ABaseWitch::SetWitchState_Implementation(const EWitchStateType NewState)
 {
 	CurrentState = NewState;
-}
-
-void ABaseWitch::SetWitchDirection_Implementation(const FVector2D& DirectionVector)
-{
-	
 }
 
 void ABaseWitch::PlayAnimation_Implementation(UAnimMontage* Target)
@@ -194,6 +195,12 @@ void ABaseWitch::SetDamagerEnabled(UBoxComponent* Target, bool bIsActive)
 	}
 }
 
+void ABaseWitch::SetMeshResponseToChanel_Implementation(ECollisionChannel Chanel, ECollisionResponse Response)
+{
+	MainMesh->SetCollisionResponseToChannel(Chanel, Response);
+	HitCollision->SetCollisionResponseToChannel(Chanel, Response);
+}
+
 void ABaseWitch::PlayMelleAttack(EEffectVisibleType Type, float DamageValue)
 {
 	Damage = DamageValue;
@@ -214,7 +221,7 @@ void ABaseWitch::ApplyAttack(AActor* Target, float ApplyValue)
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("%s : Apply Attack To Target %s. Apply Value = %f"), *GetName(), *Target->GetName(), ApplyValue);
+	// TODO : Add Current Mana
 	UGameplayStatics::ApplyDamage(Target, ApplyValue, GetController(), this, UDamageType::StaticClass());
 
 	Target->TakeDamage(ApplyValue, FDamageEvent(), GetController(), this);
@@ -251,6 +258,11 @@ const ECharacterType ABaseWitch::GetWitchType() const
 const FVector ABaseWitch::GetHeadLocation() const
 {
 	return HatItem->GetComponentLocation();
+}
+
+const FVector ABaseWitch::GetFootLocation() const
+{
+	return FootItem->GetComponentLocation();
 }
 
 void ABaseWitch::RequestMoveToAbility_Implementation(float Value)
@@ -345,7 +357,7 @@ void ABaseWitch::RequestEndedAnim_Implementation()
 {
 	if (IsValid(AbilityComp))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Request Ended Anim"));
+		//UE_LOG(LogTemp, Warning, TEXT("Request Ended Anim"));
 		AbilityComp->ResponseEndAnim();
 	}
 }
@@ -392,17 +404,17 @@ float ABaseWitch::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 {
 	if (!HasAuthority())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s : Has not Authority"), *GetName());
+		//UE_LOG(LogTemp, Warning, TEXT("%s : Has not Authority"), *GetName());
 		return 0.0f;
 	}
 
 	if (!IsValid(DamageCauser))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s : Take Damage. But DamageCauser is invalid"), *GetName());
+		//UE_LOG(LogTemp, Warning, TEXT("%s : Take Damage. But DamageCauser is invalid"), *GetName());
 		return 0.0f;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("%s : TakeDamage. Causer = %s, Value = %f"), *GetName(), *DamageCauser->GetName(), DamageAmount);
+	//UE_LOG(LogTemp, Warning, TEXT("%s : TakeDamage. Causer = %s, Value = %f"), *GetName(), *DamageCauser->GetName(), DamageAmount);
 
 	AbilityComp->CallHit(DamageCauser, DamageAmount);
 	//RequestHitToAbility(DamageCauser);
