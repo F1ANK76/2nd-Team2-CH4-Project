@@ -28,29 +28,11 @@ void UCharacterSelectWidget::NativeConstruct()
 }
 
 
-void UCharacterSelectWidget::InitWidget(UUISubsystem* NewUIHandle)
-{
-    Super::InitWidget(NewUIHandle);
-
-
-    // 자식 위젯들 중 UMapSelectTileWidget만 바인딩
-    TArray<UWidget*> FoundWidgets;
-    WidgetTree->GetAllWidgets(FoundWidgets);
-
-    for (UWidget* Widget : FoundWidgets)
-    {
-        UCharacterSelectTileWidget* Tile = Cast<UCharacterSelectTileWidget>(Widget);
-        if (Tile)
-        {
-            Tile->OnCharacterSelectTileClicked.AddDynamic(this, &UCharacterSelectWidget::OnTileClickedFromTile);
-        }
-    }
-}
-
 
 
 void UCharacterSelectWidget::OnTileClickedFromTile(int32 TileIndex)
 {
     UE_LOG(LogTemp, Log, TEXT("Tile with index %d was clicked!"), TileIndex);
     // 선택 처리 로직: UI 강조, 변수 저장 등
+    //게임모드에 전달하기
 }

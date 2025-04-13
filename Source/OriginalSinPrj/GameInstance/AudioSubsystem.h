@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "EnumSet.h"
+#include "Kismet/GameplayStatics.h"
 #include "AudioSubsystem.generated.h"
 
 class UAudioDataSettings;
@@ -17,7 +18,25 @@ class ORIGINALSINPRJ_API UAudioSubsystem : public UGameInstanceSubsystem
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
-	void PlaySounds(ESoundDataType SoundType, uint8 DetailSoundType);
+	void LoadDataTables();
+
+	void PlayBGM(ELevelSoundType SoundType);
+	void PlaySFX(ESfxSoundType SoundType, uint8 DetailSoundType, FVector Location = FVector::ZeroVector);
+
+	UFUNCTION(BlueprintCallable, Category = "Audio")
+	void SetAndApplyMasterVolume(float NewVolume);
+
+	template<typename EnumType, typename StructType>
+	void PlaySFXByType(UObject* WorldContext, UDataTable* Table, uint8 DetailSoundType, FVector Location);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
+	float MasterVolume = 1.0f;
+
+	UPROPERTY()
+	UDataTable* LevelSoundTable;
+
+	UPROPERTY()
+	UDataTable* MonsterSoundTable;
 
 	UPROPERTY()
 	TObjectPtr<UAudioComponent> BgmComp;
@@ -26,3 +45,37 @@ public:
 
 	const UAudioDataSettings* AudioDataSettings;
 };
+
+// PlaySFX(ESfxSoundType::Monster, static_cast<uint8>(EMonsterSoundType::Attack), FVector(10.f, 0.f, 0.f)); 이런식으로 사용
+template<typename EnumType, typename StructType>
+inline void UAudioSubsystem::PlaySFXByType(UObject* WorldContext, UDataTable* Table, uint8 DetailSoundType, FVector Location)
+{
+	UEnum* EnumPtr = StaticEnum<EnumType>();
+
+	if (Table && EnumPtr)
+	{
+		FName RowName = FName(*EnumPtr->GetNameStringByValue(static_cast<int64>(DetailSoundType)));
+		const StructType* FoundRow = Table->FindRow<StructType>(RowName, TEXT("PlaySFXByType"));
+
+		if (FoundRow && !FoundRow->Sound.IsNull())
+		{
+			USoundBase* Sound = FoundRow->Sound.LoadSynchronous();
+
+			if (Sound && WorldContext)
+			{
+				if (Location.IsZero())
+				{
+					// UI 사운드 같은 경우
+					UGameplayStatics::PlaySound2D(WorldContext, Sound, MasterVolume);
+					UE_LOG(LogTemp, Warning, TEXT("Play 2D Sound"));
+				}
+				else
+				{
+					// 위치 기반 사운드
+					UGameplayStatics::PlaySoundAtLocation(WorldContext, Sound, Location, MasterVolume);
+					UE_LOG(LogTemp, Warning, TEXT("Play 3D Sound"));
+				}
+			}
+		}
+	}
+}

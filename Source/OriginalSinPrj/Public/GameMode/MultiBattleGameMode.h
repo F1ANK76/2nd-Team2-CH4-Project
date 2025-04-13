@@ -6,6 +6,9 @@
 #include "GameFramework/GameMode.h"
 #include "MultiBattleGameMode.generated.h"
 
+class ALevelObjectManager;
+class ASpawnManager;
+
 UCLASS()
 class ORIGINALSINPRJ_API AMultiBattleGameMode : public AGameMode, public IBattleEvent, public IMatchManage
 {
@@ -15,8 +18,10 @@ public:
 	AMultiBattleGameMode();
 
 	virtual void BeginPlay() override;
-	virtual bool ReadyToStartMatch_Implementation() override;
 
+	void StartDelay();
+	void StartToSpawnActor();
+	void SpawnPlayer();
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;
@@ -42,11 +47,32 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void DrawMatch() override;
 
-	/*테스트용*/
-	UFUNCTION(BlueprintCallable)
-	void CreateTestPlatform(FVector SpawnLocation, FRotator SpawnRotator);
+	void InitializeTempObjects();
+	void SpawnAndDestroyObject();
 
+	/*테스트용*/
+	/*UFUNCTION(BlueprintCallable)
+	void CreateTestPlatform(FVector SpawnLocation, FRotator SpawnRotator);*/
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Platform")
+	TArray<AActor*> ActorArray;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ObjectManager")
+	TSubclassOf<ALevelObjectManager> LevelObjectManagerClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpawnManager")
+	TSubclassOf<ASpawnManager> SpawnManagerClass;
 private:
-	UPROPERTY(EditAnywhere, Category = "TestPlatform")
-	TSubclassOf<AActor> TestPlatform;
+
+	UPROPERTY()
+	ALevelObjectManager* LevelObjectManager;
+
+	UPROPERTY()
+	ASpawnManager* SpawnManager;
+
+	FTimerHandle ActorRevealTimer;
+	int32 CurrentActorArrayIndex;
+
 };

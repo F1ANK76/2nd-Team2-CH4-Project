@@ -6,7 +6,7 @@
 #include "../BaseWidget.h"
 #include "CooperationWidget.generated.h"
 
-struct FPlayerUIData; //임시 선언// 나중에 Data구조로 따로 빼야됨.
+struct FPlayerData; //임시 선언// 나중에 Data구조로 따로 빼야됨.
 
 USTRUCT(BlueprintType)
 struct FBossUIData  //임시 선언// 나중에 Data구조로 따로 빼야됨.
@@ -42,10 +42,10 @@ private:
 	class UPlayerStateWidget* Player2StateUI;
 
 public:
-	void InitPlayerUI(FPlayerUIData* Player1, FPlayerUIData* Player2);
-	void UpdatePlayerUI(FPlayerUIData* Player1, FPlayerUIData* Player2);
-	FPlayerUIData* Player1Data;
-	FPlayerUIData* Player2Data;
+	void InitPlayerUI(FPlayerData* Player1, FPlayerData* Player2);
+	void UpdatePlayerUI(FPlayerData* Player1, FPlayerData* Player2);
+	FPlayerData* Player1Data;
+	FPlayerData* Player2Data;
 
 
 	//stage2
@@ -64,13 +64,13 @@ private:
 	class UPlayerStateWidget* Enemy4StateUI;
 
 public:
-	void InitEnemyUI(FPlayerUIData* Enemy1, FPlayerUIData* Enemy2, FPlayerUIData* Enemy3, FPlayerUIData* Enemy4);
-	void UpdateEnemyUI(FPlayerUIData* Enemy1, FPlayerUIData* Enemy2, FPlayerUIData* Enemy3, FPlayerUIData* Enemy4);
+	void InitEnemyUI(FPlayerData* Enemy1, FPlayerData* Enemy2, FPlayerData* Enemy3, FPlayerData* Enemy4);
+	void UpdateEnemyUI(FPlayerData* Enemy1, FPlayerData* Enemy2, FPlayerData* Enemy3, FPlayerData* Enemy4);
 
-	FPlayerUIData* Enemy1Data;
-	FPlayerUIData* Enemy2Data;
-	FPlayerUIData* Enemy3Data;
-	FPlayerUIData* Enemy4Data;
+	FPlayerData* Enemy1Data;
+	FPlayerData* Enemy2Data;
+	FPlayerData* Enemy3Data;
+	FPlayerData* Enemy4Data;
 
 private:
 	UPROPERTY(meta = (BindWidget))
@@ -104,7 +104,16 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* BossModeTimer;
-
+	//타이머 나중에 게임모드에서 받아오고 UI는 표시만 하는거로 바꿔야됨
+	//타이머 나중에 게임모드에서 받아오고 UI는 표시만 하는거로 바꿔야됨
+	//타이머 나중에 게임모드에서 받아오고 UI는 표시만 하는거로 바꿔야됨
+	//타이머 나중에 게임모드에서 받아오고 UI는 표시만 하는거로 바꿔야됨
+	//타이머 나중에 게임모드에서 받아오고 UI는 표시만 하는거로 바꿔야됨
+	//타이머 나중에 게임모드에서 받아오고 UI는 표시만 하는거로 바꿔야됨
+	//타이머 나중에 게임모드에서 받아오고 UI는 표시만 하는거로 바꿔야됨
+	//타이머 나중에 게임모드에서 받아오고 UI는 표시만 하는거로 바꿔야됨
+	//타이머 나중에 게임모드에서 받아오고 UI는 표시만 하는거로 바꿔야됨
+	//타이머 나중에 게임모드에서 받아오고 UI는 표시만 하는거로 바꿔야됨
 	UFUNCTION()
 	void StartStageTimer();
 

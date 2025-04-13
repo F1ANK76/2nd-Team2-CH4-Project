@@ -6,6 +6,7 @@
 #include "Player/Struct/AbilityDataBuffer.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+
 void AGuardAbility::InitAbility()
 {
 	Super::InitAbility();

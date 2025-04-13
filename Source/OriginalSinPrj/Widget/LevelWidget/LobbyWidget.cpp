@@ -13,21 +13,18 @@ void ULobbyWidget::NativeConstruct()
 
     if (MapSelectButton)
     {
-        MapSelectButton->OnClicked.RemoveDynamic(this, &ULobbyWidget::OnClickMapSelect);
         MapSelectButton->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickMapSelect);
     }
         
 
     if (CharacterSelectButton)
     {
-        CharacterSelectButton->OnClicked.RemoveDynamic(this, &ULobbyWidget::OnClickCharacterSelect);
         CharacterSelectButton->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickCharacterSelect);
     }
         
 
     if (GameSettingButton)
     {
-        GameSettingButton->OnClicked.RemoveDynamic(this, &ULobbyWidget::OnClickGameSetting);
         GameSettingButton->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickGameSetting);
     }
         

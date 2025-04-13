@@ -25,6 +25,7 @@ enum class EWitchStateType : uint8
 	Guard,
 	Roll,
 	Taunt,
+	Attack,
 	NormalAttack,
 	SpecialAttack,
 	SkillAttack
@@ -56,6 +57,34 @@ enum class EAbilityType : uint8
 };
 
 UENUM(BlueprintType)
+enum class EAttackType : uint8
+{
+	Melle = 0,
+	Spawn,
+	Skill
+};
+
+UENUM(BlueprintType)
+enum class EPivotType : uint8
+{
+	Body = 0,
+	Head,
+	Foot
+};
+
+UENUM(BlueprintType)
+enum class EProjectileType : uint8
+{
+	Normal = 0,
+	VisibleWaitOnly,
+	MoveWaitOnly,
+	OverlapWaitOnly,
+	VisibleAndMoveWait,
+	VisibleAndOverlapWait,
+	MoveAndOverlapWait
+};
+
+UENUM(BlueprintType)
 enum class EDirectionType : uint8
 {
 	None = 0,
@@ -63,6 +92,14 @@ enum class EDirectionType : uint8
 	Right,
 	Up,
 	Down
+};
+
+UENUM(BlueprintType)
+enum class EEffectVisibleType : uint8
+{
+	Left = 0,
+	Right,
+	Both
 };
 
 UCLASS()

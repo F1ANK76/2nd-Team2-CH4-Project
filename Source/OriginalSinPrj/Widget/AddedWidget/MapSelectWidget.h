@@ -16,7 +16,6 @@ class ORIGINALSINPRJ_API UMapSelectWidget : public UBaseWidget
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual void InitWidget(UUISubsystem* NewUIHandle) override;
 
 public:
 	UFUNCTION()
@@ -24,4 +23,6 @@ public:
 	
 	//Open UI animation
 	//close UI animation
+
+private:
 };
