@@ -88,6 +88,14 @@ void ARushBossClone::MulticastSetActive_Implementation(bool bIsActive)
 	SetActorHiddenInGame(!bIsActive);
 }
 
+void ARushBossClone::MulticastPlayCloneAttackMontage()
+{
+	if (CloneAttackMontage && GetNetMode() != NM_DedicatedServer)
+	{
+		PlayAnimMontage(CloneAttackMontage);
+	}
+}
+
 void ARushBossClone::InitializeClone(const FVector& InTargetLocation)
 {
 	if (!HasAuthority()) return;
@@ -155,5 +163,13 @@ void ARushBossClone::SetFacingDirection()
 	{
 		FRotator LookAtRotation = TargetDirection.Rotation();
 		SetActorRotation(FRotator(0, LookAtRotation.Yaw, 0));
+	}
+}
+
+void ARushBossClone::PlayCloneAttackMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayCloneAttackMontage();
 	}
 }

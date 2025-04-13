@@ -30,7 +30,7 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
-
+	
 	template <typename T>
 	T* SpawnPooledActor(TSubclassOf<AActor> ClassToSpawn, const FVector& Location, const FRotator& Rotation);
 	void ReturnActorToPool(AActor* Actor);
@@ -46,7 +46,4 @@ protected:
 
 	UPROPERTY()
 	TMap<TSubclassOf<AActor>, FActorPoolList> ObjectPools;
-	//GC 방지
-	UPROPERTY()
-	TArray<TObjectPtr<AActor>> AllPooledActors;
 };
