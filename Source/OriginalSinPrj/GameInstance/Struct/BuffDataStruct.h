@@ -16,5 +16,8 @@ public:
     EBuffType BuffType;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UTexture2D* BuffTexture;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString Description;
 };
