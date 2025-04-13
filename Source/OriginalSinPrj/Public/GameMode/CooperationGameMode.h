@@ -65,10 +65,10 @@ public:
     void EndStage3(); //Stage3 종료 트리거
     
     //스테이지 시작마다 플레이어 위치 정해진 곳에 조정하기
-    void SetPlayerLocation(int CurrentStageIndex);
+    void SetPlayerLocation();
 
     //각 Stage 종료 후 매끄럽게 장면을 전환하기 위한 함수 필요
-    void MoveNextStage(int CurrentStageIndex);
+    void MoveNextStage();
 
     void RequestTurnOnBuffSelectUI();
 
@@ -76,6 +76,9 @@ public:
 
     UFUNCTION(BlueprintCallable)
     void HandleMonsterKilled(AController* Killer); //몬스터가 죽으면 이걸 호출
+    
+    UFUNCTION(BlueprintCallable)
+    void HandleEnemyKilled(AController* Killer); //몬스터가 죽으면 이걸 호출
 
     UPROPERTY(EditDefaultsOnly, Category = "Spawn")
     TSubclassOf<ABaseWitch> DefaultCharacterClass;
@@ -100,6 +103,7 @@ public:
     TArray<FVector> PlayerSettingLocations;
 
     void CheckUntilAllPlayerSelectBuff(); // 모든 플레이어가 버프를 선택했는지 보고 대기하는 함수.
+
 
     // 캐릭터 생성 함수
     void SpawnPlayers();

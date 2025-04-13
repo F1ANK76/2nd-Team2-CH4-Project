@@ -33,7 +33,7 @@ class ORIGINALSINPRJ_API UBuffSelectWidget : public UBaseWidget
 	// 버프 선택 버튼
 
 public:
-    // 외부에서 버프 3개 설정
+    // 외부에서 버프 3개 설정 //자료형 바꿔야할듯
     void InitializeBuffs(const TArray<FBuffInfo>& InBuffs);
 
 protected:
