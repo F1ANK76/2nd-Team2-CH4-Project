@@ -88,7 +88,6 @@ T* UBossObjectPoolWorldSubsystem::SpawnPooledActor(TSubclassOf<AActor> ClassToSp
 		NewActor->SetReplicates(true);
 		NewActor->SetReplicateMovement(true);
 		PoolList->PooledActors.Add(NewActor);
-		AllPooledActors.Add(NewActor);
 
 		if (NewActor->Implements<UBossPoolableActorInterface>())
 		{
