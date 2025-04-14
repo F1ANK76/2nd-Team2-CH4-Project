@@ -11,7 +11,7 @@
 #include "GameFramework/GameState.h"
 #include "FarmingGameState.generated.h"
 
-
+class AFarmingGameMode;
 
 UCLASS()
 class ORIGINALSINPRJ_API AFarmingGameState : public AGameState, public IBattleEvent, public IMatchManage
@@ -24,6 +24,7 @@ public:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaSeconds) override;
 
+    AFarmingGameMode* FarmingGameMode;
 
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -46,6 +47,7 @@ public:
     void AddExperienceToPlayer(APlayerController* Player, int32 Amount);
 
     void StartFarmingMode();
+
 
     void EndFarmingMode(); // 0초 됐을 때 처리할 함수
 private:

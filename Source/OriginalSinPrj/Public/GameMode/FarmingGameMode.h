@@ -26,15 +26,23 @@ public:
     //Added GameMode Function
     //Control Game Function
 public:
-    UFUNCTION(BlueprintCallable)
-    void StartGame(); // 파밍모드 시작
 
+    void MoveLevel(const FName& LevelName);
+
+    UFUNCTION(BlueprintCallable)
+    void StartSingleGame();
+
+    UFUNCTION(BlueprintCallable)
+    void StartMultiGame();
+
+    void EndSingleGame(); 
+    
+    void EndMultiGame();
     void EndGame(); // 타이머 = 0 이면 호출
 
     UFUNCTION(BlueprintCallable)
-    void HandleMonsterKilled(AController* Killer); //몬스터가 죽으면 이걸 호출
-    
-    void HandleFarmingModeEnded(); // 파밍 모드 끝내고 다음 레벨로 넘어간다던가....
+    void HandleMonsterKilled(AActor* DeadMonster, AController* Killer); //몬스터가 죽으면 이걸 호출
+
 
 
     UPROPERTY(EditDefaultsOnly, Category = "Spawn")
@@ -77,7 +85,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> MonsterSpawnLocations;
 
-    TMap<FVector, AActor*> ActiveMonsters;
+    TArray<AActor*> ActiveMonsters;
 
 
 protected:
@@ -95,7 +103,7 @@ protected:
 
     void InitPlayerUI();
 
-    //싱글 전용
+    //Test
     void PostLogin(APlayerController* NewPlayer); // 처음 플레이어가 로그인 하면... 테스트용...
 
     //멀티 전용

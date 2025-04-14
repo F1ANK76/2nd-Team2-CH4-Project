@@ -18,6 +18,10 @@ ACooperationGameMode::ACooperationGameMode()
     bIsStage1Cleared = false;
     bIsStage2Cleared = false;
     bIsStage3Cleared = false;
+    Stage1ClearTrigger1 = false;
+    Stage1ClearTrigger2 = false;
+    StageIndex = 0;
+
 }
 
 void ACooperationGameMode::StartPlay()
@@ -30,81 +34,148 @@ void ACooperationGameMode::BeginPlay()
 {
     Super::BeginPlay();
     UE_LOG(LogTemp, Warning, TEXT("GameMode beginPlay"));
+
+    //Get GameState
     CooperationGameState = GetGameState<ACooperationGameState>();
 
-    StageIndex = 1;
+    //Initial Stage index is 0;
+    StageIndex = 0;
 
+    //Open Player UI;
     InitPlayerUI();
+
+    //Game Start Condition -> Start with a timer temporarily
     FTimerHandle TimerHandle;
     GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
         {
             StartGame();
         }), 5.0f, false);
+
+
 }
 
 
-//플레이어 컨트롤러 -> 인스턴스에 담아두고, 필요할 때 생성. UISubSystem이 호출해서 위젯 만들고 -> UPdate 함수 호출은 게임모드
+void ACooperationGameMode::SetPlayerColorIndex()
+{
+    Player1ColorIndex = 0; // 혹은 ColorIndex::Red ... ColorIndex::White....
+    Player2ColorIndex = 1;
+}
+
+int ACooperationGameMode::GetPlayerColorIndex(ACharacter* PlayerChar)
+{
+    if (!IsValid(PlayerChar)) return -1;
+    AWitchController* CharacterController = Cast<AWitchController>(PlayerChar->GetController());
+    PlayerChar->DisableInput(CharacterController);
+
+    if (PlayerChar == SpawnedCharacters[0])
+    {
+        return Player1ColorIndex;
+    }
+    else if (PlayerChar == SpawnedCharacters[1])
+    {
+        return Player2ColorIndex;
+    }
+
+    //그 무엇도 아닌데, 캐릭터가 존재한다고 판정된 경우 -1 반환.
+    return -1;
+}
+
+int ACooperationGameMode::GetPlayerColorIndex(AController* PlayController)
+{
+    if (!IsValid(PlayController)) return -1;
+
+    for (int i = 0; i < SpawnedCharacters.Num(); i++)
+    {
+        AWitchController* CharacterController = Cast<AWitchController>(SpawnedCharacters[i]->GetController());
+        if (CharacterController == PlayController)
+        {
+            return i;
+        }
+    }
+    //그 무엇도 아닌데, 캐릭터가 존재한다고 판정된 경우 -1 반환.
+    return -1;
+}
 
 
 void ACooperationGameMode::StartGame()
 {
-    //로딩되고 스테이지를 본격적으로 시작하기 전 처리할 함수...
-    //게임 준비, 시작 UI를 띄우고...
+
+    //Functions to be processed before loading and starting the stage
+    //Prepare the game, display the start UI...
 
     if (IsValid(CooperationGameState))
     {
-
+        UE_LOG(LogTemp, Warning, TEXT("GameState is valid"));
+        CooperationGameState->SetActorTickEnabled(true);
     }
 
+    //Player Index Assignment
+    SetPlayerColorIndex();
 
-    //타이머 작동 시키고...
-    if (IsValid(CooperationGameState))
-    {
+    //Set Stage index -> 1
+    StageIndex = 1;
 
-    }
-
-
-
-
+    //Move Stage -> Prepare Stage 1 
     MoveNextStage();
 }
 
+
 void ACooperationGameMode::EndGame()
 {
-    
+    UE_LOG(LogTemp, Warning, TEXT("Game End "));
+
+    //일단 플레이어 입력을 멈추기.
+    SetPlayerUnReady(SpawnedCharacters[0]);
+    SetPlayerUnReady(SpawnedCharacters[1]);
+
+
+    SpawnedCharacters[0]->SetActorLocation(PlayerResultLocations[0]);
+    SpawnedCharacters[1]->SetActorLocation(PlayerResultLocations[1]);
 
     //result Page Open
+    RequestOpenResultUI();
+
+
+}
+
+void ACooperationGameMode::RequestOpenResultUI()
+{
+    //CooperationGameState->RequestPlayerToOpenResultUI();
 }
 
 //Stage1 준비 트리거
 void ACooperationGameMode::ReadyStage1()
 {
+    //Prepare Stage 1
+
+    UE_LOG(LogTemp, Warning, TEXT("Ready Stage1"));
+
+    //Turn off Player Input
+
     SetPlayerUnReady(SpawnedCharacters[0]);
     SetPlayerUnReady(SpawnedCharacters[1]);
-    //몬스터 소환하면서,
+
+    //Spawn Monster
     SpawnMonsters();
+
+    //Set to player position for stage 1
     SetPlayerLocation();
-    //게임모드 
-    //몬스터 못움직이게 잠시 세팅값 조정.
 
-    // 캐릭터도 못움직이게 동결 시켜놓고.
 
-    //CooperationUI Stage1로 바꾸기
+    //CooperationUI Turn on Stage1 UI
     //->ActiveStage1Widget();
 
-    //Game Start UI Open까지 대기
-    //Game Start UI 끝나면
+    //Game Start UI Open
+    //When Game Start UI ...
 
-
-
-    //여긴 바로 시작... 버프 선택 없음!
-    //몬스터, 캐릭터 움직임 동결되어있는 것 풀면서 시작.
+    //Start Stage1
     StartStage1();
 }
 
 //Stage2 준비 트리거
 void ACooperationGameMode::ReadyStage2()
 {
+    UE_LOG(LogTemp, Warning, TEXT("Ready Stage2"));
     SetPlayerUnReady(SpawnedCharacters[0]);
     SetPlayerUnReady(SpawnedCharacters[1]);
 
@@ -124,18 +195,29 @@ void ACooperationGameMode::ReadyStage2()
     //몬스터, 캐릭터 움직임 동결되어있는 것 풀기.
 
 
+
+
+    //Test Code
+    //Delay for Test
+
+    FTimerHandle DelayHandle;
+    GetWorldTimerManager().SetTimer(DelayHandle, this, &ACooperationGameMode::CheckUntilAllPlayerSelectBuff, 5.0f, false);
+
+    
     // 버프 완료 되었는지 확인하기
-    CheckUntilAllPlayerSelectBuff();
+    //CheckUntilAllPlayerSelectBuff();
 
 }
 
 //Stage3 준비 트리거
 void ACooperationGameMode::ReadyStage3()
 {
+    UE_LOG(LogTemp, Warning, TEXT("Ready Stage3"));
     SetPlayerUnReady(SpawnedCharacters[0]);
     SetPlayerUnReady(SpawnedCharacters[1]);
 
     SetPlayerLocation();
+    SpawnBossMonsters();
 
     //보스 못 움직이게 잠시 세팅값 조정.
 
@@ -147,44 +229,64 @@ void ACooperationGameMode::ReadyStage3()
     // 
     //CooperationUI Stage3로 바꾸기
     //->ActiveStage3Widget();
+    
+    
+    //Test Code
+    //임시 딜레이 기능
+
+    FTimerHandle DelayHandle;
+    GetWorldTimerManager().SetTimer(DelayHandle, this, &ACooperationGameMode::CheckUntilAllPlayerSelectBuff, 5.0f, false);
 
 
-
-    CheckUntilAllPlayerSelectBuff();
+    // 버프 완료 되었는지 확인하기
+    //CheckUntilAllPlayerSelectBuff();
 }
 
 //Stage1 시작 트리거
 void ACooperationGameMode::StartStage1()
 {
+    UE_LOG(LogTemp, Warning, TEXT("Start Stage1"));
+
+    //Turn On Player Input
     SetPlayerReady(SpawnedCharacters[0]);
     SetPlayerReady(SpawnedCharacters[1]);
 
-    //몬스터 움직임 동결도 해제
+    //Monster Movement...
 }
+
 //Stage2 시작 트리거
 void ACooperationGameMode::StartStage2()
 {
+    UE_LOG(LogTemp, Warning, TEXT("Start Stage2"));
+
+    //Turn On Player Input
     SetPlayerReady(SpawnedCharacters[0]);
     SetPlayerReady(SpawnedCharacters[1]);
 
-    //적 AI 움직임 동결도 해제
+    //Enemy Movement...
 }
+
 //Stage3 시작 트리거
 void ACooperationGameMode::StartStage3()
 {
+    UE_LOG(LogTemp, Warning, TEXT("Start Stage3"));
+
+    //Turn On Player Input
     SetPlayerReady(SpawnedCharacters[0]);
     SetPlayerReady(SpawnedCharacters[1]);
     
-    //보스 몬스터 활동 개시
+    //Turn on BossMonster Behaviour Function
 
     if (IsValid(CooperationGameState))
     {
         //CooperationGameState->TurnOnTimer();
     }
 }
+
 //Stage1 종료 트리거
 void ACooperationGameMode::EndStage1()
 {
+    UE_LOG(LogTemp, Warning, TEXT("End Stage1"));
     StageIndex++;
     RequestTurnOnBuffSelectUI();
 
@@ -195,6 +297,7 @@ void ACooperationGameMode::EndStage1()
 //Stage2 종료 트리거
 void ACooperationGameMode::EndStage2()
 {
+    UE_LOG(LogTemp, Warning, TEXT("End Stage2"));
     StageIndex++;
     RequestTurnOnBuffSelectUI();
 
@@ -204,7 +307,7 @@ void ACooperationGameMode::EndStage2()
 //Stage3 종료 트리거
 void ACooperationGameMode::EndStage3()
 {
-
+    UE_LOG(LogTemp, Warning, TEXT("End Stage3"));
 
     EndGame();
 }
@@ -258,15 +361,15 @@ void ACooperationGameMode::MoveNextStage()
 }//각 Stage 종료 후 매끄럽게 장면을 전환하기 위한 함수 필요
 
 
-
-
 void ACooperationGameMode::RequestTurnOnBuffSelectUI()
 {
+    /*
     //게임 스테이트 보고 좀 열어달라고 요청하기
     if (IsValid(CooperationGameState))
     {
         CooperationGameState->RequestPlayerToOpenBuffUI();
     }
+    */
 }
     
 void ACooperationGameMode::ApplyBuffToBothPlayer()
@@ -280,8 +383,27 @@ void ACooperationGameMode::ApplyBuffToBothPlayer()
 
 void ACooperationGameMode::CheckUntilAllPlayerSelectBuff()
 {
+    UE_LOG(LogTemp, Warning, TEXT("Check All Player Selects Buff"));
+
     if (!IsValid(CooperationGameState)) return;
 
+
+    //testCode
+    switch (StageIndex)
+    {
+    case 2:
+        ApplyBuffToBothPlayer();
+        StartStage2();
+        break;
+    case 3:
+        ApplyBuffToBothPlayer();
+        StartStage3();
+        break;
+    }
+
+    //testCode
+
+    /* //테스트중... 주석 해제 해야됨
     if (CooperationGameState->bPlayer1SelectedBuff && CooperationGameState->bPlayer2SelectedBuff)
     {
         UE_LOG(LogTemp, Log, TEXT("All Player has Selected Buffs! Move Next Stage."));
@@ -301,31 +423,40 @@ void ACooperationGameMode::CheckUntilAllPlayerSelectBuff()
     {
         GetWorldTimerManager().SetTimerForNextTick(this, &ACooperationGameMode::CheckUntilAllPlayerSelectBuff);
     }
+    */
 }
 
 
+/*
+UFUNCTION(Client, Reliable)
+void Client_DisableInput();
+
+void AWitchController::Client_DisableInput_Implementation()
+{
+    DisableInput(this); // this는 Local PlayerController
+}
+*/
+
+/*
+AWitchController* CharacterController = Cast<AWitchController>(PlayerChar->GetController());
+if (CharacterController)
+{
+    CharacterController->Client_DisableInput(); // 클라이언트에서 입력 비활성
+}
+*/
 
 void ACooperationGameMode::SetPlayerUnReady(ACharacter* PlayerChar)
 {
     if (!PlayerChar) return;
-
-    APlayerController* PC = Cast<APlayerController>(PlayerChar->GetController());
-    if (AWitchController* MyPC = Cast<AWitchController>(PC))
-    {
-        //MyPC->bCanControl = false;
-    }
+    AWitchController* CharacterController = Cast<AWitchController>(PlayerChar->GetController());
+    //CharacterController->Client_DisableInput(); // 클라이언트에서 입력 비활성
 }
 
 void ACooperationGameMode::SetPlayerReady(ACharacter* PlayerChar)
 {
     if (!PlayerChar) return;
-
-    APlayerController* PC = Cast<APlayerController>(PlayerChar->GetController());
-    if (AWitchController* MyPC = Cast<AWitchController>(PC))
-    {
-        //MyPC->bCanControl = true;
-        //GetPawn()->DisableInput(this); 이라는 기능이 있다고 합니다....
-    }
+    AWitchController* CharacterController = Cast<AWitchController>(PlayerChar->GetController());
+    PlayerChar->EnableInput(CharacterController);
 }
 
 
@@ -333,6 +464,30 @@ void ACooperationGameMode::SetPlayerReady(ACharacter* PlayerChar)
 
 
 void ACooperationGameMode::SpawnEnemies()
+{
+    UWorld* World = GetWorld();
+    if (!World || !EnemyBlueprintClass || EnemySpawnLocations.Num() == 0) return;
+
+    for (const FVector& SpawnLocation : EnemySpawnLocations)
+    {
+        FRotator SpawnRotation = FRotator::ZeroRotator;
+
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+        AActor* SpawnedEnemy = World->SpawnActor<AActor>(EnemyBlueprintClass, SpawnLocation, SpawnRotation, SpawnParams);
+        if (SpawnedEnemy)
+        {
+            ActiveEnemies.Add(SpawnedEnemy);
+            CurrentEnemyCount++;
+        }
+    }
+}
+
+
+
+//초기 N마리 소환
+void ACooperationGameMode::SpawnMonsters()
 {
     UWorld* World = GetWorld();
     if (!World || !MonsterBlueprintClass || MonsterSpawnLocations.Num() == 0) return;
@@ -347,51 +502,105 @@ void ACooperationGameMode::SpawnEnemies()
         AActor* SpawnedMonster = World->SpawnActor<AActor>(MonsterBlueprintClass, SpawnLocation, SpawnRotation, SpawnParams);
         if (SpawnedMonster)
         {
-            ActiveMonsters.Add(SpawnLocation, SpawnedMonster);
+            ActiveMonsters.Add(SpawnedMonster);
             CurrentMonsterCount++;
         }
     }
 }
 
-
-
 //초기 N마리 소환
-void ACooperationGameMode::SpawnMonsters()
+void ACooperationGameMode::SpawnBossMonsters()
 {
     UWorld* World = GetWorld();
-    if (!World || !EnemyBlueprintClass || EnemySpawnLocations.Num() == 0) return;
+    if (!World || !BossBlueprintClass || BossSpawnLocations.Num() == 0) return;
 
-    for (const FVector& SpawnLocation : MonsterSpawnLocations)
+    for (const FVector& SpawnLocation : BossSpawnLocations)
     {
         FRotator SpawnRotation = FRotator::ZeroRotator;
 
         FActorSpawnParameters SpawnParams;
         SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-        AActor* SpawnedMonster = World->SpawnActor<AActor>(EnemyBlueprintClass, SpawnLocation, SpawnRotation, SpawnParams);
-        if (SpawnedMonster)
-        {
-            ActiveEnemies.Add(SpawnLocation, SpawnedMonster);
-            CurrentEnemyCount++;
-        }
+        AActor* SpawnedMonster = World->SpawnActor<AActor>(BossBlueprintClass, SpawnLocation, SpawnRotation, SpawnParams);
     }
 }
 
-//몬스터가 죽을 때 누구한테 죽었는지 정보를 넘기며 게임모드에 알려주면 호출되는 함수.
-void ACooperationGameMode::HandleMonsterKilled(AController* Killer)
+void ACooperationGameMode::HandlePlayerKilled(AActor* DeadPlayer, AController* Killer)
 {
-    
+    CurrentPlayerCount--;
+
+    ActivePlayers.Remove(DeadPlayer); // 알아서 내부에서 찾고 제거함
+
+    //test Code
+    if (CurrentPlayerCount <= 0)
+    {
+        //게임을 실패한거로 종료.
+    }
+
 }
 
+
+
+
+//몬스터가 죽을 때 누구한테 죽었는지 정보를 넘기며 게임모드에 알려주면 호출되는 함수.
+void ACooperationGameMode::HandleMonsterKilled(AActor* DeadMonster, AController* Killer)
+{
+    CurrentMonsterCount--;
+
+    ActiveMonsters.Remove(DeadMonster); // 알아서 내부에서 찾고 제거함
+
+    if (CurrentMonsterCount <= 0)
+    {
+        EndStage1();
+    }
+}
+
+
+//클리어 트리거를 가지고 있는 오브젝트의 트리거가 눌리면
+void ACooperationGameMode::TriggerStage1Clear(UObject* Object)
+{
+    if (Object == Stage1ClearTriggerObject[0])
+    {
+        Stage1ClearTrigger1 = true;
+    }
+    else if(Object == Stage1ClearTriggerObject[1])
+    {
+        Stage1ClearTrigger2 = true;
+    }
+
+    if (Stage1ClearTrigger1 && Stage1ClearTrigger2)
+    {
+        EndStage1();
+    }
+}
+
+
+
+
+
+
+
+
+
 //적 AI가 죽을 때 누구한테 죽었는지 정보를 넘기며 게임모드에 알려주면 호출되는 함수.
-void ACooperationGameMode::HandleEnemyKilled(AController* Killer)
+void ACooperationGameMode::HandleEnemyKilled(AActor* DeadMonster, AController* Killer)
 {
     //조건은 제대로 지정해야할듯
     CurrentEnemyCount--;
+    // 죽은 몬스터를 ActiveMonsters 목록에서 제거
+    ActiveEnemies.Remove(DeadMonster); // 알아서 내부에서 찾고 제거함
+    
+
     if (CurrentEnemyCount <= 0)
     {
         EndStage2();
     }
+}
+
+//몬스터가 죽을 때 누구한테 죽었는지 정보를 넘기며 게임모드에 알려주면 호출되는 함수.
+void ACooperationGameMode::HandleBossMonsterKilled(AController* Killer)
+{
+    EndStage3();
 }
 
 
@@ -491,6 +700,8 @@ void ACooperationGameMode::SpawnPlayers()
             if (SpawnedCharacter)
             {
                 SpawnedCharacters.Add(SpawnedCharacter);
+                ActivePlayers.Add(SpawnedCharacter);
+                CurrentPlayerCount++;
                 UE_LOG(LogTemp, Warning, TEXT("Spawned Pawn: %s"), *GetNameSafe(SpawnedCharacter));
             }
         }
@@ -523,8 +734,40 @@ void ACooperationGameMode::InitPlayerUI()
         APlayerController* PlayerController = Cast<APlayerController>(*It);
         if (PlayerController)
         {
-            // 컨트롤러에서 게임인스터스에다가 UI 띄우는 함수 호출하라고 명령
+            // 컨트롤러에서 UIHandle이나 UISubsystem이 UI 띄우는 함수 호출하라고 명령
             //PlayerController->ShowUI(EAddWidgetType::CooperationWidget);
         }
     }
+}
+
+
+
+void ACooperationGameMode::BossSetPlayerLocation(ACharacter* PlayerChar)
+{
+    if (IsValid(PlayerChar))
+    {
+        // 플레이어의 정보를 비교 할까 말까...
+        PlayerHijackedLocation = PlayerChar->GetActorLocation();
+
+        PlayerChar->SetActorLocation(BossHijackingLocation[0]);
+    }
+}
+
+
+void ACooperationGameMode::BossReturnPlayerLocation(ACharacter* PlayerChar)
+{
+    if (IsValid(PlayerChar))
+    {
+        // 플레이어의 정보를 비교 할까 말까...
+
+        //이전 위치 저장해서 되돌리기
+        PlayerChar->SetActorLocation(PlayerHijackedLocation);
+    }
+}
+
+
+//납치하면 상대할 보스를 소환해놓기?
+void ACooperationGameMode::SpawnGhostBoss()
+{
+
 }

@@ -31,11 +31,23 @@ public:
 public:
     TObjectPtr<ACooperationGameState> CooperationGameState = nullptr;
 
+
+    UPROPERTY(BlueprintReadWrite)
     int32 StageIndex = 1;
 
-    bool bIsStage1Cleared;
-    bool bIsStage2Cleared;
-    bool bIsStage3Cleared;
+    int Player1ColorIndex = 0;
+    int Player2ColorIndex = 1;
+
+    void SetPlayerColorIndex();
+
+    UFUNCTION(BlueprintCallable)
+    int GetPlayerColorIndex(ACharacter* PlayerChar);
+
+    int GetPlayerColorIndex(AController* PlayController);
+
+    bool bIsStage1Cleared = false;
+    bool bIsStage2Cleared = false;
+    bool bIsStage3Cleared = false;
 
     UFUNCTION(BlueprintCallable)
     void ReadyStage1(); //Stage1 세팅 트리거
@@ -75,10 +87,14 @@ public:
     void ApplyBuffToBothPlayer();
 
     UFUNCTION(BlueprintCallable)
-    void HandleMonsterKilled(AController* Killer); //몬스터가 죽으면 이걸 호출
+    void HandleMonsterKilled(AActor* DeadMonster, AController* Killer); //몬스터가 죽으면 이걸 호출
     
     UFUNCTION(BlueprintCallable)
-    void HandleEnemyKilled(AController* Killer); //몬스터가 죽으면 이걸 호출
+    void HandleEnemyKilled(AActor* DeadMonster, AController* Killer); //몬스터가 죽으면 이걸 호출
+
+    UFUNCTION(BlueprintCallable)
+    void HandlePlayerKilled(AActor* DeadPlayer, AController* Killer); //플레이어가 죽으면 이걸 호출
+
 
     UPROPERTY(EditDefaultsOnly, Category = "Spawn")
     TSubclassOf<ABaseWitch> DefaultCharacterClass;
@@ -88,8 +104,13 @@ public:
 
 
     // 생성된 캐릭터를 관리할 배열
-    UPROPERTY()
+    UPROPERTY(BlueprintReadWrite)
     TArray<ABaseWitch*> SpawnedCharacters;
+
+    TArray<AActor*> ActivePlayers;
+
+    int CurrentPlayerCount = 0;
+
 
     // 게임모드 클래스에 선언
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Controller")
@@ -101,6 +122,12 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> PlayerSettingLocations;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+    TArray<FVector> PlayerResultLocations;
+
+    void RequestOpenResultUI();
+
 
     void CheckUntilAllPlayerSelectBuff(); // 모든 플레이어가 버프를 선택했는지 보고 대기하는 함수.
 
@@ -126,7 +153,8 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> MonsterSpawnLocations;
 
-    TMap<FVector, AActor*> ActiveMonsters;
+    TArray<AActor*> ActiveMonsters;
+
 
     void SpawnMonsters();
 
@@ -135,6 +163,15 @@ public:
 
     UPROPERTY(EditAnywhere, Category = "Spawning")
     TSubclassOf<AActor> MonsterBlueprintClass;
+
+    UPROPERTY(EditAnywhere, Category = "StageClearTrigger")
+    TArray<UObject*> Stage1ClearTriggerObject;
+
+    UFUNCTION(BlueprintCallable)
+    void TriggerStage1Clear(UObject* Object);
+
+    bool Stage1ClearTrigger1 = false;
+    bool Stage1ClearTrigger2 = false;
 
 
     // Stage2
@@ -147,7 +184,8 @@ public:
     UPROPERTY(EditAnywhere, Category = "Spawning")
     TSubclassOf<AActor> EnemyBlueprintClass;
 
-    TMap<FVector, AActor*> ActiveEnemies;
+    UPROPERTY(BlueprintReadWrite)
+    TArray<AActor*> ActiveEnemies;
 
     void SpawnEnemies();
 
@@ -158,8 +196,32 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> BossSpawnLocations;
 
+    UPROPERTY(EditAnywhere, Category = "Spawning")
+    TSubclassOf<AActor> BossBlueprintClass;
+
+    void SpawnBossMonsters();
 
 
+    //플레이어 강제이동(캐릭터, 로케이션)
+    UFUNCTION(BlueprintCallable)
+    void BossSetPlayerLocation(ACharacter* PlayerChar);
+
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ForceMove")
+    TArray<FVector> BossHijackingLocation;
+
+    FVector PlayerHijackedLocation = FVector::ZeroVector;
+
+    UFUNCTION(BlueprintCallable)
+    void BossReturnPlayerLocation(ACharacter* PlayerChar);
+    
+        
+        //또다른 보스 소환?
+    UFUNCTION(BlueprintCallable)
+    void SpawnGhostBoss();
+
+    UFUNCTION(BlueprintCallable)
+    void HandleBossMonsterKilled(AController* Killer);
 
 protected:
     void InitPlayerUI();

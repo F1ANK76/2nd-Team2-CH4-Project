@@ -9,13 +9,25 @@
 
 ACooperationGameState::ACooperationGameState()
 {
-    PrimaryActorTick.bCanEverTick = false;
+    PrimaryActorTick.bCanEverTick = true;
+    SetActorTickEnabled(false); // 일단 꺼두기
+
     bIsStage3Started = false;
     Timer = 0.0f;
     bReplicates = true;
 
     bPlayer1SelectedBuff = false;
     bPlayer2SelectedBuff = false;
+
+
+
+    CameraLocation = FVector::ZeroVector;
+
+
+    CameraRotation = FRotator::ZeroRotator;
+
+
+    CameraDistance = 0;
 
 }
 
@@ -33,6 +45,30 @@ void ACooperationGameState::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
 
+    if (IsValid(CooperationGameGameMode))
+    {
+        switch (CooperationGameGameMode->StageIndex)
+        {
+        case 1:
+
+            SetStage1CameraTransform();
+            break;
+
+        case 2:
+            SetStage2CameraTransform();
+            break;
+
+        case 3:
+            SetStage3CameraTransform();
+            break;
+
+        default:
+
+            break;
+        }
+    }
+    
+
     if (HasAuthority() && bIsStage3Started)
     {
         Timer += DeltaSeconds;
@@ -48,7 +84,10 @@ void ACooperationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     
     DOREPLIFETIME(ACooperationGameState, bPlayer1SelectedBuff);
     DOREPLIFETIME(ACooperationGameState, bPlayer2SelectedBuff);
-    
+    DOREPLIFETIME(ACooperationGameState, CameraLocation);
+    DOREPLIFETIME(ACooperationGameState, CameraRotation);
+    DOREPLIFETIME(ACooperationGameState, CameraDistance);
+
 }
 
 
@@ -89,6 +128,7 @@ void ACooperationGameState::InitPlayerUIInfo()
         }
     }
 }
+
 void ACooperationGameState::UpdatePlayerUIInfo()
 {
     for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
@@ -134,6 +174,23 @@ void ACooperationGameState::RequestPlayerToOpenBuffUI()
         }
     }
 }
+
+void ACooperationGameState::RequestPlayerToOpenResultUI()
+{
+    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+    {
+        APlayerController* PlayerController = Cast<APlayerController>(*It);
+        if (PlayerController)
+        {
+            //Player에게 Result UI 열라고 명령
+            //UI에 들어갈 결과는 게임모드에서 받아오던가, 여기에 있는 데이터로 표시...
+
+        }
+    }
+}
+
+
+
 
 void ACooperationGameState::ReceiveSelectedBuff(APlayerController* player, FBuffType* Bufftype)
 {
@@ -238,3 +295,148 @@ void ACooperationGameState::RegisterInitialController(APlayerController* PC)
         UE_LOG(LogTemp, Log, TEXT("Controller Registered: %s"), *PC->GetName());
     }
 }
+
+
+
+void ACooperationGameState::SetStage1CameraTransform()
+{
+    FVector SumPlayerLocation = FVector::ZeroVector;
+    float minY = 99999.f;
+    float minZ = 99999.f;
+
+    float maxY = -99999.f;
+    float maxZ = -99999.f;
+
+
+    for (AActor* Player : CooperationGameGameMode->ActivePlayers)
+    {
+        FVector PlayerLocation = Player->GetActorLocation();
+
+        SumPlayerLocation += PlayerLocation;
+        if (PlayerLocation.Y > maxY)
+        {
+            maxY = PlayerLocation.Y;
+        }
+        if (PlayerLocation.Y < minY)
+        {
+            minY = PlayerLocation.Y;
+        }
+
+        if (PlayerLocation.Z > maxZ)
+        {
+            maxZ = PlayerLocation.Z;
+        }
+        if (PlayerLocation.Z < minZ)
+        {
+            minZ = PlayerLocation.Z;
+        }
+    }
+
+    FVector MeanPlayerLocation = FVector::ZeroVector;
+    if (CooperationGameGameMode->ActivePlayers.Num() > 0)
+    {
+        MeanPlayerLocation = SumPlayerLocation / CooperationGameGameMode->ActivePlayers.Num();
+    }
+
+    if (HasAuthority()) // 서버인지 확인
+    {
+        CameraDistance = FMath::Max(maxY - minY, maxZ - minZ);
+
+        CameraLocation = MeanPlayerLocation;
+        CameraRotation = FRotator::ZeroRotator;
+    }
+    
+}
+
+void ACooperationGameState::SetStage2CameraTransform()
+{
+    FVector SumPlayerLocation = FVector::ZeroVector;
+    FVector SumEnemyLocation = FVector::ZeroVector;
+
+    float minY = 99999.f;
+    float minZ = 99999.f;
+
+    float maxY = -99999.f;
+    float maxZ = -99999.f;
+
+    for (AActor* Player : CooperationGameGameMode->ActivePlayers)
+    {
+        FVector PlayerLocation = Player->GetActorLocation();
+
+        SumPlayerLocation += PlayerLocation;
+        if (PlayerLocation.Y > maxY)
+        {
+            maxY = PlayerLocation.Y;
+        }
+        if (PlayerLocation.Y < minY)
+        {
+            minY = PlayerLocation.Y;
+        }
+
+        if (PlayerLocation.Z > maxZ)
+        {
+            maxZ = PlayerLocation.Z;
+        }
+        if (PlayerLocation.Z < minZ)
+        {
+            minZ = PlayerLocation.Z;
+        }
+    }
+
+    for (AActor* Enemy : CooperationGameGameMode->ActiveEnemies)
+    {
+        FVector EnemyLocation = Enemy->GetActorLocation();
+
+        SumEnemyLocation += EnemyLocation;
+
+        if (EnemyLocation.Y > maxY)
+        {
+            maxY = EnemyLocation.Y;
+        }
+        if (EnemyLocation.Y < minY)
+        {
+            minY = EnemyLocation.Y;
+        }
+
+        if (EnemyLocation.Z > maxZ)
+        {
+            maxZ = EnemyLocation.Z;
+        }
+        if (EnemyLocation.Z < minZ)
+        {
+            minZ = EnemyLocation.Z;
+        }
+
+    }
+
+    FVector MeanActorLocation = FVector::ZeroVector;
+
+    int32 NumOfActors = CooperationGameGameMode->ActivePlayers.Num() + CooperationGameGameMode->ActiveEnemies.Num();
+
+    if (CooperationGameGameMode->ActivePlayers.Num() + CooperationGameGameMode->ActiveEnemies.Num() > 0)
+    {
+        MeanActorLocation = (SumPlayerLocation + SumEnemyLocation) / NumOfActors;
+    }
+
+
+    if (HasAuthority())
+    {
+        CameraDistance = FMath::Max(maxY - minY, maxZ - minZ);
+        CameraLocation = MeanActorLocation;
+        CameraRotation = FRotator::ZeroRotator;
+
+    }// 서버인지 확인
+
+
+}
+
+void ACooperationGameState::SetStage3CameraTransform()
+{
+    //맵 전체 고정?
+    //분신에게 끌려갔을 때 판정은?
+}
+
+
+//원래보스 납치패턴용 보스 존재
+
+//
