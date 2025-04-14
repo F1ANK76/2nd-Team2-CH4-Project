@@ -45,7 +45,6 @@ bool AJumpAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 	bIsJumping = true;
 
 	Buffer.ParentWitch->SetMeshResponseToChanel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
-	ResponseJumped(Buffer.ParentWitch);
 	Buffer.ParentWitch->SetWitchState(EWitchStateType::Jump);
 	SetActorTickEnabled(true);
 
@@ -65,16 +64,6 @@ void AJumpAbility::UndoAbility(FAbilityDataBuffer& Buffer)
 	Buffer.ParentWitch->SetWitchState(EWitchStateType::Idle);
 	Buffer.bIsJumpable = true;
 	Buffer.bIsMoveable = true;
-}
-
-void AJumpAbility::ResponseJumped_Implementation(ABaseWitch* ParentWitch)
-{
-	if (!IsValid(ParentWitch))
-	{
-		return;
-	}
-
-	ParentWitch->Jump();
 }
 
 bool AJumpAbility::CheckExcuteable(FAbilityDataBuffer& Buffer)
@@ -98,17 +87,15 @@ void AJumpAbility::Tick(float DeltaTime)
 		return;
 	}
 
-	float Direction = Parent->GetVelocity().Z;
-	float Direction2 = MoveComp->Velocity.Z;
+	float Direction = MoveComp->Velocity.Z;
+	//UE_LOG(LogTemp, Warning, TEXT("MoveComp Velocity %f"), Direction);
 
 	if (Direction < 0 && bIsJumping)
 	{
 		bIsJumping = false;
 		Parent->SetMeshResponseToChanel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
-
-		UE_LOG(LogTemp, Warning, TEXT("Parent Velocity %f, MoveComp Velocity %f"), Direction, Direction2);
 	}
-	
+
 	if (!MoveComp->IsFalling() && !bIsJumping)
 	{
 		SetActorTickEnabled(false);

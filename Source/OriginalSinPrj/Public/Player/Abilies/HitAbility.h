@@ -19,6 +19,9 @@ public:
 	virtual void UndoAbility(FAbilityDataBuffer& Buffer) override;
 
 protected:
+	UFUNCTION(NetMulticast, Reliable)
+	void ResponseOnLaunched(const FVector& KnockbackDistance);
+
 	virtual bool CheckExcuteable(FAbilityDataBuffer& Buffer) override;
 	virtual void Tick(float DeltaTime) override;
 

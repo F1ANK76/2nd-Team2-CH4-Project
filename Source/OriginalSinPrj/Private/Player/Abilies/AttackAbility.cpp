@@ -102,11 +102,7 @@ void AAttackAbility::ExcuteMelleAttack(const FAbilityDataBuffer& Buffer)
 
 void AAttackAbility::ExcuteSpawnAttack(const FAbilityDataBuffer& Buffer)
 {
-	if (!IsValid(ProjectileObj))
-	{
-		checkf(IsValid(ProjectileClass), TEXT("Projectile Class is invalid"));
-		ProjectileObj = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileClass);
-	}
+	CheckProjectilePool();
 
 	if (IsValid(ProjectileObj))
 	{
@@ -132,6 +128,9 @@ void AAttackAbility::ExcuteSpawnAttack(const FAbilityDataBuffer& Buffer)
 
 		ProjectileObj->SetActorLocation(SpawnLocation);
 		ProjectileObj->ActiveProjectile(ProjectileData);
+
+		ActiveProjectilePool.Add(ProjectileObj);
+		ProjectilePool.Remove(ProjectileObj);
 	}
 }
 
@@ -148,12 +147,19 @@ void AAttackAbility::UndoMelleAttack(const FAbilityDataBuffer& Buffer)
 
 void AAttackAbility::UndoSpawnAttack(const FAbilityDataBuffer& Buffer)
 {
-	if (!IsValid(ProjectileObj))
+	if (ActiveProjectilePool.IsEmpty())
 	{
 		return;
 	}
 
-	ProjectileObj->DeactiveProjectile();
+	for (ABaseProjectile* Element : ActiveProjectilePool)
+	{
+		Element->DeactiveProjectile();
+
+		ProjectilePool.Add(Element);
+	}
+
+	ActiveProjectilePool.Empty();
 }
 
 void AAttackAbility::UndoSkillAttack(const FAbilityDataBuffer& Buffer)
@@ -190,5 +196,41 @@ void AAttackAbility::CalculateProjectilePos(ABaseWitch* Parent)
 	case EPivotType::Foot:
 		SpawnLocation += Parent->GetFootLocation();
 		break;
+	}
+}
+
+void AAttackAbility::CheckProjectilePool()
+{
+	if (ProjectilePool.IsEmpty())
+	{
+		SpawnProjectileObj();
+		return;
+	}
+	
+	bool bIsNotUseable = true;
+
+	for (int32 i = 0; i < ProjectilePool.Num(); ++i)
+	{
+		bIsNotUseable = ProjectilePool[i]->GetIsActevated();
+
+		if (!bIsNotUseable)
+		{
+			ProjectileObj = ProjectilePool[i];
+			break;
+		}
+	}
+
+	if (bIsNotUseable)
+	{
+		SpawnProjectileObj();
+	}
+}
+
+void AAttackAbility::SpawnProjectileObj()
+{
+	if (IsValid(ProjectileClass))
+	{
+		ProjectileObj = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileClass);
+		ProjectilePool.Add(ProjectileObj);
 	}
 }

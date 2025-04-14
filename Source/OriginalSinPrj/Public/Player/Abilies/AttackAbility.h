@@ -20,21 +20,24 @@ public:
 	
 protected:
 	virtual bool CheckExcuteable(FAbilityDataBuffer& Buffer) override;
-	virtual void SpawnProjectile(FAbilityDataBuffer& Buffer) {};
+
+	virtual void ExcuteSkillAttack(const FAbilityDataBuffer& Buffer);
+	virtual void UndoSkillAttack(const FAbilityDataBuffer& Buffer);
 
 	void ExcuteAttackByType(const FAbilityDataBuffer& Buffer);
 	void UndoAttackByType(const FAbilityDataBuffer& Buffer);
 
 	void ExcuteMelleAttack(const FAbilityDataBuffer& Buffer);
-	void ExcuteSpawnAttack(const FAbilityDataBuffer& Buffer);
-	void ExcuteSkillAttack(const FAbilityDataBuffer& Buffer);
-
 	void UndoMelleAttack(const FAbilityDataBuffer& Buffer);
-	void UndoSpawnAttack(const FAbilityDataBuffer& Buffer);
-	void UndoSkillAttack(const FAbilityDataBuffer& Buffer);
 
+	void ExcuteSpawnAttack(const FAbilityDataBuffer& Buffer);
+	void UndoSpawnAttack(const FAbilityDataBuffer& Buffer);
+	
 	void UpdateProjectileData(const FAbilityDataBuffer& Buffer);
 	void CalculateProjectilePos(ABaseWitch* Parent);
+
+	void CheckProjectilePool();
+	void SpawnProjectileObj();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Attack")
@@ -75,6 +78,12 @@ public:
 
 
 protected:
+	UPROPERTY()
+	TArray<TObjectPtr<ABaseProjectile>> ProjectilePool;
+
+	UPROPERTY()
+	TArray<TObjectPtr<ABaseProjectile>> ActiveProjectilePool;
+
 	UPROPERTY()
 	TObjectPtr<ABaseProjectile> ProjectileObj = nullptr;
 

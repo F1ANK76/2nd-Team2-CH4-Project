@@ -76,7 +76,7 @@ void ABaseWitch::PlayAnimation_Implementation(UAnimMontage* Target)
 {
 	if (!IsValid(Target))
 	{
-		EndAnimNotify();
+		//EndAnimNotify();
 		return;
 	}
 
@@ -220,7 +220,7 @@ void ABaseWitch::ApplyAttack(AActor* Target, float ApplyValue)
 	{
 		return;
 	}
-
+	//UE_LOG(LogTemp, Warning, TEXT("%s : Apply Attack. Target = %s, Value = %f"), *GetName(), *Target->GetName(), ApplyValue);
 	// TODO : Add Current Mana
 	UGameplayStatics::ApplyDamage(Target, ApplyValue, GetController(), this, UDamageType::StaticClass());
 
@@ -567,6 +567,11 @@ void ABaseWitch::OnPressedMoveKey(const FInputActionValue& Value)
 {
 	float MoveValue = Value.Get<float>();
 	
+	if (CurrentState == EWitchStateType::Idle || CurrentState == EWitchStateType::Move)
+	{
+		AddMovementInput(GetActorRightVector(), FMath::Abs(MoveValue));
+	}
+
 	RequestMoveToAbility(MoveValue);
 }
 
@@ -579,6 +584,11 @@ void ABaseWitch::OnPressedUpDownKey(const FInputActionValue& Value)
 
 void ABaseWitch::OnPressedJumpKey(const FInputActionValue& Value)
 {
+	if (CurrentState == EWitchStateType::Idle || CurrentState == EWitchStateType::Move)
+	{
+		Jump();
+	}
+
 	RequestJumpToAbility();
 }
 

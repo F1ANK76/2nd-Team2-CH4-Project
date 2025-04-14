@@ -131,7 +131,7 @@ void UWitchAbilityComponent::CallSkillAttack(int32 SkillNum)
 		AbilityBuffer.CurrentAbility = Skill5Ability;
 		break;
 	}
-
+	AbilityBuffer.NeedMana = SkillNum + 1;
 	ExcuteCurrentAbility();
 }
 
