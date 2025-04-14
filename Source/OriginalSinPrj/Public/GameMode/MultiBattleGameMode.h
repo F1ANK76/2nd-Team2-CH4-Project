@@ -22,6 +22,7 @@ public:
 	void StartDelay();
 	void StartToSpawnActor();
 	void SpawnPlayer();
+	void RespawnPlayer(APlayerController* PlayerController);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;
@@ -49,10 +50,6 @@ public:
 
 	void InitializeTempObjects();
 	void SpawnAndDestroyObject();
-
-	/*테스트용*/
-	/*UFUNCTION(BlueprintCallable)
-	void CreateTestPlatform(FVector SpawnLocation, FRotator SpawnRotator);*/
 
 public:
 
