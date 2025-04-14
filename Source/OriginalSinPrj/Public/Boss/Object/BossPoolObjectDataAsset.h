@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DestructibleObject.h"
 #include "RangeAttackProjectile.h"
 #include "WeaponToSpawn.h"
 #include "RushBossClone.h"
@@ -22,5 +23,8 @@ public:
 	TSubclassOf<AWeaponToSpawn> WeaponToSpawnClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "BossPoolObject");
-	TSubclassOf<ARushBossClone> ARushBossCloneClass;
+	TSubclassOf<ARushBossClone> RushBossCloneClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "BossPoolObject");
+	TSubclassOf<ADestructibleObject> DestructibleObjectClass;
 };

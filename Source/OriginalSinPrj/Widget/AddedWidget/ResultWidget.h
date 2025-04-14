@@ -6,7 +6,6 @@
 #include "../BaseWidget.h"
 #include "ResultWidget.generated.h"
 
-class UUIHandle;
 class UButton;
 class UTextBlock;
 
@@ -15,8 +14,8 @@ class ORIGINALSINPRJ_API UResultWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 
-public: // add notify
-	virtual void InitWidget(UUIHandle* NewUIHandle) override;
+protected:
+	virtual void NativeConstruct() override;
 
 private:
 	UFUNCTION()

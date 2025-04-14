@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Object/BossPoolObjectDataAsset.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "BossObjectPoolWorldSubsystem.generated.h"
 
+class ADestructibleObject;
 class ARushBossClone;
 class ARangeAttackProjectile;
 class AWeaponToSpawn;
@@ -23,23 +25,24 @@ UCLASS()
 class ORIGINALSINPRJ_API UBossObjectPoolWorldSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
-	
+
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
-	
-	template<typename T>
+
+	template <typename T>
 	T* SpawnPooledActor(TSubclassOf<AActor> ClassToSpawn, const FVector& Location, const FRotator& Rotation);
 	void ReturnActorToPool(AActor* Actor);
-	
+
 	ARangeAttackProjectile* SpawnRangeAttackProjectile(const FVector& Location, const FRotator& Rotation);
 	AWeaponToSpawn* SpawnWeaponToSpawn(const FVector& Location, const FRotator& Rotation);
 	ARushBossClone* SpawnRushBossClone(const FVector& Location, const FRotator& Rotation);
+	ADestructibleObject* SpawnDestructibleObject(const FVector& Location, const FRotator& Rotation);
 
 protected:
 	UPROPERTY()
-	class UBossPoolObjectDataAsset* PoolConfig;
+	UBossPoolObjectDataAsset* PoolConfig;
 
 	UPROPERTY()
 	TMap<TSubclassOf<AActor>, FActorPoolList> ObjectPools;

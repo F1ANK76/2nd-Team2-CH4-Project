@@ -21,6 +21,9 @@ protected:
 	void ExcuteMove(FAbilityDataBuffer& Buffer);
 	void ExcuteComand(FAbilityDataBuffer& Buffer);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void ResponseRotated(APawn* ParentWitch, bool bIsRotate);
+
 private:
 	static const float RotateValue;
 };

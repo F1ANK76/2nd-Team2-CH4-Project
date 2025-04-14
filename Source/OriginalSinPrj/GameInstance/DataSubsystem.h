@@ -6,14 +6,23 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "DataSubsystem.generated.h"
 
-/**
- * 
- */
+class UAllDataSettings;
+
 UCLASS()
 class ORIGINALSINPRJ_API UDataSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 	
 public:
-	void SaveData();
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
+	void LoadDataTables();
+
+	UPROPERTY()
+	UDataTable* BuffDataTable;
+
+	UPROPERTY()
+	UDataTable* CharacterDataTable;
+
+	const UAllDataSettings* AllDataSettings;
 };

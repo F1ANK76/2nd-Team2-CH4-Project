@@ -5,18 +5,24 @@
 #include "Components/Button.h"
 #include "Components/Slider.h"
 
-void UOptionWidget::InitWidget(UUIHandle* NewUIHandle)
+#include "../GameInstance/AudioSubsystem.h"
+
+void UOptionWidget::NativeConstruct()
 {
+    Super::NativeConstruct();
 	/*
 	OpenAnimation = OpenOptionAnim;
 	CloseAnimation = CloseOptionAnim;
 	*/
-	Super::InitWidget(NewUIHandle);
 	/*
 	MoveTitleButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveTitle);
 	OpenKeySettingButton->OnClicked.AddDynamic(this, &ThisClass::OpenKeySetting);
 	QuitButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedQuitGame);
 	*/
+	CloseButton->OnClicked.RemoveDynamic(this, &ThisClass::OnClickedCloseOption);
+	BGMVolumeSlider->OnValueChanged.RemoveDynamic(this, &ThisClass::OnClickedBGMVolume);
+	EffectVolumeSlider->OnValueChanged.RemoveDynamic(this, &ThisClass::OnClickedEffectVolume);
+
 	CloseButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedCloseOption);
 	BGMVolumeSlider->OnValueChanged.AddDynamic(this, &ThisClass::OnClickedBGMVolume);
 	EffectVolumeSlider->OnValueChanged.AddDynamic(this, &ThisClass::OnClickedEffectVolume);
@@ -26,6 +32,8 @@ void UOptionWidget::InitWidget(UUIHandle* NewUIHandle)
 	//BGMVolumSlider->SetValue(UIHandle->GetBGMVolumeByGameInstance());
 	//EffectVolumSlider->SetValue(UIHandle->GetEffectVolumeByGameInstance());
 }
+
+
 
 void UOptionWidget::EndRemoveAnim()
 {
@@ -47,6 +55,14 @@ void UOptionWidget::OnClickedBGMVolume(float Value)
 	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 	//UIHandle->ClickedBGMVolume(Value);
 	//UIHandle->RequestPlayUISound(EUISoundType::Click);
+
+	if (UGameInstance* GameInstance = GetGameInstance())
+	{
+		if (UAudioSubsystem* AudioSubsystem = GameInstance->GetSubsystem<UAudioSubsystem>())
+		{
+			AudioSubsystem->SetAndApplyMasterVolume(Value);
+		}
+	}
 }
 
 void UOptionWidget::OnClickedEffectVolume(float Value)

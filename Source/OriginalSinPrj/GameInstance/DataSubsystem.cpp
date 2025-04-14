@@ -1,9 +1,27 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "DataSubsystem.h"
-
-void UDataSubsystem::SaveData()
+#include "AllDataSettings.h"
+#include "Struct/CharacterDataStruct.h"
+void UDataSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
-	UE_LOG(LogTemp, Warning, TEXT("SaveData!"));
+	Super::Initialize(Collection);
+
+	AllDataSettings = GetDefault<UAllDataSettings>();
+
+    LoadDataTables();
+}
+
+void UDataSubsystem::LoadDataTables()
+{
+    if (AllDataSettings)
+    {
+        if (!AllDataSettings->BuffDataTable.IsNull())
+        {
+            BuffDataTable = AllDataSettings->BuffDataTable.LoadSynchronous();
+        }
+
+        if (!AllDataSettings->CharacterDataTable.IsNull())
+        {
+            CharacterDataTable = AllDataSettings->CharacterDataTable.LoadSynchronous();
+        }
+    }
 }

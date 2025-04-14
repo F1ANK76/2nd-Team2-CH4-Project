@@ -3,26 +3,24 @@
 
 #include "CharacterSelectTileWidget.h"
 #include "Components/Button.h"
+#include "Components/Image.h"
+#include "Components/TextBlock.h"
 
 //InitWidget이 아직 작동할 수 없어서 만든...
 void UCharacterSelectTileWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+
 	CharacterSelectButton->OnClicked.AddDynamic(this, &ThisClass::HandleButtonClicked);
+
+	//FSlateBrush Brush;
+	//Brush.SetResourceObject(SomeTexture);
+	//CharacterImage->SetBrush(Brush);
+
+	CharacterName->SetText(FText::FromString("Name"));
 }
 
-void UCharacterSelectTileWidget::InitWidget(UUIHandle* NewUIHandle)
-{
-	Super::InitWidget(NewUIHandle);
-
-	//각 버튼에 클릭시 발동?될 함수 연결하기
-	/*
-	OpenPlayerSettingButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveSingleMode);
-	*/
-	//각 버튼에 클릭시 발동?될 함수 연결하기
-	CharacterSelectButton->OnClicked.AddDynamic(this, &ThisClass::HandleButtonClicked);
-}
 
 
 

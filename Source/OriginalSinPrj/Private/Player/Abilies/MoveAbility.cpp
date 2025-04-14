@@ -4,6 +4,8 @@
 #include "Player/Abilies/MoveAbility.h"
 #include "Player/BaseWitch.h"
 #include "Player/Struct/AbilityDataBuffer.h"
+#include "GameFramework/CharacterMovementComponent.h"
+
 
 const float AMoveAbility::RotateValue = 360;
 
@@ -23,6 +25,12 @@ bool AMoveAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 	if (CheckExcuteable(Buffer))
 	{
 		ExcuteMove(Buffer);
+
+		if (Buffer.MovementComp->IsFalling())
+		{
+			return false;
+		}
+
 		return true;
 	}
 
@@ -48,25 +56,23 @@ bool AMoveAbility::CheckExcuteable(FAbilityDataBuffer& Buffer)
 
 void AMoveAbility::ExcuteMove(FAbilityDataBuffer& Buffer)
 {
+	bool bIsOldLeft = Buffer.bIsLeft;
+	float MoveValue = Buffer.MoveValueVector.X;
+
 	if (Buffer.MoveValueVector.X < 0)
 	{
-		if (Buffer.bIsLeft)
-		{
-			Buffer.bIsLeft = false;
-			Buffer.ParentWitch->AddControllerYawInput(RotateValue);
-		}
-
-		Buffer.ParentWitch->AddMovementInput(GetActorRightVector(), -Buffer.MoveValueVector.X);
+		Buffer.bIsLeft = false;
+		MoveValue *= -1;
 	}
 	else if (Buffer.MoveValueVector.X > 0)
 	{
-		if (!Buffer.bIsLeft)
-		{
-			Buffer.bIsLeft = true;
-			Buffer.ParentWitch->AddControllerYawInput(RotateValue);
-		}
+		Buffer.bIsLeft = true;
+	}
 
-		Buffer.ParentWitch->AddMovementInput(GetActorRightVector(), Buffer.MoveValueVector.X);
+	if (Buffer.bIsLeft != bIsOldLeft)
+	{
+		//Buffer.ParentWitch->AddControllerYawInput(RotateValue);
+		ResponseRotated(Buffer.ParentWitch, true);
 	}
 
 	Buffer.ParentWitch->SetWitchState(EWitchStateType::Move);
@@ -101,5 +107,23 @@ void AMoveAbility::ExcuteComand(FAbilityDataBuffer& Buffer)
 		{
 			Buffer.ComandDirection = EDirectionType::Right;
 		}
+	}
+}
+
+void AMoveAbility::ResponseRotated_Implementation(APawn* ParentWitch, bool bIsRotate)
+{
+	if (!IsValid(ParentWitch))
+	{
+		return;
+	}
+
+	/*if (!ParentWitch->IsLocallyControlled())
+	{
+		return;
+	}*/
+
+	if (bIsRotate)
+	{
+		ParentWitch->AddControllerYawInput(RotateValue);
 	}
 }

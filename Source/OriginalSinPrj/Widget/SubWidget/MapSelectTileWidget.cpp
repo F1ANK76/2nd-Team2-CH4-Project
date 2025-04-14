@@ -3,6 +3,8 @@
 
 #include "MapSelectTileWidget.h"
 #include "Components/Button.h"
+#include "Components/Image.h"
+#include "Components/TextBlock.h"
 
 //InitWidget이 아직 작동할 수 없어서 만든...
 void UMapSelectTileWidget::NativeConstruct()
@@ -10,18 +12,13 @@ void UMapSelectTileWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	MapSelectButton->OnClicked.AddDynamic(this, &ThisClass::HandleButtonClicked);
-}
 
-void UMapSelectTileWidget::InitWidget(UUIHandle* NewUIHandle)
-{
-	Super::InitWidget(NewUIHandle);
+	//FSlateBrush Brush;
+	//Brush.SetResourceObject(SomeTexture);
+	//MapImage->SetBrush(Brush);
 
-	//각 버튼에 클릭시 발동?될 함수 연결하기
-	/*
-	OpenPlayerSettingButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveSingleMode);
-	*/
-	//각 버튼에 클릭시 발동?될 함수 연결하기
-	MapSelectButton->OnClicked.AddDynamic(this, &ThisClass::HandleButtonClicked);
+
+	MapName->SetText(FText::FromString("Name"));
 }
 
 void UMapSelectTileWidget::HandleButtonClicked()

@@ -4,6 +4,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "../Widget/BaseWidget.h"
 #include "UISettings.h"
+#include "AudioSubsystem.h"
 
 void UUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -93,6 +94,17 @@ void UUISubsystem::OnPostLoadMap(UWorld* LoadedWorld)
     if (CurrentActiveWidget)
     {
         CurrentActiveWidget->AddToViewport();
+        
+        if (UAudioSubsystem* AudioSubsystem = GetGameInstance()->GetSubsystem<UAudioSubsystem>())
+        {
+            // BGM 재생 호출 시점 변경은 필요할 수도 있음, 레벨 전환시 기존에 재생되던 BGM은 전부 날아감
+            if (CurrentActiveWidget == IntroLevelWidget)
+            {
+                AudioSubsystem->PlayBGM(ELevelSoundType::TitleSound);
+            }
+
+            // 필요 레벨별 재생..
+        }
     }
     else
     {
