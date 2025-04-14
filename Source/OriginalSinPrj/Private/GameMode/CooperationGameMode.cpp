@@ -48,10 +48,8 @@ void ACooperationGameMode::BeginPlay()
 
 void ACooperationGameMode::StartGame()
 {
-
+    //로딩되고 스테이지를 본격적으로 시작하기 전 처리할 함수...
     //게임 준비, 시작 UI를 띄우고...
-
-    //시작 신호가 오면...
 
     if (IsValid(CooperationGameState))
     {
@@ -68,7 +66,7 @@ void ACooperationGameMode::StartGame()
 
 
 
-    MoveNextStage(StageIndex);
+    MoveNextStage();
 }
 
 void ACooperationGameMode::EndGame()
@@ -81,58 +79,78 @@ void ACooperationGameMode::EndGame()
 //Stage1 준비 트리거
 void ACooperationGameMode::ReadyStage1()
 {
+    SetPlayerUnReady(SpawnedCharacters[0]);
+    SetPlayerUnReady(SpawnedCharacters[1]);
     //몬스터 소환하면서,
     SpawnMonsters();
-    SetPlayerLocation(StageIndex);
+    SetPlayerLocation();
     //게임모드 
     //몬스터 못움직이게 잠시 세팅값 조정.
 
     // 캐릭터도 못움직이게 동결 시켜놓고.
 
-    SetPlayerUnReady(SpawnedCharacters[0]);
-    SetPlayerUnReady(SpawnedCharacters[1]);
-
+    //CooperationUI Stage1로 바꾸기
+    //->ActiveStage1Widget();
 
     //Game Start UI Open까지 대기
     //Game Start UI 끝나면
 
-    //몬스터, 캐릭터 움직임 동결되어있는 것 풀기.
 
 
-    //준비 완료 되면 시작
+    //여긴 바로 시작... 버프 선택 없음!
+    //몬스터, 캐릭터 움직임 동결되어있는 것 풀면서 시작.
     StartStage1();
 }
 
 //Stage2 준비 트리거
 void ACooperationGameMode::ReadyStage2()
 {
+    SetPlayerUnReady(SpawnedCharacters[0]);
+    SetPlayerUnReady(SpawnedCharacters[1]);
+
     SpawnEnemies();
-    SetPlayerLocation(StageIndex);
+    SetPlayerLocation();
     //몬스터 못움직이게 잠시 세팅값 조정.
 
     // 캐릭터도 못움직이게 동결 시켜놓고.
-    SetPlayerUnReady(SpawnedCharacters[0]);
-    SetPlayerUnReady(SpawnedCharacters[1]);
+
     //Game Start UI Open까지 대기
     //Game Start UI 끝나면
+
+
+    //CooperationUI Stage2로 바꾸기
+    //->ActiveStage2Widget();
 
     //몬스터, 캐릭터 움직임 동결되어있는 것 풀기.
 
 
-    //준비 완료 되면 시작
-    StartStage2();
+    // 버프 완료 되었는지 확인하기
+    CheckUntilAllPlayerSelectBuff();
+
 }
 
 //Stage3 준비 트리거
 void ACooperationGameMode::ReadyStage3()
 {
-    SetPlayerLocation(StageIndex);
-
     SetPlayerUnReady(SpawnedCharacters[0]);
     SetPlayerUnReady(SpawnedCharacters[1]);
 
-    //준비 완료 되면 시작
-    StartStage3();
+    SetPlayerLocation();
+
+    //보스 못 움직이게 잠시 세팅값 조정.
+
+    // 캐릭터도 못움직이게 동결 시켜놓고.
+
+    //Game Start UI Open까지 대기
+    //Game Start UI 끝나면
+    // 
+    // 
+    //CooperationUI Stage3로 바꾸기
+    //->ActiveStage3Widget();
+
+
+
+    CheckUntilAllPlayerSelectBuff();
 }
 
 //Stage1 시작 트리거
@@ -140,12 +158,16 @@ void ACooperationGameMode::StartStage1()
 {
     SetPlayerReady(SpawnedCharacters[0]);
     SetPlayerReady(SpawnedCharacters[1]);
+
+    //몬스터 움직임 동결도 해제
 }
 //Stage2 시작 트리거
 void ACooperationGameMode::StartStage2()
 {
     SetPlayerReady(SpawnedCharacters[0]);
     SetPlayerReady(SpawnedCharacters[1]);
+
+    //적 AI 움직임 동결도 해제
 }
 //Stage3 시작 트리거
 void ACooperationGameMode::StartStage3()
@@ -153,6 +175,8 @@ void ACooperationGameMode::StartStage3()
     SetPlayerReady(SpawnedCharacters[0]);
     SetPlayerReady(SpawnedCharacters[1]);
     
+    //보스 몬스터 활동 개시
+
     if (IsValid(CooperationGameState))
     {
         //CooperationGameState->TurnOnTimer();
@@ -161,21 +185,21 @@ void ACooperationGameMode::StartStage3()
 //Stage1 종료 트리거
 void ACooperationGameMode::EndStage1()
 {
-    
+    StageIndex++;
     RequestTurnOnBuffSelectUI();
 
-    MoveNextStage(StageIndex);
-    StageIndex++;
+    MoveNextStage();
+
 }
 
 //Stage2 종료 트리거
 void ACooperationGameMode::EndStage2()
 {
-
+    StageIndex++;
     RequestTurnOnBuffSelectUI();
 
-    MoveNextStage(StageIndex);
-    StageIndex++;
+    MoveNextStage();
+
 }
 //Stage3 종료 트리거
 void ACooperationGameMode::EndStage3()
@@ -185,9 +209,9 @@ void ACooperationGameMode::EndStage3()
     EndGame();
 }
 
-void ACooperationGameMode::SetPlayerLocation(int CurrentStageIndex)
+void ACooperationGameMode::SetPlayerLocation()
 {
-    switch (CurrentStageIndex)
+    switch (StageIndex)
     {
     case 1:
 
@@ -211,9 +235,9 @@ void ACooperationGameMode::SetPlayerLocation(int CurrentStageIndex)
 }
 
     
-void ACooperationGameMode::MoveNextStage(int CurrentStageIndex)
+void ACooperationGameMode::MoveNextStage()
 {
-    switch (CurrentStageIndex)
+    switch (StageIndex)
     {
     case 1:
         
@@ -241,44 +265,42 @@ void ACooperationGameMode::RequestTurnOnBuffSelectUI()
     //게임 스테이트 보고 좀 열어달라고 요청하기
     if (IsValid(CooperationGameState))
     {
-        //CooperationGameState->RequestPlayerToOpenBuffUI();
+        CooperationGameState->RequestPlayerToOpenBuffUI();
     }
 }
     
 void ACooperationGameMode::ApplyBuffToBothPlayer()
 {
-    //버프 뭐 골랐는지 확인하고 적용시키는 거 확인 후 스탯 적용하라고 요청.
+    //버프 두개 골랐으면 스탯 적용하라고 요청.
     if (IsValid(CooperationGameState))
     {
-        //CooperationGameState->ApplyBuffStat();
+        CooperationGameState->ApplyBuffStat();
     }
 }
 
 void ACooperationGameMode::CheckUntilAllPlayerSelectBuff()
 {
-
-    
     if (!IsValid(CooperationGameState)) return;
 
-    //이 함수 내에 머물면서 계속 조건을 테스트 하는 방법을 찾아야한다.
-    /*
-    while (!CooperationGameState->bPlayer1SelectedBuff || !CooperationGameState->bPlayer2SelectedBuff)
-    {
-    //방법이 위험해~~....
-    }
-    */
-    /*
     if (CooperationGameState->bPlayer1SelectedBuff && CooperationGameState->bPlayer2SelectedBuff)
     {
-        다음단계 함수
-        UE_LOG(LogTemp, Log, TEXT("모든 플레이어 버프 선택 완료! 다음 스테이지 진행"));
+        UE_LOG(LogTemp, Log, TEXT("All Player has Selected Buffs! Move Next Stage."));
+        switch (StageIndex)
+        {
+        case 2:
+            ApplyBuffToBothPlayer();
+            StartStage2();
+            break;
+        case 3:
+            ApplyBuffToBothPlayer();
+            StartStage3();
+            break;
+        }
     }
     else
     {
-        // 아직 준비 안 됨 → 재확인 예약
         GetWorldTimerManager().SetTimerForNextTick(this, &ACooperationGameMode::CheckUntilAllPlayerSelectBuff);
     }
-    */
 }
 
 
@@ -361,6 +383,18 @@ void ACooperationGameMode::HandleMonsterKilled(AController* Killer)
     
 }
 
+//적 AI가 죽을 때 누구한테 죽었는지 정보를 넘기며 게임모드에 알려주면 호출되는 함수.
+void ACooperationGameMode::HandleEnemyKilled(AController* Killer)
+{
+    //조건은 제대로 지정해야할듯
+    CurrentEnemyCount--;
+    if (CurrentEnemyCount <= 0)
+    {
+        EndStage2();
+    }
+}
+
+
 
 void ACooperationGameMode::PostSeamlessTravel()
 {
@@ -425,6 +459,9 @@ void ACooperationGameMode::HandleClientPossession(APlayerController* PC, int ind
         UE_LOG(LogTemp, Warning, TEXT("PlayerController is invalid or no spawned characters."));
     }
     UE_LOG(LogTemp, Warning, TEXT("Client Possess ended %s"), *GetNameSafe(PC));
+    
+    //Game Stage에서 필요한 기능을 위해 게임 스테이트에 컨트롤러 등록해두기
+    CooperationGameState->RegisterInitialController(PC);
 }
 
 void ACooperationGameMode::SpawnPlayers()
