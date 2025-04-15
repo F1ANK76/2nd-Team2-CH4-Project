@@ -14,8 +14,8 @@ class ORIGINALSINPRJ_API UResultWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 
-protected:
-	virtual void NativeConstruct() override;
+public:
+	virtual void InitWidget(UUISubsystem* uiSubsystem) override;
 
 private:
 	UFUNCTION()
