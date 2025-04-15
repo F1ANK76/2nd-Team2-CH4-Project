@@ -219,7 +219,6 @@ void ACooperationGameMode::ReadyStage2()
     UE_LOG(LogTemp, Warning, TEXT("Ready Stage2"));
     SetPlayerUnReady(SpawnedCharacters[0]);
     SetPlayerUnReady(SpawnedCharacters[1]);
-
     SpawnEnemies();
     SetPlayerLocation();
     //몬스터 못움직이게 잠시 세팅값 조정.
@@ -293,7 +292,10 @@ void ACooperationGameMode::StartStage1()
     //Turn On Player Input
     SetPlayerReady(SpawnedCharacters[0]);
     SetPlayerReady(SpawnedCharacters[1]);
-
+    if (IsValid(CooperationGameState))
+    {
+        CooperationGameState->TurnOnTimer();
+    }
     //Monster Movement...
 }
 
@@ -303,8 +305,8 @@ void ACooperationGameMode::StartStage2()
     UE_LOG(LogTemp, Warning, TEXT("Start Stage2"));
 
     //Turn On Player Input
-    SetPlayerReady(SpawnedCharacters[0]);
-    SetPlayerReady(SpawnedCharacters[1]);
+    //SetPlayerReady(SpawnedCharacters[0]);
+    //SetPlayerReady(SpawnedCharacters[1]);
 
     //Enemy Movement...
 }
@@ -380,7 +382,9 @@ void ACooperationGameMode::SetPlayerLocation()
     }
 }
 
-    
+    //set color mode
+    //set player level
+
 void ACooperationGameMode::MoveNextStage()
 {
     switch (StageIndex)
@@ -487,6 +491,8 @@ if (CharacterController)
     CharacterController->Client_DisableInput(); // 클라이언트에서 입력 비활성
 }
 */
+
+
 
 void ACooperationGameMode::SetPlayerUnReady(ACharacter* PlayerChar)
 {
@@ -772,17 +778,18 @@ void ACooperationGameMode::PossessCharacter(APlayerController* PC, APawn* PawnTo
 }
 
 
+
 void ACooperationGameMode::InitPlayerUI()
 {
-    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+    //방법 2
+    /*
+    // 레벨 서브시스템에 레벨 변경 알림
+    UMyLevelSubsystem* LevelSubsystem = GetWorld()->GetSubsystem<UMyLevelSubsystem>();
+    if (LevelSubsystem)
     {
-        APlayerController* PlayerController = Cast<APlayerController>(*It);
-        if (PlayerController)
-        {
-            // 컨트롤러에서 UIHandle이나 UISubsystem이 UI 띄우는 함수 호출하라고 명령
-            //PlayerController->ShowUI(EAddWidgetType::CooperationWidget);
-        }
+        LevelSubsystem->OnLevelChanged("NewLevel");
     }
+    */
 }
 
 

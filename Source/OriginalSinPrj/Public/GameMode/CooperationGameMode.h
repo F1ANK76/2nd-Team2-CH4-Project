@@ -166,6 +166,9 @@ public:
 
     TSubclassOf<APlayerController> PlayerControllerClass;
 
+
+
+
     void SetPlayerUnReady(ACharacter* PlayerChar);
 
     void SetPlayerReady(ACharacter* PlayerChar);
@@ -249,6 +252,7 @@ public:
     void HandleBossMonsterKilled(AController* Killer);
 
 protected:
+    //UFUNCTION(NetMulticast, Reliable)
     void InitPlayerUI();
 
     //멀티 전용

@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h" 
 #include "GameMode/CooperationGameMode.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/Controller/WitchController.h"
 #include "../GameInstance/DataSubsystem.h"
 
 ACooperationGameState::ACooperationGameState()
@@ -77,18 +78,7 @@ void ACooperationGameState::Tick(float DeltaSeconds)
 
 
 
-void ACooperationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-    
-    DOREPLIFETIME(ACooperationGameState, bPlayer1SelectedBuff);
-    DOREPLIFETIME(ACooperationGameState, bPlayer2SelectedBuff);
-    DOREPLIFETIME(ACooperationGameState, CameraLocation);
-    DOREPLIFETIME(ACooperationGameState, CameraRotation);
-    DOREPLIFETIME(ACooperationGameState, CameraDistance);
-
-}
+//ShowLevelWidget
 
 
 //보스전 타이머 켜기
@@ -446,3 +436,104 @@ void ACooperationGameState::SetStage3CameraTransform()
 //원래보스 납치패턴용 보스 존재
 
 //
+
+
+
+
+
+
+
+
+////////////////////////////멀티 처리
+
+void ACooperationGameState::OnRep_UpdatePlayerDataUI()
+{
+    APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0); // 보통 로컬플레이어
+    if (APlayerController* MyPC = Cast<APlayerController>(PC))
+    {
+        // 로컬 플레이어인지 확인
+        if (MyPC->IsLocalPlayerController())
+        {
+            // 로컬 플레이어일 경우 로그 출력
+            //UE_LOG(LogTemp, Log, TEXT("This is the local player controller."));
+
+            // 로컬 플레이어의 UI를 업데이트
+            //MyPC->UpdateHealthUI(Health);
+        }
+        else
+        {
+            // 로컬 플레이어가 아닐 경우 로그 출력
+            UE_LOG(LogTemp, Log, TEXT("This is NOT the local player controller."));
+        }
+    }
+
+}
+
+void ACooperationGameState::OnRep_UpdateTimer()
+{
+    APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0); // 보통 로컬플레이어
+    if (AWitchController* MyPC = Cast<AWitchController>(PC))
+    {
+        // 로컬 플레이어인지 확인
+        if (MyPC->IsLocalPlayerController())
+        {
+            // 로컬 플레이어일 경우 로그 출력
+            UE_LOG(LogTemp, Warning, TEXT("MyPC: %s | Role: %s | LocalController: %s"),
+                *MyPC->GetName(),
+                *UEnum::GetValueAsString(MyPC->GetLocalRole()),
+                MyPC->IsLocalPlayerController() ? TEXT("Yes") : TEXT("No"));
+            DisableInput(PC);
+            UE_LOG(LogTemp, Warning, TEXT("Possessed Pawn: %s"), *GetNameSafe(MyPC->GetPawn()));
+
+            // 로컬 플레이어의 UI를 업데이트
+            //MyPC->UpdateHealthUI(Health);
+        }
+        else
+        {
+            // 로컬 플레이어가 아닐 경우 로그 출력
+            UE_LOG(LogTemp, Log, TEXT("This is NOT the local player controller."));
+        }
+    }
+}
+
+
+
+void ACooperationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+
+    DOREPLIFETIME(ACooperationGameState, bPlayer1SelectedBuff);
+    DOREPLIFETIME(ACooperationGameState, bPlayer2SelectedBuff);
+    DOREPLIFETIME(ACooperationGameState, CameraLocation);
+    DOREPLIFETIME(ACooperationGameState, CameraRotation);
+    DOREPLIFETIME(ACooperationGameState, CameraDistance);
+    DOREPLIFETIME(ACooperationGameState, PlayerDatas);
+    DOREPLIFETIME(ACooperationGameState, Timer);
+
+}
+
+
+
+void ACooperationGameState::SetPlayerUnReady_Implementation()
+{
+    APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0); // 보통 로컬플레이어
+
+    if (APlayerController* MyPC = Cast<APlayerController>(PC))
+    {
+        // 로컬 플레이어인지 확인
+        if (MyPC->IsLocalPlayerController())
+        {
+            // 로컬 플레이어일 경우 로그 출력
+            UE_LOG(LogTemp, Log, TEXT("This is the local player controller."));
+            MyPC->DisableInput(MyPC);
+            // 로컬 플레이어의 UI를 업데이트
+            //MyPC->UpdateHealthUI(Health);
+        }
+        else
+        {
+            // 로컬 플레이어가 아닐 경우 로그 출력
+            UE_LOG(LogTemp, Log, TEXT("This is NOT the local player controller."));
+        }
+    }
+}

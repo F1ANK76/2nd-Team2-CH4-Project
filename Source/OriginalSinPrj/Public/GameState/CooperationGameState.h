@@ -94,14 +94,27 @@ public:
     UPROPERTY(Replicated)
     bool bIsStage3Started;
 
-    UPROPERTY(Replicated, BlueprintReadOnly)
+    UPROPERTY(ReplicatedUsing = OnRep_UpdateTimer)
     float Timer;
 
+    UFUNCTION()
+    void OnRep_UpdateTimer();
 
-
+    //////////////////////////////////////////////////////////// UI와 연동하는 함수////////////////////////////////////////////////////
     // Player 정보 관리
     UPROPERTY(BlueprintReadOnly)
     TMap<APlayerController*, FPlayerData> PlayerInfos;
+
+    UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayerDataUI)
+    TArray<FPlayerData> PlayerDatas;
+
+    UFUNCTION()
+    void OnRep_UpdatePlayerDataUI();
+
+    UFUNCTION(Client, Reliable)
+    void SetPlayerUnReady();
+    ///////////////////
+
 
     //플레이어 컨트롤러 저장해놓기
     UPROPERTY()
