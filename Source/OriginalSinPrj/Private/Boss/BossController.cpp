@@ -24,7 +24,7 @@ void ABossController::BeginPlay()
 	{
 		PoolWorldSubsystem = GetWorld()->GetSubsystem<UBossObjectPoolWorldSubsystem>();
 		PoolWorldSubsystem->SetBossReference(Cast<ABossCharacter>(GetPawn()));
-
+		UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("PlatformSpawnTarget"), PlatformSpawnTargets);
 		FindPlatforms();
 
 		//일단 임시, 추후 GameMode에서 호출
@@ -35,6 +35,12 @@ void ABossController::BeginPlay()
 void ABossController::SetOneMinusDestructibleObjectCount()
 {
 	DestructibleObjectCount -= 1;
+	GetBlackboardComponent()->SetValueAsInt("DestructibleObjectCount", DestructibleObjectCount);
+}
+
+void ABossController::SetOnePlusDestructibleObjectCount()
+{
+	DestructibleObjectCount += 1;
 	GetBlackboardComponent()->SetValueAsInt("DestructibleObjectCount", DestructibleObjectCount);
 }
 
@@ -136,12 +142,12 @@ void ABossController::StartBattle()
 		CheckBossHpDelay,
 		true);
 
-	//특수공격 타이머
+	//특수공격 타이머 
 	GetWorld()->GetTimerManager().SetTimer(
 		SpecialAttackTriggerTimerHandle,
 		this,
 		&ABossController::TriggerSpecialAttack,
-		40.0f,
+		SpecialAttackDelay,
 		true);
 }
 
@@ -152,6 +158,8 @@ void ABossController::EndBattle()
 	bIsBattleStart = false;
 	GetWorldTimerManager().ClearTimer(FindClosestPlayerTimerHandle);
 	GetWorldTimerManager().ClearTimer(ObjectSpawnTimerHandle);
+	GetWorldTimerManager().ClearTimer(BossHpCheckTimerHandle);
+	GetWorldTimerManager().ClearTimer(SpecialAttackTriggerTimerHandle);
 	GetWorldTimerManager().ClearTimer(InstantDeathAttackTimerHandle);
 	GetBlackboardComponent()->SetValueAsBool("bIsBattleStart", false);
 	if (IsValid(BrainComponent))
@@ -209,6 +217,11 @@ void ABossController::UpdateBossHpForSpecialAttack()
 void ABossController::KillAllPlayerAttack()
 {
 	if (!HasAuthority()) return;
+
+	TArray<AActor*> LeftPlatforms;
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("PatternPlatform"), LeftPlatforms);
+
+	if (!IsAnyBossPlatform(LeftPlatforms)) return;
 	
 	GetWorldTimerManager().ClearTimer(FindClosestPlayerTimerHandle);
 	GetWorldTimerManager().ClearTimer(ObjectSpawnTimerHandle);
@@ -221,6 +234,16 @@ void ABossController::KillAllPlayerAttack()
 
 	//즉사공격 애니메이션
 
+	//남아있는 발판 제거
+	for (AActor* Actor : LeftPlatforms)
+	{
+		ABossPlatform* BossPlatform = Cast<ABossPlatform>(Actor);
+		if (!BossPlatform->IsHidden())
+		{
+			PoolWorldSubsystem->ReturnActorToPool(BossPlatform);
+		}
+	}
+	
 	//플레이어 사망처리
 	for (ACharacter* PlayerCharacter : PlayerCharacters)
 	{
@@ -236,6 +259,20 @@ void ABossController::KillAllPlayerAttack()
 
 		PlayerWitch->TakeDamage(Damage, DamageEvent, this, GetPawn());
 	}
+}
+
+bool ABossController::IsAnyBossPlatform(TArray<AActor*>& Actors)
+{
+	int32 LeftPlatformCount = 0;
+	
+	for (auto Platform : Actors)
+	{
+		ABossPlatform* BossPlatform = Cast<ABossPlatform>(Platform);
+		if (!BossPlatform->IsHidden()) LeftPlatformCount++;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("LeftPlatformCount : %d"), LeftPlatformCount);
+	return LeftPlatformCount > 0 ? true : false;
 }
 
 void ABossController::FindPlatforms()
@@ -264,7 +301,7 @@ void ABossController::FindPlatforms()
 void ABossController::SpawnDestructibleObject()
 {
 	if (FoundPlatformActors.Num() == 0) return;
-	if (DestructibleObjectCount == MaxDestructibleObject) return;
+	if (DestructibleObjectCount >= MaxDestructibleObject) return;
 
 	AActor* Platform = FoundPlatformActors[FMath::RandRange(0, FoundPlatformActors.Num() - 1)];
 
@@ -294,19 +331,11 @@ void ABossController::SpawnDestructibleObject()
 		TraceEnd,
 		ObjectQueryParams);
 
-	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Green, false, 2.0f, 0, 2.0f);
-
 	if (bHit)
 	{
 		FVector SpawnLocation = HitResult.ImpactPoint + FVector(0, 0, 50.0f);
 		ADestructibleObject* DestructibleObject = PoolWorldSubsystem->SpawnDestructibleObject(
 			SpawnLocation, FRotator::ZeroRotator);
-		if (IsValid(DestructibleObject))
-		{
-			DestructibleObject->SetBossControllerCache(this);
-		}
-		DestructibleObjectCount++;
-		GetBlackboardComponent()->SetValueAsInt("DestructibleObjectCount", DestructibleObjectCount);
 		UE_LOG(LogTemp, Warning, TEXT("DestructibleObjectCount : %d"), DestructibleObjectCount);
 	}
 }

@@ -12,13 +12,15 @@ ABossPlatform::ABossPlatform()
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("StaticMeshComponent");
 	MeshComponent->SetupAttachment(SceneRoot);
-	MeshComponent->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	MeshComponent->SetCollisionProfileName("BlockAll");
+	MeshComponent->OnComponentHit.AddDynamic(this, &ABossPlatform::OnPlatformHit);
 
 	bReplicates = true;
 	SetReplicateMovement(true);
 
 	Tags.Add("BossPlatform");
+	Tags.Add("PatternPlatform");
 }
 
 void ABossPlatform::BeginPlay()
@@ -29,18 +31,23 @@ void ABossPlatform::BeginPlay()
 
 	bIsActivate = false;
 	SetActorHiddenInGame(true);
+	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ABossPlatform::OnPooledObjectSpawn_Implementation()
 {
 	bIsActivate = true;
 	SetActorHiddenInGame(false);
+	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 
 void ABossPlatform::OnPooledObjectReset_Implementation()
 {
+	bHasBeenTriggered = false;
 	bIsActivate = false;
 	SetActorHiddenInGame(true);
+	SetActorLocation(FVector::ZeroVector);
+	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ABossPlatform::OnPlatformHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,

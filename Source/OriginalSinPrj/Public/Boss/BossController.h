@@ -16,7 +16,9 @@ class ORIGINALSINPRJ_API ABossController : public AAIController
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintCallable)
 	void StartBattle();
+	UFUNCTION(BlueprintCallable)
 	void EndBattle();
 	
 	void SpawnDestructibleObject();
@@ -30,8 +32,10 @@ public:
 	APawn* GetTargetPlayerPawn() const { return TargetPlayerPawn; }
 	int32 GetDestructibleObjectCount() const { return DestructibleObjectCount; }
 	int32 GetMaxDestructibleObject() const { return MaxDestructibleObject; }
+	TArray<AActor*> GetPlatformSpawnTargets() const { return PlatformSpawnTargets; }
 	//setter
 	void SetOneMinusDestructibleObjectCount();
+	void SetOnePlusDestructibleObjectCount();
 	void SetDestructibleObjectCount(int32 NewNumber) { DestructibleObjectCount = NewNumber; }
 
 protected:
@@ -65,6 +69,7 @@ protected:
 private:
 	bool bIsBattleStart = false;
 	TArray<ACharacter*> PlayerCharacters;
+	TArray<AActor*> PlatformSpawnTargets;
 	APawn* TargetPlayerPawn = nullptr;
 	FTimerHandle FindClosestPlayerTimerHandle;
 	FTimerHandle ObjectSpawnTimerHandle;
@@ -86,6 +91,7 @@ private:
 	void TriggerSpecialAttack();
 	void UpdateBossHpForSpecialAttack();
 	void KillAllPlayerAttack();
+	bool IsAnyBossPlatform(TArray<AActor*>& Actors);
 
 	//DestructibleObject Function
 	void FindPlatforms();
