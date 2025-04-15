@@ -11,7 +11,7 @@ ABossCharacter::ABossCharacter()
 	PrimaryActorTick.bCanEverTick = false;
 
 	MaxHP = 1000;
-	CurrentHP = MaxHP;
+	CurrentHP = 500;
 	bIsDead = false;
 	
 	AIControllerClass = ABossController::StaticClass();
@@ -90,6 +90,14 @@ void ABossCharacter::MulticastPlayRushBossAttackMontage_Implementation()
 	}
 }
 
+void ABossCharacter::MulticastPlayHijackAttackMontage_Implementation()
+{
+	if (HijackAttackMontage && GetNetMode() != NM_DedicatedServer)
+	{
+		PlayAnimMontage(HijackAttackMontage);
+	}
+}
+
 void ABossCharacter::PlayStartBattleMontage()
 {
 	if (HasAuthority())
@@ -127,5 +135,13 @@ void ABossCharacter::PlayRushBossAttackMontage()
 	if (HasAuthority())
 	{
 		MulticastPlayRushBossAttackMontage();
+	}
+}
+
+void ABossCharacter::PlayHijackAttackMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayHijackAttackMontage();
 	}
 }

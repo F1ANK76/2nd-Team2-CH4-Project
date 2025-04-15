@@ -5,6 +5,7 @@
 #include "Boss/Object/BossPoolableActorInterface.h"
 #include "Boss/Object/BossPoolObjectDataAsset.h"
 #include "Boss/Object/RangeAttackProjectile.h"
+#include "Boss/BossCharacter.h"
 #include "GameFramework/GameMode.h"
 
 void UBossObjectPoolWorldSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -12,14 +13,15 @@ void UBossObjectPoolWorldSubsystem::Initialize(FSubsystemCollectionBase& Collect
 	Super::Initialize(Collection);
 
 	PoolConfig = LoadObject<UBossPoolObjectDataAsset>(nullptr, TEXT("/Game/Resources/Boss/DA_BossPoolObject"));
-	
+
 	if (!IsValid(PoolConfig))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to Load BossPoolObject DataAsset"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("BossObjectPoolWorldSubsystem Initialized in Level : %s"), *GetWorld()->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("BossObjectPoolWorldSubsystem Initialized in Level : %s"),
+		       *GetWorld()->GetName());
 	}
 }
 
@@ -46,7 +48,8 @@ bool UBossObjectPoolWorldSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 }
 
 template <typename T>
-T* UBossObjectPoolWorldSubsystem::SpawnPooledActor(TSubclassOf<AActor> ClassToSpawn, const FVector& Location, const FRotator& Rotation)
+T* UBossObjectPoolWorldSubsystem::SpawnPooledActor(TSubclassOf<AActor> ClassToSpawn, const FVector& Location,
+                                                   const FRotator& Rotation)
 {
 	if (!IsValid(ClassToSpawn)) return nullptr;
 
@@ -81,14 +84,15 @@ T* UBossObjectPoolWorldSubsystem::SpawnPooledActor(TSubclassOf<AActor> ClassToSp
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParams.bNoFail = true;
 	SpawnParams.Owner = GetWorld()->GetAuthGameMode();
-	
+
 	AActor* NewActor = World->SpawnActor<AActor>(ClassToSpawn, Location, Rotation, SpawnParams);
 	if (IsValid(NewActor))
 	{
 		NewActor->SetReplicates(true);
 		NewActor->SetReplicateMovement(true);
+		NewActor->SetInstigator(Cast<APawn>(BossCharacter));
+		NewActor->SetOwner(Cast<APawn>(BossCharacter));
 		PoolList->PooledActors.Add(NewActor);
-		AllPooledActors.Add(NewActor);
 
 		if (NewActor->Implements<UBossPoolableActorInterface>())
 		{
@@ -107,7 +111,8 @@ void UBossObjectPoolWorldSubsystem::ReturnActorToPool(AActor* Actor)
 	}
 }
 
-ARangeAttackProjectile* UBossObjectPoolWorldSubsystem::SpawnRangeAttackProjectile(const FVector& Location, const FRotator& Rotation)
+ARangeAttackProjectile* UBossObjectPoolWorldSubsystem::SpawnRangeAttackProjectile(
+	const FVector& Location, const FRotator& Rotation)
 {
 	if (IsValid(PoolConfig->RangeAttackProjectileClass))
 	{
@@ -141,7 +146,7 @@ ARushBossClone* UBossObjectPoolWorldSubsystem::SpawnRushBossClone(const FVector&
 }
 
 ADestructibleObject* UBossObjectPoolWorldSubsystem::SpawnDestructibleObject(const FVector& Location,
-	const FRotator& Rotation)
+                                                                            const FRotator& Rotation)
 {
 	if (IsValid(PoolConfig->DestructibleObjectClass))
 	{
@@ -150,4 +155,9 @@ ADestructibleObject* UBossObjectPoolWorldSubsystem::SpawnDestructibleObject(cons
 
 	UE_LOG(LogTemp, Error, TEXT("No DestructibleObjectClass in Data Asset"));
 	return nullptr;
+}
+
+void UBossObjectPoolWorldSubsystem::SetBossReference(ABossCharacter* InBossCharacter)
+{
+	BossCharacter = InBossCharacter;
 }

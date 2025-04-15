@@ -10,7 +10,7 @@ UOneWayPlatformComponent::UOneWayPlatformComponent()
     PreviousZVelocity = -1.0f;
     bWasOnGround = true;
 
-    SetIsReplicated(true);
+    SetIsReplicatedByDefault(true);
 }
 
 void UOneWayPlatformComponent::BeginPlay()

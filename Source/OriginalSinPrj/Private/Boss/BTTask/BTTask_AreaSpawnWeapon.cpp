@@ -44,11 +44,7 @@ EBTNodeResult::Type UBTTask_AreaSpawnWeapon::ExecuteTask(UBehaviorTreeComponent&
 	LastSpawnTime = 0.0f;
 
 	bIsTaskExecuting = true;
-
-	// if (IsValid(BossCharacter->AreaSpawnWeaponMontage) && IsValid(BossCharacter->GetMesh()->GetAnimInstance()))
-	// {
-	// 	BossCharacter->GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &UBTTask_AreaSpawnWeapon::OnMontageEnded);
-	// }
+	
 	BossCharacter->PlayAreaSpawnWeaponMontage();
 	
 	return EBTNodeResult::InProgress;
@@ -88,8 +84,6 @@ void UBTTask_AreaSpawnWeapon::TickTask(UBehaviorTreeComponent& BTComponent, uint
 
 void UBTTask_AreaSpawnWeapon::FireWeapon()
 {
-	UE_LOG(LogTemp, Warning, TEXT("FireWeapon Called"));
-
 	FVector TargetLocation = BossController->GetTargetPlayerPawnLocation();
 	FVector SpawnLocation = FVector(0.0f, FMath::RandRange(-SpawnWidth/2, SpawnWidth/2), SpawnHeight);
 	FRotator SpawnRotation = (TargetLocation - SpawnLocation).Rotation();
@@ -104,16 +98,3 @@ void UBTTask_AreaSpawnWeapon::FireWeapon()
 		}
 	}
 }
-
-// void UBTTask_AreaSpawnWeapon::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
-// {
-// 	if (Montage == BossCharacter->AreaSpawnWeaponMontage)
-// 	{
-// 		if (IsValid(BossCharacter))
-// 		{
-// 			BossCharacter->GetMesh()->GetAnimInstance()->OnMontageEnded.RemoveDynamic(this, &UBTTask_AreaSpawnWeapon::OnMontageEnded);
-// 		}
-// 		FireWeapon();
-// 		FinishLatentTask(*BTComp, EBTNodeResult::Succeeded);
-// 	}
-// }

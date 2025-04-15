@@ -51,9 +51,6 @@ private:
 	float AccumulatedTime;
 	float LastSpawnTime;
 	bool bIsTaskExecuting;
-
-	// UFUNCTION()
-	// void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	
 	void FireWeapon();
 };
