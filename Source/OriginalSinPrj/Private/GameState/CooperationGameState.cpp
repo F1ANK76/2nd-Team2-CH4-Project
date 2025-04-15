@@ -59,7 +59,7 @@ void ACooperationGameState::Tick(float DeltaSeconds)
             break;
 
         case 3:
-            SetStage3CameraTransform();
+            //SetStage3CameraTransform(); -> Run only once at Start Stage3  -> in Gamemode
             break;
 
         default:
@@ -94,7 +94,6 @@ void ACooperationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 //보스전 타이머 켜기
 void ACooperationGameState::TurnOnTimer()
 {
-    PrimaryActorTick.bCanEverTick = true;
     bIsStage3Started = true;
 }
 
@@ -340,11 +339,13 @@ void ACooperationGameState::SetStage1CameraTransform()
 
     if (HasAuthority()) // 서버인지 확인
     {
-        CameraDistance = FMath::Max(maxY - minY, maxZ - minZ);
+        CameraDistance = maxY - minY + 2 * (maxZ - minZ);
 
         CameraLocation = MeanPlayerLocation;
         CameraRotation = FRotator::ZeroRotator;
     }
+
+    CooperationGameGameMode->SpawnedBaseCamera[0]->UpdateCameraLocationandRotation();
     
 }
 
@@ -421,19 +422,24 @@ void ACooperationGameState::SetStage2CameraTransform()
 
     if (HasAuthority())
     {
-        CameraDistance = FMath::Max(maxY - minY, maxZ - minZ);
+        CameraDistance = maxY - minY + 2 * (maxZ - minZ);
         CameraLocation = MeanActorLocation;
         CameraRotation = FRotator::ZeroRotator;
 
     }// 서버인지 확인
 
-
+    CooperationGameGameMode->SpawnedBaseCamera[0]->UpdateCameraLocationandRotation();
 }
 
 void ACooperationGameState::SetStage3CameraTransform()
 {
-    //맵 전체 고정?
-    //분신에게 끌려갔을 때 판정은?
+
+    //Fix Camera Settings
+    CameraDistance = CooperationGameGameMode->BossStageCameraDistance[0];
+    CameraLocation = CooperationGameGameMode->BossStageCameraLocations[0];
+    CameraRotation = CooperationGameGameMode->BossStageCameraAngle[0];
+
+    CooperationGameGameMode->SpawnedBaseCamera[0]->UpdateCameraLocationandRotation();
 }
 
 

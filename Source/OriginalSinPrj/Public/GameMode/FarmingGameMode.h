@@ -16,7 +16,7 @@ class ORIGINALSINPRJ_API AFarmingGameMode : public AGameMode, public IBattleEven
 {
 	GENERATED_BODY()
 	
-
+    //낙사 있음, 서로 데미지 없음.
     //GameMode Default Function
 public:
     AFarmingGameMode();
@@ -26,6 +26,8 @@ public:
     //Added GameMode Function
     //Control Game Function
 public:
+
+
 
     void MoveLevel(const FName& LevelName);
 
@@ -42,6 +44,7 @@ public:
 
     UFUNCTION(BlueprintCallable)
     void HandleMonsterKilled(AActor* DeadMonster, AController* Killer); //몬스터가 죽으면 이걸 호출
+
 
 
 

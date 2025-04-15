@@ -7,6 +7,7 @@
 #include "../Player/BaseWitch.h"
 #include "../Widget/LevelWidget/CooperationWidget.h"
 #include "GameState/CooperationGameState.h"
+#include "BaseCamera.h"
 #include "CooperationGameMode.generated.h"
 
 
@@ -26,11 +27,35 @@ public:
     //Control Game Function
     UFUNCTION(BlueprintCallable)
     void StartGame(); //game 시작 트리거
+
     void EndGame();
     
 public:
     TObjectPtr<ACooperationGameState> CooperationGameState = nullptr;
 
+    UPROPERTY(EditDefaultsOnly, Category = "Camera")
+    TSubclassOf<ABaseCamera> BaseCamera;
+
+    // 생성된 카메라를 관리할 배열
+    UPROPERTY()
+    TArray<ABaseCamera*> SpawnedBaseCamera;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BossCamera")
+    TArray<FVector> CameraSpawnLocations;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BossCamera")
+    TArray<FVector> BossStageCameraLocations;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BossCamera")
+    TArray<float> BossStageCameraDistance;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BossCamera")
+    TArray<FRotator> BossStageCameraAngle;
+
+    //카메라 생성 함수
+    void SpawnCamera();
+
+    void AttachPlayerToCamera(ACharacter* Player, ABaseCamera* Camera);
 
     UPROPERTY(BlueprintReadWrite)
     int32 StageIndex = 1;

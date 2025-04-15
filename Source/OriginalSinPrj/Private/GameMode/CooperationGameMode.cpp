@@ -41,6 +41,8 @@ void ACooperationGameMode::BeginPlay()
     //Initial Stage index is 0;
     StageIndex = 0;
 
+    SpawnCamera();
+
     //Open Player UI;
     InitPlayerUI();
 
@@ -53,6 +55,39 @@ void ACooperationGameMode::BeginPlay()
 
 
 }
+
+void ACooperationGameMode::SpawnCamera()
+{
+    UWorld* World = GetWorld();
+    if (!IsValid(World) || !IsValid(BaseCamera)) return;
+    
+    for (const FVector& SpawnLocation : CameraSpawnLocations)
+    {
+        FRotator SpawnRotation = FRotator::ZeroRotator;
+
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+        ABaseCamera* SpawnedCamera = World->SpawnActor<ABaseCamera>(BaseCamera, SpawnLocation, SpawnRotation, SpawnParams);
+        if (SpawnedCamera)
+        {
+            SpawnedBaseCamera.Add(SpawnedCamera);
+        }
+    }
+}
+
+void ACooperationGameMode::AttachPlayerToCamera(ACharacter* Player, ABaseCamera* Camera)
+{
+    APlayerController* PlayerController = Cast<APlayerController>(Player->GetController());
+    if (PlayerController == nullptr) return;  // 컨트롤러가 없으면 종료
+
+    if (PlayerController)
+    {
+        Camera->ActivateCamera(PlayerController);
+    }
+    
+}
+
 
 
 void ACooperationGameMode::SetPlayerColorIndex()
@@ -99,6 +134,11 @@ int ACooperationGameMode::GetPlayerColorIndex(AController* PlayController)
 
 void ACooperationGameMode::StartGame()
 {
+
+    //Camera Settings
+
+    AttachPlayerToCamera(SpawnedCharacters[0], SpawnedBaseCamera[0]);
+    AttachPlayerToCamera(SpawnedCharacters[1], SpawnedBaseCamera[0]);
 
     //Functions to be processed before loading and starting the stage
     //Prepare the game, display the start UI...
@@ -160,6 +200,7 @@ void ACooperationGameMode::ReadyStage1()
 
     //Set to player position for stage 1
     SetPlayerLocation();
+
 
 
     //CooperationUI Turn on Stage1 UI
@@ -229,8 +270,10 @@ void ACooperationGameMode::ReadyStage3()
     // 
     //CooperationUI Stage3로 바꾸기
     //->ActiveStage3Widget();
-    
-    
+    CooperationGameState->SetStage3CameraTransform();
+
+    AttachPlayerToCamera(SpawnedCharacters[0], SpawnedBaseCamera[0]);
+    AttachPlayerToCamera(SpawnedCharacters[1], SpawnedBaseCamera[1]);
     //Test Code
     //임시 딜레이 기능
 
@@ -724,6 +767,8 @@ void ACooperationGameMode::PossessCharacter(APlayerController* PC, APawn* PawnTo
     PC->Possess(PawnToPossess);
 
     UE_LOG(LogTemp, Warning, TEXT("Possessed Pawn: %s by Controller: %s"), *GetNameSafe(PawnToPossess), *GetNameSafe(PC));
+
+
 }
 
 
@@ -746,6 +791,8 @@ void ACooperationGameMode::BossSetPlayerLocation(ACharacter* PlayerChar)
 {
     if (IsValid(PlayerChar))
     {
+        //Camera Settings
+        AttachPlayerToCamera(PlayerChar, SpawnedBaseCamera[1]);
         // 플레이어의 정보를 비교 할까 말까...
         PlayerHijackedLocation = PlayerChar->GetActorLocation();
 
@@ -762,6 +809,7 @@ void ACooperationGameMode::BossReturnPlayerLocation(ACharacter* PlayerChar)
 
         //이전 위치 저장해서 되돌리기
         PlayerChar->SetActorLocation(PlayerHijackedLocation);
+        AttachPlayerToCamera(PlayerChar, SpawnedBaseCamera[0]);
     }
 }
 

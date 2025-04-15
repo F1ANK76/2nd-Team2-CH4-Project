@@ -123,6 +123,10 @@ void AFarmingGameMode::EndMultiGame()
     // Move to next...
 }
 
+//이전 게임모드에서 맵 설정 받아오는 함수.
+//이전 게임모드에서 캐릭터를 받아오는 함수.
+
+
 void AFarmingGameMode::MoveLevel(const FName& LevelName)
 {
     UWorld* World = GetWorld();
@@ -130,11 +134,13 @@ void AFarmingGameMode::MoveLevel(const FName& LevelName)
     {
         if (NetMode == NM_Standalone)
         {
-            World->ServerTravel(TEXT("/Game/Maps/SingleLevel?listen"), true);
+            //선택한 맵으로 이동할 수 있도록 수정.
+            //World->ServerTravel(TEXT("/Game/Maps/SingleLevel?listen"), true);
         }
         else
         {
-            World->ServerTravel(TEXT("/Game/Maps/MatchLevel?listen"), true);
+            //선택한 맵으로 이동할 수 있도록 수정.
+            //World->ServerTravel(TEXT("/Game/Maps/MatchLevel?listen"), true);
         }
     }
     

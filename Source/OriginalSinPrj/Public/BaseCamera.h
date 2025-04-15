@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Camera/CameraComponent.h"
 #include "GameFramework/GameStateBase.h"
+#include "OriginalSinPrj/Interface/CameraStateInterface.h"
 #include "BaseCamera.generated.h"
 
 UCLASS()
@@ -15,7 +17,7 @@ class ORIGINALSINPRJ_API ABaseCamera : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ABaseCamera();
-
+	ICameraStateInterface* CameraState = nullptr;
 	AGameStateBase* GameState = nullptr;
 protected:
 	// Called when the game starts or when spawned
@@ -24,7 +26,10 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	UCameraComponent* CameraComponent;
+
 	UPROPERTY(BlueprintReadOnly)
 	FVector CamLoc = FVector::ZeroVector;
 	
@@ -34,5 +39,8 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	float CamDist = 0.0f;
 
+	void UpdateCameraLocationandRotation();
+
+	void ActivateCamera(APlayerController* PC);
 
 };
