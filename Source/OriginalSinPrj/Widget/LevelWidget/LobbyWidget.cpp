@@ -6,51 +6,59 @@
 #include "../AddedWidget/MapSelectWidget.h"
 #include "../AddedWidget/CharacterSelectWidget.h"
 #include "../AddedWidget/GameSettingWidget.h"
+#include "Player/Controller/WitchController.h"
+#include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
 
-void ULobbyWidget::NativeConstruct()
+
+void ULobbyWidget::InitWidget(UUISubsystem* uiSubsystem)
 {
-    Super::NativeConstruct();
+    Super::InitWidget(uiSubsystem);
 
     if (MapSelectButton)
     {
         MapSelectButton->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickMapSelect);
     }
-        
 
     if (CharacterSelectButton)
     {
         CharacterSelectButton->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickCharacterSelect);
     }
-        
 
     if (GameSettingButton)
     {
         GameSettingButton->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickGameSetting);
     }
-        
 
     if (QuitButton)
     {
-        QuitButton->OnClicked.RemoveDynamic(this, &ULobbyWidget::OnClickedMoveTitle);
         QuitButton->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickedMoveTitle);
     }
 
     if (ReadyButton)
     {
-        ReadyButton->OnClicked.RemoveDynamic(this, &ULobbyWidget::OnClickReady);
         ReadyButton->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickReady);
     }
 
     if (GameStartButton)
     {
-        GameStartButton->OnClicked.RemoveDynamic(this, &ULobbyWidget::OnClickGameStart);
         GameStartButton->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickGameStart);
     }
 
-    // ±âº»À¸·Î ¸Ê ¼±ÅÃ¸¸ º¸ÀÌ°Ô
+    MapSelectWidget->InitWidget(UIHandle);
+    CharacterSelectWidget->InitWidget(UIHandle);
+    GameSettingWidget->InitWidget(UIHandle);
+}
+
+void ULobbyWidget::NativeConstruct()
+{
+    Super::NativeConstruct();
+
+    // ï¿½âº»ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½
     if (MapSelectWidget) MapSelectWidget->SetVisibility(ESlateVisibility::Collapsed);
     if (CharacterSelectWidget) CharacterSelectWidget->SetVisibility(ESlateVisibility::Collapsed);
     if (GameSettingWidget) GameSettingWidget->SetVisibility(ESlateVisibility::Collapsed);
+
+    bIsReadied = false;
 }
 
 void ULobbyWidget::OnClickMapSelect()
@@ -78,11 +86,76 @@ void ULobbyWidget::OnClickGameSetting()
 
 void ULobbyWidget::OnClickReady()
 {
-    //¼­¹ö¿¡ readyµÆ´Ù°í ¾Ë¸²
+    if (!CheckValidOfPlayerController())
+    {
+        return;
+    }
+
+    if (bIsReadied)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("OnClicked Unready"));
+        OwningPC->OnUnreadiedClient();
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("OnClicked Ready"));
+        OwningPC->OnReadiedClient();
+    }
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ readyï¿½Æ´Ù°ï¿½ ï¿½Ë¸ï¿½
 }
 
 
 void ULobbyWidget::OnClickGameStart()
 {
-    //¼­¹ö¿¡ ¸ðµÎ°¡ ·¹µð »óÅÂ¶ó¸é °ÔÀÓ ½ÃÀÛÇÏ°Ú´Ù°í ¾Ë¸²
+    if (!CheckValidOfPlayerController())
+    {
+        return;
+    }
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Î°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¶ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°Ú´Ù°ï¿½ ï¿½Ë¸ï¿½
+    OwningPC->OnClickedStartButton();
+}
+
+bool ULobbyWidget::CheckValidOfGameInstance()
+{
+    if (!IsValid(GetGameInstance()))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("GameInstance is invalid"));
+        return false;
+    }
+
+    LocalGameInstance = GetGameInstance<UOriginalSinPrjGameInstance>();
+
+    if (!IsValid(LocalGameInstance))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("GameInstance Cast Fail"));
+        return false;
+    }
+
+    return true;
+}
+
+bool ULobbyWidget::CheckValidOfPlayerController()
+{
+    if (!CheckValidOfGameInstance())
+    {
+        return false;
+    }
+
+    APlayerController* NewPC = LocalGameInstance->GetOwningPlayerController();
+
+    if (!IsValid(NewPC))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Player Controller is invalid"));
+        return false;
+    }
+
+    OwningPC = Cast<AWitchController>(NewPC);
+
+    if (!IsValid(OwningPC))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Player Controller Cast Fail"));
+        return false;
+    }
+
+    return true;
 }

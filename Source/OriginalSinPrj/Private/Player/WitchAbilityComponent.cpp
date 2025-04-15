@@ -131,7 +131,7 @@ void UWitchAbilityComponent::CallSkillAttack(int32 SkillNum)
 		AbilityBuffer.CurrentAbility = Skill5Ability;
 		break;
 	}
-
+	AbilityBuffer.NeedMana = SkillNum + 1;
 	ExcuteCurrentAbility();
 }
 
@@ -251,6 +251,16 @@ void UWitchAbilityComponent::PauseBufferTimer()
 	{
 		bIsPlayingAnim = true;
 	}
+}
+
+void UWitchAbilityComponent::AddCurrentMana(float Value)
+{
+	AbilityBuffer.CurrentMana = FMath::Clamp(AbilityBuffer.CurrentMana + Value, 0, AbilityBuffer.MaxMana);
+}
+
+void UWitchAbilityComponent::SetMaxMana(float Value)
+{
+	AbilityBuffer.MaxMana = Value;
 }
 
 void UWitchAbilityComponent::BeginPlay()

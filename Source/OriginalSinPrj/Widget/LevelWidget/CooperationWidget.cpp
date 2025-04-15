@@ -10,9 +10,11 @@
 #include "Styling/SlateTypes.h"
 
 
-void UCooperationWidget::NativeConstruct()
+void UCooperationWidget::InitWidget(UUISubsystem* uiSubsystem)
 {
-    ////////////////////////////ÀÓ½Ã¹öÆ°/////////////////////////////////
+    Super::InitWidget(uiSubsystem);
+
+    ////////////////////////////ï¿½Ó½Ã¹ï¿½Æ°/////////////////////////////////
     if (tempDamage)
         tempDamage->OnClicked.AddDynamic(this, &UCooperationWidget::damage);
     if (temp_boss_init)
@@ -32,9 +34,12 @@ void UCooperationWidget::NativeConstruct()
 
     if (StopTimerButton)
         StopTimerButton->OnClicked.AddDynamic(this, &UCooperationWidget::StopStageTimer);
-    ////////////////////////////ÀÓ½Ã¹öÆ°/////////////////////////////////
+    ////////////////////////////ï¿½Ó½Ã¹ï¿½Æ°/////////////////////////////////
+}
 
-
+void UCooperationWidget::NativeConstruct()
+{
+    Super::NativeConstruct();
 
     ProgressBarColors = {
     FLinearColor(0.47f, 0.25f, 0.31f, 1.f),
@@ -57,18 +62,18 @@ void UCooperationWidget::ActiveWidgetbyStage(int32 StageIndex)
     switch (StageIndex)
     {
     case 1:
-        // 1´Ü°è À§Á¬ È°¼ºÈ­
+        // 1ï¿½Ü°ï¿½ ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­
         ActiveStage1Widget();
         break;
 
     case 2:
-        // 2´Ü°è À§Á¬ È°¼ºÈ­
+        // 2ï¿½Ü°ï¿½ ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­
         ActiveStage1Widget();
         ActiveStage2Widget();
         break;
 
     case 3:
-        // 3´Ü°è À§Á¬ È°¼ºÈ­
+        // 3ï¿½Ü°ï¿½ ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­
         ActiveStage1Widget();
         ActiveStage3Widget();
         break;
@@ -82,7 +87,7 @@ void UCooperationWidget::ActiveWidgetbyStage(int32 StageIndex)
 void UCooperationWidget::ActiveStage1Widget()
 {
     DeactivateAllWidgets();
-    // 1´Ü°è À§Á¬ È°¼ºÈ­
+    // 1ï¿½Ü°ï¿½ ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­
     Player1StateUI->SetVisibility(ESlateVisibility::Visible);
     Player2StateUI->SetVisibility(ESlateVisibility::Visible);
 
@@ -110,17 +115,17 @@ void UCooperationWidget::ActiveStage3Widget()
 
 void UCooperationWidget::DeactivateAllWidgets()
 {
-    // Player ´Ü°è UI
+    // Player ï¿½Ü°ï¿½ UI
     Player1StateUI->SetVisibility(ESlateVisibility::Collapsed);
     Player2StateUI->SetVisibility(ESlateVisibility::Collapsed);
 
-    // Enemy ´Ü°è UI
+    // Enemy ï¿½Ü°ï¿½ UI
     Enemy1StateUI->SetVisibility(ESlateVisibility::Collapsed);
     Enemy2StateUI->SetVisibility(ESlateVisibility::Collapsed);
     Enemy3StateUI->SetVisibility(ESlateVisibility::Collapsed);
     Enemy4StateUI->SetVisibility(ESlateVisibility::Collapsed);
 
-    // Boss ´Ü°è UI
+    // Boss ï¿½Ü°ï¿½ UI
     BossHPBar->SetVisibility(ESlateVisibility::Collapsed);
     BossCurrentHPText->SetVisibility(ESlateVisibility::Collapsed);
     BossMaxHPText->SetVisibility(ESlateVisibility::Collapsed);
@@ -133,7 +138,7 @@ void UCooperationWidget::DeactivateAllWidgets()
 
 
 
-//GameMode È¤Àº SubsystemÂÊ¿¡¼­ ÃÊ±âÈ­ ÇØÁÖ¸é, ÀÚµ¿À¸·Î UI¼³Á¤°ªÀÌ µé¾î°¡°Ô µÇ´Â ÇÔ¼ö.
+//GameMode È¤ï¿½ï¿½ Subsystemï¿½Ê¿ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­ ï¿½ï¿½ï¿½Ö¸ï¿½, ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ UIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½î°¡ï¿½ï¿½ ï¿½Ç´ï¿½ ï¿½Ô¼ï¿½.
 
 void UCooperationWidget::InitPlayerUI(FPlayerData* Player1, FPlayerData* Player2)
 {
@@ -141,7 +146,7 @@ void UCooperationWidget::InitPlayerUI(FPlayerData* Player1, FPlayerData* Player2
     Player2StateUI->InitPlayerState(*Player2);
 }
 
-//GameMode È¤Àº SubsystemÂÊ¿¡¼­ ¾÷µ¥ÀÌÆ® ÇØÁÖ¸é, UIÀÇ °ªÀ» ¹Ù²Ù´Â ÇÔ¼ö.
+//GameMode È¤ï¿½ï¿½ Subsystemï¿½Ê¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½Ö¸ï¿½, UIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²Ù´ï¿½ ï¿½Ô¼ï¿½.
 void UCooperationWidget::UpdatePlayerUI(FPlayerData* Player1, FPlayerData* Player2)
 {
     Player1StateUI->UpdateStatus(*Player1);
@@ -171,7 +176,7 @@ void UCooperationWidget::InitBossUI(FBossUIData* BossData)
     BossCurrentHPText->SetText(FText::AsNumber(BossData->MaxHP));
     BossMaxHPText->SetText(FText::AsNumber(BossData->MaxHP));
 
-    int32 RemainHPLineCount = BossRemaingHPMaxLine; // °è»ê½Ä;
+    int32 RemainHPLineCount = BossRemaingHPMaxLine; // ï¿½ï¿½ï¿½ï¿½;
     FString FormattedText = FString::Printf(TEXT("X%d"), RemainHPLineCount);
     RemainHPLine->SetText(FText::FromString(FormattedText));
 
@@ -183,7 +188,7 @@ void UCooperationWidget::UpdateBossUI(FBossUIData* BossData)
     BossCurrentHPText->SetText(FText::AsNumber(BossData->CurrentHP));
     BossMaxHPText->SetText(FText::AsNumber(BossData->MaxHP));
 
-    int32 RemainHPLineCount = BossData->CurrentHP / HPPerLine; // °è»ê½Ä;    .
+    int32 RemainHPLineCount = BossData->CurrentHP / HPPerLine; // ï¿½ï¿½ï¿½ï¿½;    .
     float Fraction = static_cast<float>(temp_boss_hp % HPPerLine) / HPPerLine;
     BossHPBar->SetPercent(Fraction);
     if (BossData->CurrentHP > HPPerLine)
@@ -197,11 +202,11 @@ void UCooperationWidget::UpdateBossUI(FBossUIData* BossData)
     }
 
 
-    // ¸¶Áö¸· Ã¼·ÂÁÙÀÏ °æ¿ì, Æ¯¼ö »ö»ó Àû¿ë
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½, Æ¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (RemainHPLineCount == 0)
     {
         BossHPBar->WidgetStyle.FillImage.TintColor = FSlateColor(ProgressBarColors[(RemainHPLineCount + 1) % (ProgressBarColors.Num() - 1)]);
-        BossHPBar->WidgetStyle.BackgroundImage.TintColor = FSlateColor(FLinearColor::Black); // ¶Ç´Â ¼û±è
+        BossHPBar->WidgetStyle.BackgroundImage.TintColor = FSlateColor(FLinearColor::Black); // ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½
     }
     else
     {
@@ -217,7 +222,7 @@ void UCooperationWidget::StartStageTimer()
 {
     ElapsedTime = 0.0f;
 
-    // 1ÃÊ °£°ÝÀ¸·Î TickStageTimer È£Ãâ
+    // 1ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ TickStageTimer È£ï¿½ï¿½
     GetWorld()->GetTimerManager().SetTimer(
         StageTimerHandle,
         this,
@@ -251,7 +256,7 @@ void UCooperationWidget::StopStageTimer()
 
 
 /////////////////////////////////test///////////////////////////////////
-//ÀÓ½ÃÇÔ¼ö Å×½ºÆ®¿ë
+//ï¿½Ó½ï¿½ï¿½Ô¼ï¿½ ï¿½×½ï¿½Æ®ï¿½ï¿½
 void UCooperationWidget::damage()
 {
     temp_boss_hp = temp_boss_hp - 3;
@@ -289,7 +294,7 @@ void UCooperationWidget::tempUpdateBossUI()
     BossMaxHPText->SetText(FText::AsNumber(max_boss_hp));
 
 
-    int32 RemainHPLineCount = temp_boss_hp / HPPerLine; // °è»ê½Ä;
+    int32 RemainHPLineCount = temp_boss_hp / HPPerLine; // ï¿½ï¿½ï¿½ï¿½;
     float Fraction = static_cast<float>(temp_boss_hp % HPPerLine) / HPPerLine;
     BossHPBar->SetPercent(Fraction);
 
@@ -304,11 +309,11 @@ void UCooperationWidget::tempUpdateBossUI()
         RemainHPLine->SetText(FText::FromString(TEXT("")));
     }
 
-    // ¸¶Áö¸· Ã¼·ÂÁÙÀÏ °æ¿ì, Æ¯¼ö »ö»ó Àû¿ë
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½, Æ¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (RemainHPLineCount == 0)
     {
         BossHPBar->WidgetStyle.FillImage.TintColor = FSlateColor(ProgressBarColors[(RemainHPLineCount + 1) % (ProgressBarColors.Num() - 1)]);
-        BossHPBar->WidgetStyle.BackgroundImage.TintColor = FSlateColor(ProgressBarColors.Last()); // ¶Ç´Â ¼û±è
+        BossHPBar->WidgetStyle.BackgroundImage.TintColor = FSlateColor(ProgressBarColors.Last()); // ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½
     }
     else
     {

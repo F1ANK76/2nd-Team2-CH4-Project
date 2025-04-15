@@ -10,7 +10,7 @@ UKnockbackComponent::UKnockbackComponent()
     MinZKnockback = 0.5f;
     ZKnockbackStrengthMultiplier = 0.0015f;
 
-    SetIsReplicated(true);
+    SetIsReplicatedByDefault(true);
 }
 
 void UKnockbackComponent::BeginPlay()

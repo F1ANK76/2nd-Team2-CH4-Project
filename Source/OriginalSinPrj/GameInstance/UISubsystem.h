@@ -9,6 +9,8 @@
 
 class UBaseWidget;
 class UUISettings;
+class AWitchController;
+class UOriginalSinPrjGameInstance;
 
 UCLASS()
 class ORIGINALSINPRJ_API UUISubsystem : public UGameInstanceSubsystem
@@ -18,9 +20,18 @@ class ORIGINALSINPRJ_API UUISubsystem : public UGameInstanceSubsystem
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
-	void ShowLevel(ELevelType LevelType);
+	void ShowLevelWidget(ELevelType LevelType);
+	//void ShowLevel(ELevelType LevelType);
 	void ShowWidget(EAddWidgetType WidgetType);
+	void CloseWidget(EAddWidgetType WidgetType);
 	void CreateWidgets();
+
+	void SetVisibilityWidget(bool bIsVisible);
+	const ELevelType GetCurrentLevelType();
+	void OnClickedMoveLevel(ELevelType LevelType, bool bIsSingle);
+
+	bool CheckValidOfGameInstance();
+	void SetMouseMode(bool MouseMode);
 
 	UFUNCTION(BlueprintCallable)
 	void CloseGame();
@@ -85,4 +96,16 @@ public:
 private:
 	UFUNCTION()
 	void OnPostLoadMap(UWorld* LoadedWorld);
+
+	UBaseWidget* CreateWidgetByClass(TSubclassOf<UBaseWidget> WidgetClass);
+
+private:
+	UPROPERTY()
+	ELevelType CurrentLevel = ELevelType::IntroLevel;
+
+	UPROPERTY()
+	TObjectPtr<UBaseWidget> TempWidget = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UOriginalSinPrjGameInstance> GameInstance = nullptr;
 };

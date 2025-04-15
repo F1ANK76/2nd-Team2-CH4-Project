@@ -6,12 +6,10 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 
-//InitWidgetÀÌ ¾ÆÁ÷ ÀÛµ¿ÇÒ ¼ö ¾ø¾î¼­ ¸¸µç...
-void UCharacterSelectTileWidget::NativeConstruct()
+//InitWidgetï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ûµï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½î¼­ ï¿½ï¿½ï¿½ï¿½...
+void UCharacterSelectTileWidget::InitWidget(UUISubsystem* uiSubsystem)
 {
-	Super::NativeConstruct();
-
-
+	UE_LOG(LogTemp, Warning, TEXT("AddDynamic Button"));
 	CharacterSelectButton->OnClicked.AddDynamic(this, &ThisClass::HandleButtonClicked);
 
 	//FSlateBrush Brush;
@@ -21,12 +19,9 @@ void UCharacterSelectTileWidget::NativeConstruct()
 	CharacterName->SetText(FText::FromString("Name"));
 }
 
-
-
-
 void UCharacterSelectTileWidget::HandleButtonClicked()
 {
 	UE_LOG(LogTemp, Log, TEXT("Tile with was clicked!"));
-    OnCharacterSelectTileClicked.Broadcast(MyTileIndex); // ¹öÆ° ´­¸®¸é ÀÌº¥Æ® ³¯¸²
+    OnCharacterSelectTileClicked.Broadcast(MyTileIndex); // ï¿½ï¿½Æ° ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ® ï¿½ï¿½ï¿½ï¿½
 }
 

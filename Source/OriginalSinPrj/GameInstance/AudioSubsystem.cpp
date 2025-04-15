@@ -15,7 +15,7 @@ void UAudioSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	AudioDataSettings = GetDefault<UAudioDataSettings>();
 
-    LoadDataTables();
+    //LoadDataTables();
 }
 
 void UAudioSubsystem::LoadDataTables()
@@ -34,18 +34,80 @@ void UAudioSubsystem::LoadDataTables()
     }
 }
 
+void UAudioSubsystem::CheckLoadedLevelSound()
+{
+    if (!IsValid(AudioDataSettings))
+    {
+        return;
+    }
+
+    if (AudioDataSettings->LevelSounds.IsNull())
+    {
+        return;
+    }
+
+    if (!IsValid(LevelSoundTable))
+    {
+        LevelSoundTable = AudioDataSettings->LevelSounds.LoadSynchronous();
+    }
+}
+
+void UAudioSubsystem::PlayBGMByLevelType(ELevelType LevelType)
+{
+    CheckLoadedLevelSound();
+
+    ELevelSoundType SoundType = ELevelSoundType::TitleSound;
+
+    switch (LevelType)
+    {
+    case ELevelType::IntroLevel:
+    case ELevelType::TitleLevel:
+        SoundType = ELevelSoundType::TitleSound;
+        break;
+
+    case ELevelType::TrainingLevel:
+        SoundType = ELevelSoundType::TrainingSound;
+        break;
+
+    case ELevelType::FarmingLevel:
+        SoundType = ELevelSoundType::FarmingSound;
+        break;
+
+    case ELevelType::SingleLevel:
+        SoundType = ELevelSoundType::SingleSound;
+        break;
+
+    case ELevelType::MatchLevel:
+        SoundType = ELevelSoundType::MatchSound;
+        break;
+
+    case ELevelType::LobbyLevel:
+        SoundType = ELevelSoundType::LobbySound;
+        break;
+
+    case ELevelType::MultiLevel:
+        SoundType = ELevelSoundType::MultiSound;
+        break;
+
+    case ELevelType::CooperationLevel:
+        SoundType = ELevelSoundType::CooperationSound;
+        break;
+    }
+
+    PlayBGM(SoundType);
+}
+
 void UAudioSubsystem::PlayBGM(ELevelSoundType SoundType)
 {
     if (GetWorld())
     {
-        UDataTable* TargetTable = LevelSoundTable;
         UEnum* EnumPtr = StaticEnum<ELevelSoundType>();
 
-        if (TargetTable)
+        if (LevelSoundTable)
         {
             FName RowName = FName(*EnumPtr->GetNameStringByValue(static_cast<int64>(SoundType)));
 
-            const FLevelAudioDataStruct* FoundRow = TargetTable->FindRow<FLevelAudioDataStruct>(RowName, TEXT("PlayBGM AudioSubsystem"));
+            const FLevelAudioDataStruct* FoundRow = LevelSoundTable->FindRow<FLevelAudioDataStruct>(RowName, TEXT("PlayBGM AudioSubsystem"));
 
             if (FoundRow)
             {
@@ -77,7 +139,7 @@ void UAudioSubsystem::PlayBGM(ELevelSoundType SoundType)
 
 void UAudioSubsystem::PlaySFX(ESfxSoundType SoundType, uint8 DetailSoundType, FVector Location)
 {
-    // À§Ä¡¿¡ µû¸¥ ¼Ò¸® Àç»ý ÇÊ¿ä, UI »ç¿îµå¸¸ Ã³¸® °¡´É
+    // ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ò¸ï¿½ ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½, UI ï¿½ï¿½ï¿½å¸¸ Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     switch (SoundType)
     {
         case ESfxSoundType::Monster:
@@ -97,7 +159,7 @@ void UAudioSubsystem::SetAndApplyMasterVolume(float NewVolume)
 
     if (BgmComp)
     {
-        // ÇöÀç º¼·ý 0À¸·Î ÇÏ¸é BGM ¿ÏÀüÈ÷ ¸ØÃç¼­ ÀÏ½ÃÁ¤Áö·Î ÀÓ½Ã Á¶Ä¡
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ ï¿½Ï¸ï¿½ BGM ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ç¼­ ï¿½Ï½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ó½ï¿½ ï¿½ï¿½Ä¡
         if (MasterVolume != 0)
         {
             BgmComp->SetVolumeMultiplier(MasterVolume);

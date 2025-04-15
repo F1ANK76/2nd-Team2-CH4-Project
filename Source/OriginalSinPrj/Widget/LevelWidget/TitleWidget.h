@@ -15,7 +15,11 @@ class ORIGINALSINPRJ_API UTitleWidget : public UBaseWidget
 
 
 public:
-	virtual void NativeConstruct() override;
+	virtual void InitWidget(UUISubsystem* uiSubsystem) override;
+
+private:
+	UFUNCTION()
+	void OnSelectedSingleMode();
 
 private:
 	UPROPERTY(Meta = (BindWidget))
