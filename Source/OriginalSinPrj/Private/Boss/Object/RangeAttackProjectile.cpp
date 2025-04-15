@@ -7,8 +7,10 @@
 #include "Boss/BossObjectPoolWorldSubsystem.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/DamageType.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/BaseWitch.h"
 
 ARangeAttackProjectile::ARangeAttackProjectile()
 {
@@ -108,23 +110,38 @@ void ARangeAttackProjectile::OnOverlapBegin(
 	{
 		//보스 자신 제외
 		if (OtherActor->Tags.Contains("Boss")) return;
-		UE_LOG(LogTemp, Warning, TEXT("RangeAttack Projectile Hits : %s"), *OtherActor->GetName());
 
 		//캐릭터일 경우
-		if (OtherActor->IsA(ACharacter::StaticClass()))
-		{
-			ACharacter* HitCharacter = Cast<ACharacter>(OtherActor);
-			if (IsValid(HitCharacter))
-			{
-				UGameplayStatics::ApplyDamage(
-					HitCharacter,
-					Damage,
-					nullptr,
-					this,
-					nullptr);
-				IBossPoolableActorInterface::Execute_OnPooledObjectReset(this);
-			}
-		}
+		// if (OtherActor->IsA(ACharacter::StaticClass()))
+		// {
+		// 	ACharacter* HitCharacter = Cast<ACharacter>(OtherActor);
+		// 	if (IsValid(HitCharacter))
+		// 	{
+		// 		UGameplayStatics::ApplyDamage(
+		// 			HitCharacter,
+		// 			Damage,
+		// 			nullptr,
+		// 			this,
+		// 			nullptr);
+		// 		IBossPoolableActorInterface::Execute_OnPooledObjectReset(this);
+		// 	}
+		// }
+		
+		// if (OtherActor->IsA(ABaseWitch::StaticClass()))
+		// {
+		// 	ABaseWitch* HitWitch = Cast<ABaseWitch>(OtherActor);
+		// 	if (IsValid(HitWitch))
+		// 	{
+		// 		FDamageEvent DamageEvent;
+		// 		AController* InstigatorController = GetInstigatorController();
+		//
+		// 		HitWitch->TakeDamage(
+		// 			Damage,
+		// 			DamageEvent,
+		// 			InstigatorController,
+		// 			this);
+		// 	}
+		// }
 
 		//폰일 경우(추후 삭제 예정 : DefaultPawn 테스트용도)
 		if (OtherActor->IsA(APawn::StaticClass()))

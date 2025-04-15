@@ -7,6 +7,8 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "BossObjectPoolWorldSubsystem.generated.h"
 
+class ABossController;
+class ABossCharacter;
 class ADestructibleObject;
 class ARushBossClone;
 class ARangeAttackProjectile;
@@ -40,13 +42,15 @@ public:
 	ARushBossClone* SpawnRushBossClone(const FVector& Location, const FRotator& Rotation);
 	ADestructibleObject* SpawnDestructibleObject(const FVector& Location, const FRotator& Rotation);
 
+	TMap<TSubclassOf<AActor>, FActorPoolList> GetObjectPools() const { return ObjectPools; }
+	void SetBossReference(ABossCharacter* InBossCharacter);
+
 protected:
 	UPROPERTY()
 	UBossPoolObjectDataAsset* PoolConfig;
 
 	UPROPERTY()
 	TMap<TSubclassOf<AActor>, FActorPoolList> ObjectPools;
-	//GC 방지
-	UPROPERTY()
-	TArray<TObjectPtr<AActor>> AllPooledActors;
+
+	ABossCharacter* BossCharacter;
 };
