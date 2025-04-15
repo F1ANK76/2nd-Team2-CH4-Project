@@ -7,6 +7,7 @@
 #include "../Player/BaseWitch.h"
 #include "../Widget/LevelWidget/CooperationWidget.h"
 #include "GameState/CooperationGameState.h"
+#include "BaseCamera.h"
 #include "CooperationGameMode.generated.h"
 
 
@@ -18,7 +19,6 @@ class ORIGINALSINPRJ_API ACooperationGameMode : public AGameMode
     //GameMode Default Function
 public:
     ACooperationGameMode();
-
     virtual void StartPlay() override; // BeginPlay보다 먼저 호출
     virtual void BeginPlay() override; // 게임을 시작할 준비가 되면 호출
 
@@ -26,16 +26,84 @@ public:
     //Control Game Function
     UFUNCTION(BlueprintCallable)
     void StartGame(); //game 시작 트리거
+
     void EndGame();
     
 public:
     TObjectPtr<ACooperationGameState> CooperationGameState = nullptr;
 
+
+    UPROPERTY(BlueprintReadWrite)
+    TArray<ABaseWitch*> SpawnedCharacters;
+    
+    // 생성된 캐릭터를 관리할 배열
+    TArray<AActor*> ActivePlayers;
+
+    // return Current Activated Players
+    TArray<AActor*> GetActivePlayers() const
+    {
+        return ActivePlayers;
+    }
+
+    int CurrentPlayerCount = 0;
+
+
+    // 게임모드 클래스에 선언
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Controller")
+    TSubclassOf<APlayerController> NewPlayerControllerClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+    TArray<FVector> PlayerSpawnLocations;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+    TArray<FVector> PlayerSettingLocations;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+    TArray<FVector> PlayerResultLocations;
+
+
+
+
+    UPROPERTY(EditDefaultsOnly, Category = "Camera")
+    TSubclassOf<ABaseCamera> BaseCamera;
+
+    // 생성된 카메라를 관리할 배열
+    UPROPERTY()
+    TArray<ABaseCamera*> SpawnedBaseCamera;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BossCamera")
+    TArray<FVector> CameraSpawnLocations;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BossCamera")
+    TArray<FVector> BossStageCameraLocations;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BossCamera")
+    TArray<float> BossStageCameraDistance;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BossCamera")
+    TArray<FRotator> BossStageCameraAngle;
+
+    //카메라 생성 함수
+    void SpawnCamera();
+
+    void AttachPlayerToCamera(ACharacter* Player, ABaseCamera* Camera);
+
+    UPROPERTY(BlueprintReadWrite)
     int32 StageIndex = 1;
 
-    bool bIsStage1Cleared;
-    bool bIsStage2Cleared;
-    bool bIsStage3Cleared;
+    int Player1ColorIndex = 0;
+    int Player2ColorIndex = 1;
+
+    void SetPlayerColorIndex();
+
+    UFUNCTION(BlueprintCallable)
+    int GetPlayerColorIndex(ACharacter* PlayerChar);
+
+    int GetPlayerColorIndex(AController* PlayController);
+
+    bool bIsStage1Cleared = false;
+    bool bIsStage2Cleared = false;
+    bool bIsStage3Cleared = false;
 
     UFUNCTION(BlueprintCallable)
     void ReadyStage1(); //Stage1 세팅 트리거
@@ -75,10 +143,14 @@ public:
     void ApplyBuffToBothPlayer();
 
     UFUNCTION(BlueprintCallable)
-    void HandleMonsterKilled(AController* Killer); //몬스터가 죽으면 이걸 호출
+    void HandleMonsterKilled(AActor* DeadMonster, AController* Killer); //몬스터가 죽으면 이걸 호출
     
     UFUNCTION(BlueprintCallable)
-    void HandleEnemyKilled(AController* Killer); //몬스터가 죽으면 이걸 호출
+    void HandleEnemyKilled(AActor* DeadMonster, AController* Killer); //몬스터가 죽으면 이걸 호출
+
+    UFUNCTION(BlueprintCallable)
+    void HandlePlayerKilled(AActor* DeadPlayer, AController* Killer); //플레이어가 죽으면 이걸 호출
+
 
     UPROPERTY(EditDefaultsOnly, Category = "Spawn")
     TSubclassOf<ABaseWitch> DefaultCharacterClass;
@@ -87,20 +159,8 @@ public:
     TSubclassOf<UCooperationWidget> CooperationWidget;
 
 
-    // 생성된 캐릭터를 관리할 배열
-    UPROPERTY()
-    TArray<ABaseWitch*> SpawnedCharacters;
 
-    // 게임모드 클래스에 선언
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Controller")
-    TSubclassOf<APlayerController> NewPlayerControllerClass;
-
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
-    TArray<FVector> PlayerSpawnLocations;
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
-    TArray<FVector> PlayerSettingLocations;
+    void RequestOpenResultUI();
 
     void CheckUntilAllPlayerSelectBuff(); // 모든 플레이어가 버프를 선택했는지 보고 대기하는 함수.
 
@@ -114,9 +174,9 @@ public:
 
     TSubclassOf<APlayerController> PlayerControllerClass;
 
-    void SetPlayerUnReady(ACharacter* PlayerChar);
+    void SetPlayerUnReady();
 
-    void SetPlayerReady(ACharacter* PlayerChar);
+    void SetPlayerReady();
 
 
     // Stage1
@@ -126,7 +186,8 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> MonsterSpawnLocations;
 
-    TMap<FVector, AActor*> ActiveMonsters;
+    TArray<AActor*> ActiveMonsters;
+
 
     void SpawnMonsters();
 
@@ -135,6 +196,15 @@ public:
 
     UPROPERTY(EditAnywhere, Category = "Spawning")
     TSubclassOf<AActor> MonsterBlueprintClass;
+
+    UPROPERTY(EditAnywhere, Category = "StageClearTrigger")
+    TArray<UObject*> Stage1ClearTriggerObject;
+
+    UFUNCTION(BlueprintCallable)
+    void TriggerStage1Clear(UObject* Object);
+
+    bool Stage1ClearTrigger1 = false;
+    bool Stage1ClearTrigger2 = false;
 
 
     // Stage2
@@ -147,7 +217,8 @@ public:
     UPROPERTY(EditAnywhere, Category = "Spawning")
     TSubclassOf<AActor> EnemyBlueprintClass;
 
-    TMap<FVector, AActor*> ActiveEnemies;
+    UPROPERTY(BlueprintReadWrite)
+    TArray<AActor*> ActiveEnemies;
 
     void SpawnEnemies();
 
@@ -158,12 +229,44 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> BossSpawnLocations;
 
+    UPROPERTY(EditAnywhere, Category = "Spawning")
+    TSubclassOf<AActor> BossBlueprintClass;
+
+    void SpawnBossMonsters();
 
 
+    //플레이어 강제이동(캐릭터, 로케이션)
+    UFUNCTION(BlueprintCallable)
+    void BossSetPlayerLocation(ACharacter* PlayerChar);
+
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ForceMove")
+    TArray<FVector> BossHijackingLocation;
+
+    FVector PlayerHijackedLocation = FVector::ZeroVector;
+
+    UFUNCTION(BlueprintCallable)
+    void BossReturnPlayerLocation(ACharacter* PlayerChar);
+    
+        
+        //또다른 보스 소환?
+    UFUNCTION(BlueprintCallable)
+    void SpawnGhostBoss();
+
+    UFUNCTION(BlueprintCallable)
+    void HandleBossMonsterKilled(AController* Killer);
+
+    UFUNCTION()
+    void TravelLevel();
 
 protected:
+    //UFUNCTION(NetMulticast, Reliable)
     void InitPlayerUI();
 
     //멀티 전용
     virtual void PostSeamlessTravel() override;
+
+
+
+
 };
