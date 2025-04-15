@@ -12,13 +12,13 @@ class ORIGINALSINPRJ_API AMenuGameState : public AGameState, public ILobbyEvent,
 {
 	GENERATED_BODY()
 	
-// ÇÔ¼ö
-public: /*------------------------°øÅë------------------------*/
+// ï¿½Ô¼ï¿½
+public: /*------------------------ï¿½ï¿½ï¿½ï¿½------------------------*/
 	virtual void TravelLevel(const FName& LevelName) override;
 	virtual void SelectCharacter(const FName& CharacterName, APlayerController* Player) override;
 	virtual void SelectMap(const FName& MapName) override;
 
-public: /*---------------------·ÎÄÃÇÃ·¹ÀÌ---------------------*/
+public: /*---------------------ï¿½ï¿½ï¿½ï¿½ï¿½Ã·ï¿½ï¿½ï¿½---------------------*/
 	
 	UFUNCTION(BlueprintCallable)
 	void Local_TravelLevel(const FName& LevelName);
@@ -26,7 +26,7 @@ public: /*---------------------·ÎÄÃÇÃ·¹ÀÌ---------------------*/
 	UFUNCTION(BlueprintCallable)
 	void Local_SelectCharacter(const FName& CharacterName, APlayerController* Player);
 
-public: /*---------------------¸ÖÆ¼ÇÃ·¹ÀÌ---------------------*/
+public: /*---------------------ï¿½ï¿½Æ¼ï¿½Ã·ï¿½ï¿½ï¿½---------------------*/
 
 	virtual void ReadyPlayer(APlayerController* Player) override;
 	virtual void UnreadyPlayer(APlayerController* Player) override;
@@ -69,13 +69,13 @@ public: /*---------------------¸ÖÆ¼ÇÃ·¹ÀÌ---------------------*/
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_ExitSessionPlayer(const FString& PlayerName);
 
-// º¯¼ö
-private: /*------------------------°øÅë------------------------*/
+// ï¿½ï¿½ï¿½ï¿½
+private: /*------------------------ï¿½ï¿½ï¿½ï¿½------------------------*/
 
-private: /*---------------------·ÎÄÃÇÃ·¹ÀÌ---------------------*/
+private: /*---------------------ï¿½ï¿½ï¿½ï¿½ï¿½Ã·ï¿½ï¿½ï¿½---------------------*/
 
 
-private: /*---------------------¸ÖÆ¼ÇÃ·¹ÀÌ---------------------*/
+private: /*---------------------ï¿½ï¿½Æ¼ï¿½Ã·ï¿½ï¿½ï¿½---------------------*/
 	bool bIsSessionConnected;
 	TMap<FString, bool> PlayerList;
 };

@@ -44,7 +44,7 @@ bool AHitAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 
 	Buffer.KnockGuage += Buffer.AddedGuage;
 	
-	Parent->LaunchCharacter(KnockDistance, false, false);
+	ResponseOnLaunched(KnockDistance);
 	SetActorTickEnabled(true);
 	Parent->SetMeshResponseToChanel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 
@@ -54,7 +54,7 @@ bool AHitAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 void AHitAbility::UndoAbility(FAbilityDataBuffer& Buffer)
 {
 	Super::UndoAbility(Buffer);
-
+	//UE_LOG(LogTemp, Warning, TEXT("Undo Hit"));
 	SetActorTickEnabled(false);
 
 	Parent->SetMeshResponseToChanel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
@@ -69,6 +69,16 @@ void AHitAbility::UndoAbility(FAbilityDataBuffer& Buffer)
 	Parent->StopAnimation(AbilityMontage);
 
 	KnockDistance = FVector::ZeroVector;
+}
+
+void AHitAbility::ResponseOnLaunched_Implementation(const FVector& KnockbackDistance)
+{
+	if (!IsValid(Parent))
+	{
+		return;
+	}
+
+	Parent->LaunchCharacter(KnockbackDistance, false, false);
 }
 
 bool AHitAbility::CheckExcuteable(FAbilityDataBuffer& Buffer)

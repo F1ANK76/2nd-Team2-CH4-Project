@@ -6,13 +6,10 @@
 #include "Components/Image.h"
 #include "Components/Button.h"
 
-void UBuffSelectWidget::NativeConstruct()
-{
-    Super::NativeConstruct();
 
-    BuffButton1->OnClicked.RemoveDynamic(this, &UBuffSelectWidget::OnBuff1Clicked);
-    BuffButton2->OnClicked.RemoveDynamic(this, &UBuffSelectWidget::OnBuff2Clicked);
-    BuffButton3->OnClicked.RemoveDynamic(this, &UBuffSelectWidget::OnBuff3Clicked);
+void UBuffSelectWidget::InitWidget(UUISubsystem* uiSubsystem)
+{
+    Super::InitWidget(uiSubsystem);
 
     BuffButton1->OnClicked.AddDynamic(this, &UBuffSelectWidget::OnBuff1Clicked);
     BuffButton2->OnClicked.AddDynamic(this, &UBuffSelectWidget::OnBuff2Clicked);
@@ -49,33 +46,33 @@ void UBuffSelectWidget::OnBuff1Clicked()
 {
     DeactivateOhterWidgets(1);
     //play animation
-    UE_LOG(LogTemp, Log, TEXT("Buff 1 ¼±ÅÃµÊ: %s"), *Buffs[0].BuffName.ToString());
-    //°ÔÀÓ¸ðµå Àü´Þ
+    UE_LOG(LogTemp, Log, TEXT("Buff 1 ï¿½ï¿½ï¿½Ãµï¿½: %s"), *Buffs[0].BuffName.ToString());
+    //ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 void UBuffSelectWidget::OnBuff2Clicked()
 {
     DeactivateOhterWidgets(2);
     //play animation
-    UE_LOG(LogTemp, Log, TEXT("Buff 2 ¼±ÅÃµÊ: %s"), *Buffs[1].BuffName.ToString());
-    //°ÔÀÓ¸ðµå Àü´Þ
+    UE_LOG(LogTemp, Log, TEXT("Buff 2 ï¿½ï¿½ï¿½Ãµï¿½: %s"), *Buffs[1].BuffName.ToString());
+    //ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 void UBuffSelectWidget::OnBuff3Clicked()
 {
     DeactivateOhterWidgets(3);
     //play animation
-    UE_LOG(LogTemp, Log, TEXT("Buff 3 ¼±ÅÃµÊ: %s"), *Buffs[2].BuffName.ToString());
-    //°ÔÀÓ¸ðµå Àü´Þ
+    UE_LOG(LogTemp, Log, TEXT("Buff 3 ï¿½ï¿½ï¿½Ãµï¿½: %s"), *Buffs[2].BuffName.ToString());
+    //ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 void UBuffSelectWidget::DeactivateOhterWidgets(int32 SelectedButtonIndex)
 {
-    //¹öÆ° µû´Ú ´­·¯¼­ µÎ°³ °¡Á®°¡´Â °Å ¹æÁö¿ë.
+    //ï¿½ï¿½Æ° ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
     switch (SelectedButtonIndex)
     {
     case 1:
-        BuffButton2->SetIsEnabled(false); // ¹öÆ° ºñÈ°¼ºÈ­ (Å¬¸¯ ¾È µÊ)
+        BuffButton2->SetIsEnabled(false); // ï¿½ï¿½Æ° ï¿½ï¿½È°ï¿½ï¿½È­ (Å¬ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½)
         BuffButton3->SetIsEnabled(false);
         break;
 
@@ -92,8 +89,8 @@ void UBuffSelectWidget::DeactivateOhterWidgets(int32 SelectedButtonIndex)
     default:
         break;
     }
-    BuffButton2->SetIsEnabled(false); // ¹öÆ° ºñÈ°¼ºÈ­ (Å¬¸¯ ¾È µÊ)
-    BuffButton3->SetIsEnabled(false);  // ¹öÆ° È°¼ºÈ­ (Å¬¸¯ °¡´É)
+    BuffButton2->SetIsEnabled(false); // ï¿½ï¿½Æ° ï¿½ï¿½È°ï¿½ï¿½È­ (Å¬ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½)
+    BuffButton3->SetIsEnabled(false);  // ï¿½ï¿½Æ° È°ï¿½ï¿½È­ (Å¬ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 
 }
 

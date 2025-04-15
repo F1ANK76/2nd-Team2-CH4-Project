@@ -3,11 +3,9 @@
 //#include "System/UIHandle.h"
 
 
-void UIntroWidget::NativeConstruct()
+void UIntroWidget::InitWidget(UUISubsystem* uiSubsystem)
 {
-	Super::NativeConstruct();
-	ToTitleButton->OnClicked.RemoveDynamic(this, &UBaseWidget::OnClickedMoveTitle);
+	Super::InitWidget(uiSubsystem);
+
 	ToTitleButton->OnClicked.AddDynamic(this, &UBaseWidget::OnClickedMoveTitle);
-
 }
-

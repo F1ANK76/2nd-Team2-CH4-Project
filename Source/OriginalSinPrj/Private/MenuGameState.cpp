@@ -2,7 +2,7 @@
 
 #include "Kismet/GameplayStatics.h"
 
-/*------------------------°øÅë------------------------*/
+/*------------------------ï¿½ï¿½ï¿½ï¿½------------------------*/
 void AMenuGameState::TravelLevel(const FName& LevelName)
 {
 	if (!bIsSessionConnected)
@@ -31,7 +31,7 @@ void AMenuGameState::SelectMap(const FName& MapName)
 {
 }
 
-/*---------------------·ÎÄÃÇÃ·¹ÀÌ---------------------*/
+/*---------------------ï¿½ï¿½ï¿½ï¿½ï¿½Ã·ï¿½ï¿½ï¿½---------------------*/
 void AMenuGameState::Local_TravelLevel(const FName& LevelName)
 {
 	UGameplayStatics::OpenLevel(this, LevelName);
@@ -42,7 +42,7 @@ void AMenuGameState::Local_SelectCharacter(const FName& CharacterName, APlayerCo
 
 }
 
-/*---------------------¸ÖÆ¼ÇÃ·¹ÀÌ---------------------*/
+/*---------------------ï¿½ï¿½Æ¼ï¿½Ã·ï¿½ï¿½ï¿½---------------------*/
 void AMenuGameState::ReadyPlayer(APlayerController* Player)
 {
 	Multicast_ReadyPlayer(Player);

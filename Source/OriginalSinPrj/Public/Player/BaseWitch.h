@@ -79,6 +79,8 @@ public:
 	UFUNCTION(Server, Reliable)
 	void RequestPauseTimer();
 
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 	void PlayMelleAttack(EEffectVisibleType Type, float DamageValue);
 	void StopMelleAttack();
 
@@ -90,6 +92,9 @@ public:
 	const ECharacterType GetWitchType() const;
 	const FVector GetHeadLocation() const;
 	const FVector GetFootLocation() const;
+
+	void SetColorIndex(bool Value);
+	void SetPlayerLevel(int32 LevelValue);
 
 protected:
 	UFUNCTION(BlueprintCallable)
@@ -137,7 +142,6 @@ protected:
 	UFUNCTION()
 	virtual void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -191,6 +195,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damager")
 	TObjectPtr<UBoxComponent> RightHandDamager = nullptr;
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	float AddedMana = 0.1f;
+
+
 protected:
 	TObjectPtr<AWitchController> WitchController = nullptr;
 	TObjectPtr<UWitchAnimInstance> WitchAnimInstance = nullptr;
@@ -203,4 +212,5 @@ protected:
 
 	bool bIsActivedOverlap = false;
 	float Damage = 0.0f;
+	bool bIsFirstIndex = false;
 };

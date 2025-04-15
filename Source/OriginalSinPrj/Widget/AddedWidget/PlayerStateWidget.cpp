@@ -25,7 +25,7 @@ void UPlayerStateWidget::InitPlayerState(const FPlayerData& Data)
 
 void UPlayerStateWidget::UpdateStatus(const FPlayerData& Data)
 {
-    // HP, Mana, Special °°Àº ½Ç½Ã°£ ¼öÄ¡¸¸ °»½Å
+    // HP, Mana, Special ï¿½ï¿½ï¿½ï¿½ ï¿½Ç½Ã°ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     HPBar->SetPercent(Data.CurrentHP / Data.MaxHP);
     ManaBar->SetPercent(Data.CurrentMana / Data.MaxMana);
     EXPBar->SetPercent(Data.CurrentEXP / Data.MaxEXP);
