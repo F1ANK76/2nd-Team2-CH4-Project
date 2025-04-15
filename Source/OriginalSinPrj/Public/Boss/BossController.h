@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
-//#include "Object/RangeAttackProjectile.h"
 #include "BossController.generated.h"
 
 class UBossObjectPoolWorldSubsystem;
@@ -17,10 +16,14 @@ class ORIGINALSINPRJ_API ABossController : public AAIController
 	GENERATED_BODY()
 
 public:
+	void StartBattle();
+	void EndBattle();
+	
 	void SpawnDestructibleObject();
 
 	void ActiveObjectSpawnTimer();
 	void DeactiveObjectSpawnTimer();
+	void StartInstantDeathAttackTimer();
 	
 	//getter
 	FVector GetTargetPlayerPawnLocation() const { return TargetPlayerPawn->GetActorLocation(); }
@@ -53,31 +56,37 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Boss | Property")
 	float SpecialAttackDelay = 40.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "InstantDeath | Property")
+	float InstantDeathDelay = 20.0f;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Boss | AI")
 	UBehaviorTree* BossBehaviorTree = nullptr;
 
 private:
 	bool bIsBattleStart = false;
+	TArray<ACharacter*> PlayerCharacters;
 	APawn* TargetPlayerPawn = nullptr;
 	FTimerHandle FindClosestPlayerTimerHandle;
 	FTimerHandle ObjectSpawnTimerHandle;
 	FTimerHandle BossHpCheckTimerHandle;
 	FTimerHandle SpecialAttackTriggerTimerHandle;
+	FTimerHandle InstantDeathAttackTimerHandle;
 
-	//DestructibleObject
+	//DestructibleObject Property
 	int32 DestructibleObjectCount = 0;
 	TArray<FName> TargetPlatformTags;
 	TArray<AActor*> FoundPlatformActors;
 	UBossObjectPoolWorldSubsystem* PoolWorldSubsystem;
 
+	//Controller Function
 	void UpdateBossFacingDirection();
 	APawn* FindClosestPlayer();
-	void StartBattle();
-	void EndBattle();
 
+	//SpecialAttack Function
 	void TriggerSpecialAttack();
-	 void UpdateBossHpForSpecialAttack();
+	void UpdateBossHpForSpecialAttack();
+	void KillAllPlayerAttack();
 
-	//DestructibleObject
+	//DestructibleObject Function
 	void FindPlatforms();
 };
