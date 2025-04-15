@@ -526,7 +526,7 @@ void ACooperationGameState::UpdateTimer()
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
             // 여기서 UISubsystem 사용 가능!
-            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->UpdateBossTimer(Timer);
+            //Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->UpdateBossTimer(Timer);
         }
     }
 }
