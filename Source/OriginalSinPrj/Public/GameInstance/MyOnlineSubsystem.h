@@ -13,10 +13,23 @@ class ORIGINALSINPRJ_API UMyOnlineSubsystem : public UGameInstanceSubsystem, pub
 	GENERATED_BODY()
 	
 public:
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
+	UFUNCTION(BlueprintCallable)
 	virtual void CreateGameSession(const FString& SessionName) override;
+
+	UFUNCTION(BlueprintCallable)
 	virtual void FindGameSessions() override;
+
+	UFUNCTION(BlueprintCallable)
+	void JoinGameSession();
+
+	UFUNCTION(BlueprintCallable)
+	void TravelMultiBattleMode();
+
 	virtual void JoinGameSession(const FOnlineSessionSearchResult& SearchResult) override;
+	
+	UFUNCTION(BlueprintCallable)
 	virtual void DestroyGameSession() override;
 
 private:
@@ -27,4 +40,7 @@ private:
 	void OnDestroySessionComplete(FName SessionName, bool bWasSuccessful);
 
 	TSharedPtr<FOnlineSessionSearch> SessionSearch;
+	FName CurrentSessionName;
+	IOnlineSubsystem* OnlineSub;
+	IOnlineSessionPtr Sessions;
 };

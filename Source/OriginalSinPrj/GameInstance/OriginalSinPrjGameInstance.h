@@ -9,6 +9,7 @@
 class UUISubsystem;
 class UAudioSubsystem;
 class UDataSubsystem;
+class UMyOnlineSubsystem;
 
 UCLASS()
 class ORIGINALSINPRJ_API UOriginalSinPrjGameInstance : public UGameInstance
@@ -27,4 +28,7 @@ private:
 
 	UPROPERTY()
 	UDataSubsystem* DataSubsystem;
+
+	UPROPERTY()
+	UMyOnlineSubsystem* MyOnlineSubsystem;
 };

@@ -5,6 +5,7 @@
 #include "UISubsystem.h"
 #include "AudioSubsystem.h"
 #include "DataSubsystem.h"
+#include "GameInstance/MyOnlineSubsystem.h"
 
 void UOriginalSinPrjGameInstance::Init()
 {
@@ -22,4 +23,6 @@ void UOriginalSinPrjGameInstance::Init()
     AudioSubsystem = GetSubsystem<UAudioSubsystem>();
 
     DataSubsystem = GetSubsystem<UDataSubsystem>();
+
+    MyOnlineSubsystem = GetSubsystem<UMyOnlineSubsystem>();
 }

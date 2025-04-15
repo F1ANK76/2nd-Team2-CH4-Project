@@ -38,9 +38,9 @@ void AMenuGameMode::SelectMap(const FName& MapName)
 
 void AMenuGameMode::TravelLevel(const FName& LevelName)
 {
-	if (AMenuGameState* MenuGameState = Cast<AMenuGameState>(UGameplayStatics::GetGameState(this)))
+	if (HasAuthority())
 	{
-		MenuGameState->TravelLevel(LevelName);
+		GetWorld()->SeamlessTravel(LevelName.ToString());
 	}
 }
 
