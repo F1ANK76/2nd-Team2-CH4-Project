@@ -6,18 +6,17 @@
 #include "../BaseWidget.h"
 #include "BattleWidget.generated.h"
 
-struct FPlayerData; //ÀÓ½Ã ¼±¾ð// ³ªÁß¿¡ Data±¸Á¶·Î µû·Î »©¾ßµÊ.
+struct FPlayerData; //ï¿½Ó½ï¿½ ï¿½ï¿½ï¿½ï¿½// ï¿½ï¿½ï¿½ß¿ï¿½ Dataï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ßµï¿½.
 
 UCLASS()
 class ORIGINALSINPRJ_API UBattleWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 
-
 protected:
 	virtual void NativeConstruct() override;
 
-	//Å¸ÀÌ¸Ó
+	//Å¸ï¿½Ì¸ï¿½
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* FarmingModeTimer;

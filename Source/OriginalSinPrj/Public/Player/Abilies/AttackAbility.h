@@ -21,10 +21,10 @@ public:
 protected:
 	virtual bool CheckExcuteable(FAbilityDataBuffer& Buffer) override;
 
-	virtual void ExcuteSkillAttack(const FAbilityDataBuffer& Buffer);
+	virtual void ExcuteSkillAttack(FAbilityDataBuffer& Buffer);
 	virtual void UndoSkillAttack(const FAbilityDataBuffer& Buffer);
 
-	void ExcuteAttackByType(const FAbilityDataBuffer& Buffer);
+	void ExcuteAttackByType(FAbilityDataBuffer& Buffer);
 	void UndoAttackByType(const FAbilityDataBuffer& Buffer);
 
 	void ExcuteMelleAttack(const FAbilityDataBuffer& Buffer);

@@ -5,6 +5,7 @@
 #include "Player/BaseWitch.h"
 #include "Player/Struct/AbilityDataBuffer.h"
 #include "Player/Projectile/BaseProjectile.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 
@@ -15,13 +16,15 @@ ASkillAbility::ASkillAbility() : Super()
 	SetRootComponent(WitchSelfEffect);
 }
 
-void ASkillAbility::ExcuteSkillAttack(const FAbilityDataBuffer& Buffer)
+void ASkillAbility::ExcuteSkillAttack(FAbilityDataBuffer& Buffer)
 {
 	Super::ExcuteSkillAttack(Buffer);
 
 	GetWorld()->GetTimerManager().ClearTimer(SpawnTimer);
 	CurrentSpawnCount = 0;
 	AddedLocation = OriginAdded;
+
+	Buffer.CurrentMana -= ConsumeMana;
 
 	switch (EffectPivot)
 	{
@@ -75,7 +78,12 @@ void ASkillAbility::BeginPlay()
 
 bool ASkillAbility::CheckExcuteable(FAbilityDataBuffer& Buffer)
 {
-	if (Buffer.NeedMana < ConsumeMana)
+	if (Buffer.CurrentMana < ConsumeMana)
+	{
+		return false;
+	}
+
+	if (Buffer.MovementComp->IsFalling())
 	{
 		return false;
 	}

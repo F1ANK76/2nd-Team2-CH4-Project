@@ -52,7 +52,7 @@ bool AAttackAbility::CheckExcuteable(FAbilityDataBuffer& Buffer)
 	return true;
 }
 
-void AAttackAbility::ExcuteAttackByType(const FAbilityDataBuffer& Buffer)
+void AAttackAbility::ExcuteAttackByType(FAbilityDataBuffer& Buffer)
 {
 	switch (AttackType)
 	{
@@ -134,7 +134,7 @@ void AAttackAbility::ExcuteSpawnAttack(const FAbilityDataBuffer& Buffer)
 	}
 }
 
-void AAttackAbility::ExcuteSkillAttack(const FAbilityDataBuffer& Buffer)
+void AAttackAbility::ExcuteSkillAttack(FAbilityDataBuffer& Buffer)
 {
 	
 }

@@ -221,10 +221,10 @@ void ABaseWitch::ApplyAttack(AActor* Target, float ApplyValue)
 		return;
 	}
 	//UE_LOG(LogTemp, Warning, TEXT("%s : Apply Attack. Target = %s, Value = %f"), *GetName(), *Target->GetName(), ApplyValue);
-	// TODO : Add Current Mana
-	UGameplayStatics::ApplyDamage(Target, ApplyValue, GetController(), this, UDamageType::StaticClass());
+	//UGameplayStatics::ApplyDamage(Target, ApplyValue, GetController(), this, UDamageType::StaticClass());
 
 	Target->TakeDamage(ApplyValue, FDamageEvent(), GetController(), this);
+	AbilityComp->AddCurrentMana(AddedMana);
 }
 
 void ABaseWitch::EndAnimNotify()
@@ -263,6 +263,19 @@ const FVector ABaseWitch::GetHeadLocation() const
 const FVector ABaseWitch::GetFootLocation() const
 {
 	return FootItem->GetComponentLocation();
+}
+
+void ABaseWitch::SetColorIndex(bool Value)
+{
+	bIsFirstIndex = Value;
+}
+
+void ABaseWitch::SetPlayerLevel(int32 LevelValue)
+{
+	if (IsValid(AbilityComp))
+	{
+		AbilityComp->SetMaxMana(LevelValue);
+	}
 }
 
 void ABaseWitch::RequestMoveToAbility_Implementation(float Value)

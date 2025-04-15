@@ -253,6 +253,16 @@ void UWitchAbilityComponent::PauseBufferTimer()
 	}
 }
 
+void UWitchAbilityComponent::AddCurrentMana(float Value)
+{
+	AbilityBuffer.CurrentMana = FMath::Clamp(AbilityBuffer.CurrentMana + Value, 0, AbilityBuffer.MaxMana);
+}
+
+void UWitchAbilityComponent::SetMaxMana(float Value)
+{
+	AbilityBuffer.MaxMana = Value;
+}
+
 void UWitchAbilityComponent::BeginPlay()
 {
 	Super::BeginPlay();
