@@ -7,6 +7,7 @@
 #include "RangeAttackProjectile.h"
 #include "WeaponToSpawn.h"
 #include "RushBossClone.h"
+#include "BossPlatform.h"
 #include "Engine/DataAsset.h"
 #include "BossPoolObjectDataAsset.generated.h"
 
@@ -22,9 +23,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "BossPoolObject")
 	TSubclassOf<AWeaponToSpawn> WeaponToSpawnClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "BossPoolObject");
+	UPROPERTY(EditDefaultsOnly, Category = "BossPoolObject")
 	TSubclassOf<ARushBossClone> RushBossCloneClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "BossPoolObject");
+	UPROPERTY(EditDefaultsOnly, Category = "BossPoolObject")
 	TSubclassOf<ADestructibleObject> DestructibleObjectClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "BossPoolObject")
+	TSubclassOf<ABossPlatform> BossPlatformClass;
 };

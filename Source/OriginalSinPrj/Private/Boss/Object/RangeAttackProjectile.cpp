@@ -3,6 +3,7 @@
 
 #include "Boss/Object/RangeAttackProjectile.h"
 
+#include "Engine/DamageEvents.h"
 #include "Boss/BossCharacter.h"
 #include "Boss/BossObjectPoolWorldSubsystem.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -16,7 +17,7 @@ ARangeAttackProjectile::ARangeAttackProjectile()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	Damage = 50.0f;
+	Damage = 50.0f; //임시
 	LifeTime = 3.0f;
 	bIsActivate = false;
 
@@ -110,15 +111,30 @@ void ARangeAttackProjectile::OnOverlapBegin(
 	{
 		//보스 자신 제외
 		if (OtherActor->Tags.Contains("Boss")) return;
+		
+		if (IsValid(OtherActor) && OtherActor->IsA(ABaseWitch::StaticClass()))
+		{
+			ABaseWitch* HitWitch = Cast<ABaseWitch>(OtherActor);
+			if (IsValid(HitWitch))
+			{
+				FDamageEvent DamageEvent;
+		
+				HitWitch->TakeDamage(
+					Damage,
+					DamageEvent,
+					GetInstigatorController(),
+					this);
+			}
+		}
 
-		//캐릭터일 경우
-		// if (OtherActor->IsA(ACharacter::StaticClass()))
+		// //폰일 경우(추후 삭제 예정 : DefaultPawn 테스트용도)
+		// if (OtherActor->IsA(APawn::StaticClass()))
 		// {
-		// 	ACharacter* HitCharacter = Cast<ACharacter>(OtherActor);
-		// 	if (IsValid(HitCharacter))
+		// 	APawn* HitPawn = Cast<APawn>(OtherActor);
+		// 	if (IsValid(HitPawn))
 		// 	{
 		// 		UGameplayStatics::ApplyDamage(
-		// 			HitCharacter,
+		// 			HitPawn,
 		// 			Damage,
 		// 			nullptr,
 		// 			this,
@@ -126,38 +142,6 @@ void ARangeAttackProjectile::OnOverlapBegin(
 		// 		IBossPoolableActorInterface::Execute_OnPooledObjectReset(this);
 		// 	}
 		// }
-		
-		// if (OtherActor->IsA(ABaseWitch::StaticClass()))
-		// {
-		// 	ABaseWitch* HitWitch = Cast<ABaseWitch>(OtherActor);
-		// 	if (IsValid(HitWitch))
-		// 	{
-		// 		FDamageEvent DamageEvent;
-		// 		AController* InstigatorController = GetInstigatorController();
-		//
-		// 		HitWitch->TakeDamage(
-		// 			Damage,
-		// 			DamageEvent,
-		// 			InstigatorController,
-		// 			this);
-		// 	}
-		// }
-
-		//폰일 경우(추후 삭제 예정 : DefaultPawn 테스트용도)
-		if (OtherActor->IsA(APawn::StaticClass()))
-		{
-			APawn* HitPawn = Cast<APawn>(OtherActor);
-			if (IsValid(HitPawn))
-			{
-				UGameplayStatics::ApplyDamage(
-					HitPawn,
-					Damage,
-					nullptr,
-					this,
-					nullptr);
-				IBossPoolableActorInterface::Execute_OnPooledObjectReset(this);
-			}
-		}
 
 		//땅에 닿았을 때
 		if (OtherActor->Tags.Contains("Ground"))
