@@ -5,52 +5,74 @@
 #include "../SubWidget/CharacterSelectTileWidget.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/Button.h"
+#include "../GameInstance/UISubsystem.h"
 
 
-//initWidgetÀÌ ½ÇÇàµÇÁö ¾Ê¾Æ ¸¸µç ÀÓ½Ã ÇÔ¼ö...
-void UCharacterSelectWidget::NativeConstruct()
+//initWidgetï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ó½ï¿½ ï¿½Ô¼ï¿½...
+void UCharacterSelectWidget::InitWidget(UUISubsystem* uiHandle)
 {
-    Super::NativeConstruct();
+    Super::InitWidget(uiHandle);
 
-
-    // ÀÚ½Ä À§Á¬µé Áß UMapSelectTileWidget¸¸ ¹ÙÀÎµù
-    TArray<UWidget*> FoundWidgets;
-    WidgetTree->GetAllWidgets(FoundWidgets);
-
-    for (UWidget* Widget : FoundWidgets)
-    {
-        UCharacterSelectTileWidget* Tile = Cast<UCharacterSelectTileWidget>(Widget);
-        if (Tile)
-        {
-            Tile->OnCharacterSelectTileClicked.AddDynamic(this, &UCharacterSelectWidget::OnTileClickedFromTile);
-        }
-    }
+    InitDelegate();
+    UICloseButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedClose);
 }
-
-
-void UCharacterSelectWidget::InitWidget(UUISubsystem* NewUIHandle)
-{
-    Super::InitWidget(NewUIHandle);
-
-
-    // ÀÚ½Ä À§Á¬µé Áß UMapSelectTileWidget¸¸ ¹ÙÀÎµù
-    TArray<UWidget*> FoundWidgets;
-    WidgetTree->GetAllWidgets(FoundWidgets);
-
-    for (UWidget* Widget : FoundWidgets)
-    {
-        UCharacterSelectTileWidget* Tile = Cast<UCharacterSelectTileWidget>(Widget);
-        if (Tile)
-        {
-            Tile->OnCharacterSelectTileClicked.AddDynamic(this, &UCharacterSelectWidget::OnTileClickedFromTile);
-        }
-    }
-}
-
-
 
 void UCharacterSelectWidget::OnTileClickedFromTile(int32 TileIndex)
 {
+    checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
+
+    ELevelType CurrentLevel = UIHandle->GetCurrentLevelType();
+
+    if (CurrentLevel == ELevelType::TitleLevel)
+    {
+        OnClickedCloseWidget(EAddWidgetType::CharacterSelectWidget);
+        OnClickedOpenWidget(EAddWidgetType::MapSelectWidget);
+    }
+    
+
+    //TODO : Character Index Send To GameMode
     UE_LOG(LogTemp, Log, TEXT("Tile with index %d was clicked!"), TileIndex);
-    // ¼±ÅÃ Ã³¸® ·ÎÁ÷: UI °­Á¶, º¯¼ö ÀúÀå µî
+    // ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: UI ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
+    //ï¿½ï¿½ï¿½Ó¸ï¿½å¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½
+}
+
+void UCharacterSelectWidget::OnClickedClose()
+{
+    checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
+
+    //OnClickedCloseWidget(EAddWidgetType::CharacterSelectWidget);
+
+    ELevelType CurrentLevel = UIHandle->GetCurrentLevelType();
+
+    if (CurrentLevel == ELevelType::TitleLevel)
+    {
+        OnClickedCloseWidget(EAddWidgetType::CharacterSelectWidget);
+        UIHandle->SetVisibilityWidget(true);
+    }
+    else
+    {
+        SetVisibility(ESlateVisibility::Collapsed);
+    }
+}
+
+void UCharacterSelectWidget::InitDelegate()
+{
+    TArray<UWidget*> FoundWidgets;
+    WidgetTree->GetAllWidgets(FoundWidgets);
+
+    for (UWidget* Widget : FoundWidgets)
+    {
+        if (!IsValid(Widget))
+        {
+            continue;
+        }
+
+        UCharacterSelectTileWidget* Tile = Cast<UCharacterSelectTileWidget>(Widget);
+
+        if (IsValid(Tile))
+        {
+            Tile->InitWidget(UIHandle);
+            Tile->OnCharacterSelectTileClicked.AddDynamic(this, &UCharacterSelectWidget::OnTileClickedFromTile);
+        }
+    }
 }

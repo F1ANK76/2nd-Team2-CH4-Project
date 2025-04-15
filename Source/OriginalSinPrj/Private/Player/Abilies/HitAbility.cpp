@@ -29,23 +29,24 @@ bool AHitAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 	}
 
 	Parent = Buffer.ParentWitch;
-
-	UE_LOG(LogTemp, Warning, TEXT("%s : Excute Hit Ability"), *Parent->GetName());
+	PreMoveState = Parent->GetCharacterMovement()->GetMovementName();
+	StartPosZ = Parent->GetActorLocation().Z;
 
 	Buffer.bIsJumpable = false;
 	Buffer.bIsMoveable = false;
 	Buffer.bIsUseable = false;
 
 	Parent->PauseTimer();
+	Parent->SetWitchState(EWitchStateType::Hit);
+	Parent->PlayAnimation(AbilityMontage);
 
 	CalculateKnockTargetPos(Buffer);
 
-	Buffer.ParentWitch->SetWitchState(EWitchStateType::Hit);
-	Buffer.ParentWitch->PlayAnimation(AbilityMontage);
-	Buffer.MovementComp->SetMovementMode(EMovementMode::MOVE_Flying);
-	SetActorTickEnabled(true);
-
 	Buffer.KnockGuage += Buffer.AddedGuage;
+	
+	ResponseOnLaunched(KnockDistance);
+	SetActorTickEnabled(true);
+	Parent->SetMeshResponseToChanel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 
 	return true;
 }
@@ -53,39 +54,31 @@ bool AHitAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 void AHitAbility::UndoAbility(FAbilityDataBuffer& Buffer)
 {
 	Super::UndoAbility(Buffer);
-
-	UE_LOG(LogTemp, Warning, TEXT("Undo Hit"));
-
+	//UE_LOG(LogTemp, Warning, TEXT("Undo Hit"));
 	SetActorTickEnabled(false);
-	Buffer.MovementComp->SetMovementMode(EMovementMode::MOVE_Walking);
+
+	Parent->SetMeshResponseToChanel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
 
 	Buffer.bIsJumpable = true;
 	Buffer.bIsMoveable = true;
 	Buffer.bIsUseable = true;
+	bIsStartedKnock = false;
+	bIsFalling = false;
 
-	Buffer.ParentWitch->SetWitchState(EWitchStateType::Idle);
-	Buffer.ParentWitch->StopAnimation(AbilityMontage);
+	Parent->SetWitchState(EWitchStateType::Idle);
+	Parent->StopAnimation(AbilityMontage);
 
 	KnockDistance = FVector::ZeroVector;
-	AddedKnock = FVector::ZeroVector;
-
-	CurrentTime = 0.0f;
-	bIsTopHeight = false;
 }
 
-void AHitAbility::ResponseKnocked_Implementation(APawn* Target, const FVector& MoveValue)
+void AHitAbility::ResponseOnLaunched_Implementation(const FVector& KnockbackDistance)
 {
-	if (!IsValid(Target))
+	if (!IsValid(Parent))
 	{
 		return;
 	}
 
-	if (!Target->IsLocallyControlled())
-	{
-		return;
-	}
-
-	Target->AddMovementInput(MoveValue, 1);
+	Parent->LaunchCharacter(KnockbackDistance, false, false);
 }
 
 bool AHitAbility::CheckExcuteable(FAbilityDataBuffer& Buffer)
@@ -153,27 +146,33 @@ void AHitAbility::CalculateHitDirection(const FVector& Compare, const FVector& T
 
 void AHitAbility::CalculateKnockTargetPos(FAbilityDataBuffer& Buffer)
 {
-	StartPos = Buffer.ParentWitch->GetActorLocation();
-
 	float DistanceY = KnockDistanceY + Buffer.KnockGuage * KnockMultiply;
 	float DistanceZ = KnockDistanceZ + Buffer.KnockGuage * KnockMultiply;
 
-	KnockDistance = FVector(0, DistanceY, DistanceZ);
-
-	AddedKnock.Y = DistanceY / KnockTime;
-	AddedKnock.Z = DistanceZ / (KnockTime / 2);
-
 	if (HitDirection == EDirectionType::Right)
 	{
-		AddedKnock.Y *= -1;
+		DistanceY *= -1;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Knock Distance : %f, %f"), DistanceY, DistanceZ);
+	KnockDistance = FVector(0, DistanceY, DistanceZ);
+}
+
+void AHitAbility::CalculateStartedFalling()
+{
+	float CurrentDirectionZ = Parent->GetActorLocation().Z - StartPosZ;
+
+	if (CurrentDirectionZ < 0 && !bIsFalling)
+	{
+		if (CurrentDirectionZ <= -0.01f)
+		{
+			bIsFalling = true;
+			Parent->SetMeshResponseToChanel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
+		}
+	}
 }
 
 void AHitAbility::OnEndedKnock()
 {
-	UE_LOG(LogTemp, Warning, TEXT("End Knock"));
 	SetActorTickEnabled(false);
 	Parent->RequestEndedAnim();
 }
@@ -187,30 +186,27 @@ void AHitAbility::Tick(float DeltaTime)
 		return;
 	}
 
-	CurrentTime += DeltaTime;
-
-	if (CurrentTime >= KnockTime)
+	if (!IsValid(Parent->GetCharacterMovement()))
 	{
-		OnEndedKnock();
+		return;
+	}
+	
+	CalculateStartedFalling();
+
+	if (PreMoveState.Equals(Parent->GetCharacterMovement()->GetMovementName()))
+	{
 		return;
 	}
 
-	FVector CurrentLocation = Parent->GetActorLocation();
+	PreMoveState = Parent->GetCharacterMovement()->GetMovementName();
 
-	float CurrentDistanceY = FMath::Abs(CurrentLocation.Y - StartPos.Y);
-	float CurrentDistanceZ = FMath::Abs(CurrentLocation.Z - StartPos.Z);
+	if (PreMoveState.Equals("Falling") && !bIsStartedKnock)
+	{
+		bIsStartedKnock = true;
+	}
 
-	if (CurrentDistanceY >= KnockDistance.Y)
+	if (!Parent->GetCharacterMovement()->IsFalling() && bIsStartedKnock)
 	{
 		OnEndedKnock();
-		return;
 	}
-
-	if (CurrentDistanceZ >= KnockDistance.Z && !bIsTopHeight)
-	{
-		bIsTopHeight = true;
-		AddedKnock.Z *= -1.0f;
-	}
-
-	ResponseKnocked(Parent, AddedKnock * DeltaTime * KnockSpeed);
 }

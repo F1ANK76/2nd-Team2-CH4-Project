@@ -29,17 +29,28 @@ class ORIGINALSINPRJ_API UBuffSelectWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 	
-	// ¹öÇÁ UI ÅØ½ºÆ® + ÀÌ¹ÌÁö
-	// ¹öÇÁ ¼±ÅÃ ¹öÆ°
+	// ï¿½ï¿½ï¿½ï¿½ UI ï¿½Ø½ï¿½Æ® + ï¿½Ì¹ï¿½ï¿½ï¿½
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ°
 
 public:
-    // ¿ÜºÎ¿¡¼­ ¹öÇÁ 3°³ ¼³Á¤
+    virtual void InitWidget(UUISubsystem* uiSubsystem) override;
+
+    // ï¿½ÜºÎ¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 3ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ //ï¿½Ú·ï¿½ï¿½ï¿½ ï¿½Ù²ï¿½ï¿½ï¿½Òµï¿½
     void InitializeBuffs(const TArray<FBuffInfo>& InBuffs);
 
 protected:
-    virtual void NativeConstruct() override;
+    UFUNCTION()
+    void OnBuff1Clicked();
+    UFUNCTION()
+    void OnBuff2Clicked();
+    UFUNCTION()
+    void OnBuff3Clicked();
 
-    // °¢ Ä«µå ±¸¼º¿ä¼Ò (BindWidgetÀ¸·Î BP ¿¬°á)
+    UFUNCTION()
+    void DeactivateOhterWidgets(int32 SelectedButtonIndex);
+
+protected:
+    // ï¿½ï¿½ Ä«ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (BindWidgetï¿½ï¿½ï¿½ï¿½ BP ï¿½ï¿½ï¿½ï¿½)
     UPROPERTY(meta = (BindWidget))
     class UTextBlock* BuffName1;
     UPROPERTY(meta = (BindWidget))
@@ -49,7 +60,7 @@ protected:
     UPROPERTY(meta = (BindWidget))
     class UButton* BuffButton1;
 
-    // 2¹ø Ä«µå
+    // 2ï¿½ï¿½ Ä«ï¿½ï¿½
     UPROPERTY(meta = (BindWidget))
     class UTextBlock* BuffName2;
     UPROPERTY(meta = (BindWidget))
@@ -59,7 +70,7 @@ protected:
     UPROPERTY(meta = (BindWidget))
     class UButton* BuffButton2;
 
-    // 3¹ø Ä«µå
+    // 3ï¿½ï¿½ Ä«ï¿½ï¿½
     UPROPERTY(meta = (BindWidget))
     class UTextBlock* BuffName3;
     UPROPERTY(meta = (BindWidget))
@@ -68,13 +79,6 @@ protected:
     class UImage* BuffImage3;
     UPROPERTY(meta = (BindWidget))
     class UButton* BuffButton3;
-
-    UFUNCTION()
-    void OnBuff1Clicked();
-    UFUNCTION()
-    void OnBuff2Clicked();
-    UFUNCTION()
-    void OnBuff3Clicked();
 
 private:
     TArray<FBuffInfo> Buffs;

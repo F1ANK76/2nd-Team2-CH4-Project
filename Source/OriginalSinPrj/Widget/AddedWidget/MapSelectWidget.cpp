@@ -5,48 +5,59 @@
 #include "../SubWidget/MapSelectTileWidget.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/Button.h"
+#include "../GameInstance/UISubsystem.h"
 
 
-void UMapSelectWidget::NativeConstruct()
+void UMapSelectWidget::InitWidget(UUISubsystem* uiSubsystem)
 {
-    Super::NativeConstruct();
+    Super::InitWidget(uiSubsystem);
 
-    // ÀÚ½Ä À§Á¬µé Áß UMapSelectTileWidget¸¸ ¹ÙÀÎµù
     TArray<UWidget*> FoundWidgets;
     WidgetTree->GetAllWidgets(FoundWidgets);
 
     for (UWidget* Widget : FoundWidgets)
     {
+        if (!IsValid(Widget))
+        {
+            continue;
+        }
+
         UMapSelectTileWidget* Tile = Cast<UMapSelectTileWidget>(Widget);
-        if (Tile)
+
+        if (IsValid(Tile))
         {
             Tile->OnMapSelectTileClicked.AddDynamic(this, &UMapSelectWidget::OnTileClickedFromTile);
+            Tile->InitWidget(UIHandle);
         }
     }
+
+    UICloseButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedBack);
 }
-
-void UMapSelectWidget::InitWidget(UUISubsystem* NewUIHandle)
-{
-    Super::InitWidget(NewUIHandle);
-
-
-    // ÀÚ½Ä À§Á¬µé Áß UMapSelectTileWidget¸¸ ¹ÙÀÎµù
-    TArray<UWidget*> FoundWidgets;
-    WidgetTree->GetAllWidgets(FoundWidgets);
-
-    for (UWidget* Widget : FoundWidgets)
-    {
-        UMapSelectTileWidget* Tile = Cast<UMapSelectTileWidget>(Widget);
-        if (Tile)
-        {
-            Tile->OnMapSelectTileClicked.AddDynamic(this, &UMapSelectWidget::OnTileClickedFromTile);
-        }
-    }
-}
-
 
 void UMapSelectWidget::OnTileClickedFromTile(int32 TileIndex)
 {
+    UIHandle->OnClickedMoveLevel(ELevelType::FarmingLevel, true);
+    // Requset Move Level To GameMode or GameInstance
     UE_LOG(LogTemp, Log, TEXT("Tile with index %d was clicked!"), TileIndex);
-    // ¼±ÅÃ Ã³¸® ·ÎÁ÷: UI °­Á¶, º¯¼ö ÀúÀå µî
+    // ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: UI ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
+
+    //ï¿½ï¿½ï¿½Ó¸ï¿½å³ª ï¿½Ì·ï¿½ï¿½ï¿½ï¿½Ù°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½
+}
+
+void UMapSelectWidget::OnClickedBack()
+{
+    //OnClickedCloseWidget(EAddWidgetType::MapSelectWidget);
+    checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
+    ELevelType CurrentLevel = UIHandle->GetCurrentLevelType();
+
+    if (CurrentLevel == ELevelType::TitleLevel)
+    {
+        OnClickedCloseWidget(EAddWidgetType::MapSelectWidget);
+        OnClickedOpenWidget(EAddWidgetType::CharacterSelectWidget);
+    }
+    else
+    {
+        SetVisibility(ESlateVisibility::Collapsed);
+
+    }
 }

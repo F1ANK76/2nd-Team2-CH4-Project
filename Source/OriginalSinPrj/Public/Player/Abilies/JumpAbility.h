@@ -21,12 +21,6 @@ public:
 	virtual void UndoAbility(FAbilityDataBuffer& Buffer) override;
 	
 protected:
-	UFUNCTION(NetMulticast, Reliable)
-	void ResponseJumped(ABaseWitch* ParentWitch);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void ResponseEndJumped(ABaseWitch* ParentWitch);
-
 	virtual bool CheckExcuteable(FAbilityDataBuffer& Buffer) override;
 	virtual void Tick(float DeltaTime) override;
 

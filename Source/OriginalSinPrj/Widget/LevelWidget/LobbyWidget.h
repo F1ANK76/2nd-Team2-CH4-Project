@@ -10,6 +10,9 @@ class UMapSelectWidget;
 class UCharacterSelectWidget;
 class UGameSettingWidget;
 class UButton;
+class UOriginalSinPrjGameInstance;
+class AWitchController;
+
 
 UCLASS()
 class ORIGINALSINPRJ_API ULobbyWidget : public UBaseWidget
@@ -17,10 +20,11 @@ class ORIGINALSINPRJ_API ULobbyWidget : public UBaseWidget
 	GENERATED_BODY()
 
 public:
+    virtual void InitWidget(UUISubsystem* uiSubsystem) override;
     virtual void NativeConstruct() override;
 
 protected:
-    // ¸Ê/Ä³¸¯ÅÍ/¿É¼Ç UI À§Á¬ ÂüÁ¶
+    // ï¿½ï¿½/Ä³ï¿½ï¿½ï¿½ï¿½/ï¿½É¼ï¿½ UI ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     UPROPERTY(meta = (BindWidget))
     UMapSelectWidget* MapSelectWidget;
 
@@ -30,7 +34,7 @@ protected:
     UPROPERTY(meta = (BindWidget))
     UGameSettingWidget* GameSettingWidget;
 
-    // ¸Þ´º ¹öÆ°
+    // ï¿½Þ´ï¿½ ï¿½ï¿½Æ°
     UPROPERTY(meta = (BindWidget))
     UButton* MapSelectButton;
 
@@ -49,7 +53,7 @@ protected:
     UPROPERTY(meta = (BindWidget))
     UButton* GameStartButton;
 
-    // Å¬¸¯ ÀÌº¥Æ® ÇÔ¼ö
+    // Å¬ï¿½ï¿½ ï¿½Ìºï¿½Æ® ï¿½Ô¼ï¿½
     UFUNCTION()
     void OnClickMapSelect();
 
@@ -64,4 +68,16 @@ protected:
 
     UFUNCTION()
     void OnClickGameStart();
+
+    bool CheckValidOfGameInstance();
+    bool CheckValidOfPlayerController();
+
+protected:
+    UPROPERTY()
+    TObjectPtr<UOriginalSinPrjGameInstance> LocalGameInstance = nullptr;
+
+    UPROPERTY()
+    TObjectPtr<AWitchController> OwningPC = nullptr;
+
+    bool bIsReadied = false;
 };

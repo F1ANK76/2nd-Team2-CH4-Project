@@ -19,15 +19,17 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 	void LoadDataTables();
+	void CheckLoadedLevelSound();
 
+	void PlayBGMByLevelType(ELevelType LevelType);
 	void PlayBGM(ELevelSoundType SoundType);
-	void PlaySFX(ESfxSoundType SoundType, uint8 DetailSoundType);
+	void PlaySFX(ESfxSoundType SoundType, uint8 DetailSoundType, FVector Location = FVector::ZeroVector);
 
 	UFUNCTION(BlueprintCallable, Category = "Audio")
 	void SetAndApplyMasterVolume(float NewVolume);
 
 	template<typename EnumType, typename StructType>
-	void PlaySFXByType(UObject* WorldContext, UDataTable* Table, uint8 DetailSoundType);
+	void PlaySFXByType(UObject* WorldContext, UDataTable* Table, uint8 DetailSoundType, FVector Location);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
 	float MasterVolume = 1.0f;
@@ -46,9 +48,9 @@ public:
 	const UAudioDataSettings* AudioDataSettings;
 };
 
-//PlaySFX(ESfxSoundType::Monster, static_cast<uint8>(EMonsterSoundType::Attack)); ÀÌ·±½ÄÀ¸·Î »ç¿ë
+// PlaySFX(ESfxSoundType::Monster, static_cast<uint8>(EMonsterSoundType::Attack), FVector(10.f, 0.f, 0.f)); ï¿½Ì·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 template<typename EnumType, typename StructType>
-inline void UAudioSubsystem::PlaySFXByType(UObject* WorldContext, UDataTable* Table, uint8 DetailSoundType)
+inline void UAudioSubsystem::PlaySFXByType(UObject* WorldContext, UDataTable* Table, uint8 DetailSoundType, FVector Location)
 {
 	UEnum* EnumPtr = StaticEnum<EnumType>();
 
@@ -63,7 +65,18 @@ inline void UAudioSubsystem::PlaySFXByType(UObject* WorldContext, UDataTable* Ta
 
 			if (Sound && WorldContext)
 			{
-				UGameplayStatics::PlaySound2D(WorldContext, Sound, MasterVolume);
+				if (Location.IsZero())
+				{
+					// UI ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+					UGameplayStatics::PlaySound2D(WorldContext, Sound, MasterVolume);
+					UE_LOG(LogTemp, Warning, TEXT("Play 2D Sound"));
+				}
+				else
+				{
+					// ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+					UGameplayStatics::PlaySoundAtLocation(WorldContext, Sound, Location, MasterVolume);
+					UE_LOG(LogTemp, Warning, TEXT("Play 3D Sound"));
+				}
 			}
 		}
 	}

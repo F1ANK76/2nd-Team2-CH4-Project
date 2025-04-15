@@ -7,6 +7,8 @@
 #include "Components/BoxComponent.h"
 #include "Player/Struct/AbilityDataBuffer.h"
 #include "Player/BaseWitch.h"
+#include "Player/Struct/ProjectileDataBuffer.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 
 ABaseProjectile::ABaseProjectile()
 {
@@ -15,56 +17,164 @@ ABaseProjectile::ABaseProjectile()
 	SceneComp = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	CollisionComp = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision Comp"));
 	EffectComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Effect Comp"));
+	MoveComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Move Comp"));
 
 	SetRootComponent(SceneComp);
 	CollisionComp->SetupAttachment(RootComponent);
 	EffectComp->SetupAttachment(RootComponent);
-
+	
 	CollisionComp->SetGenerateOverlapEvents(true);
 	CollisionComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	CollisionComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
+	CollisionComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
+	MoveComp->bAutoActivate = false;
+
+	CollisionComp->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel2);
 }
 
-void ABaseProjectile::InitProjectile(ABaseWitch* Parent)
+void ABaseProjectile::ActiveProjectile(const FProjectileDataBuffer& Buffer)
 {
-	ParentWitch = Parent;
-}
+	ResetProjectile();
+	bIsActivated = true;
 
-void ABaseProjectile::ActiveProjectile(const FAbilityDataBuffer& Buffer, float DelayTime)
-{
-	if (DelayTime == 0)
-	{
-		SetActorEnableCollision(true);
-		CollisionComp->Activate(true);
-		OnActivedProjectile();
-		return;
-	}
-	GetWorld()->GetTimerManager().SetTimer(DelayTimer, FTimerDelegate::CreateLambda([&]()
-		{
-			SetActorEnableCollision(true);
-			CollisionComp->Activate(true);
-			OnActivedProjectile();
-		}), DelayTime, false);
+	ParentWitch = Buffer.ParentWitch;
+	AttackDamage = Buffer.AttackDamage;
+	MoveDirection = Buffer.MoveDirection;
+	MoveSpeed = Buffer.MoveSpeed;
+
+	ActiveVisibleDelayTimer(Buffer.VisibleDelay);
+	ActiveDeactiveDelayTimer(Buffer.DeactiveDelay);
+	ActiveMoveDelayTimer(Buffer.VisibleDelay + Buffer.MoveDelay);
+	ActiveAttackDelayTimer(Buffer.VisibleDelay + Buffer.MoveDelay + Buffer.AttackDelay);
 }
 
 void ABaseProjectile::DeactiveProjectile()
 {
-	if (bActiveOverlapEvent)
+	if (!bCompleteDeactive)
+	{
+		return;
+	}
+	
+	GetWorld()->GetTimerManager().ClearTimer(DeactiveTimer);
+	GetWorld()->GetTimerManager().ClearTimer(VisibleDelayTimer);
+	GetWorld()->GetTimerManager().ClearTimer(AttackDelayTimer);
+	GetWorld()->GetTimerManager().ClearTimer(MoveDelayTimer);
+
+	CollisionComp->Deactivate();
+	SetActorEnableCollision(false);
+	bActiveOverlapEvent = false;
+
+	MoveComp->Deactivate();
+	MoveComp->InitialSpeed = 0;
+	MoveComp->Velocity = FVector::ZeroVector;
+
+	OnDeactivedProjectile();
+	bIsActivated = false;
+}
+
+void ABaseProjectile::ApplyMove()
+{
+	if (MoveDirection.Size() == 0)
 	{
 		return;
 	}
 
-	GetWorld()->GetTimerManager().ClearTimer(DelayTimer);
-	CollisionComp->Deactivate();
-	SetActorEnableCollision(false);
-	OnDeactivedProjectile();
+	if (IsValid(MoveComp))
+	{
+		MoveComp->Activate(true);
+		MoveComp->InitialSpeed = MoveSpeed;
+		MoveComp->Velocity = MoveDirection * MoveSpeed;
+	}
+}
+
+void ABaseProjectile::ApplyAttack()
+{
+	SetActorEnableCollision(true);
+	CollisionComp->Activate(true);
+}
+
+void ABaseProjectile::ApplyVisible()
+{
+	OnActivedProjectile();
+}
+
+EProjectileType ABaseProjectile::GetProjectileType() const
+{
+	return ProjectileType;
+}
+
+bool ABaseProjectile::GetIsActevated() const
+{
+	return bIsActivated;
 }
 
 void ABaseProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	DeactiveProjectile();
+	ResetProjectile();
+
 	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
+	CollisionComp->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnEndedOverlap);
+}
+
+void ABaseProjectile::ActiveMoveDelayTimer(float TimeValue)
+{
+	if (TimeValue == 0)
+	{
+		ApplyMove();
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().SetTimer(MoveDelayTimer, this, &ThisClass::ApplyMove, TimeValue, false);
+	}
+}
+
+void ABaseProjectile::ActiveAttackDelayTimer(float TimeValue)
+{
+	if (TimeValue == 0)
+	{
+		ApplyAttack();
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().SetTimer(AttackDelayTimer, this, &ThisClass::ApplyAttack, TimeValue, false);
+	}
+}
+
+void ABaseProjectile::ActiveVisibleDelayTimer(float TimeValue)
+{
+	if (TimeValue == 0)
+	{
+		ApplyVisible();
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().SetTimer(VisibleDelayTimer, this, &ThisClass::ApplyVisible, TimeValue, false);
+	}
+}
+
+void ABaseProjectile::ActiveDeactiveDelayTimer(float TimeValue)
+{
+	if (TimeValue == 0)
+	{
+		bCompleteDeactive = true;
+	}
+	else
+	{
+		bCompleteDeactive = false;
+		GetWorld()->GetTimerManager().SetTimer(DeactiveTimer, FTimerDelegate::CreateLambda([&]()
+			{
+				bCompleteDeactive = true;
+				DeactiveProjectile();
+			}), TimeValue, false);
+	}
+}
+
+void ABaseProjectile::ResetProjectile()
+{
+	bCompleteDeactive = true;
+	DeactiveProjectile();
 }
 
 void ABaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -94,10 +204,25 @@ void ABaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor
 		return;
 	}
 
+	//UE_LOG(LogTemp, Warning, TEXT("%s : Overlapped %s"), *GetName(), *OtherActor->GetName());
+
 	bActiveOverlapEvent = true;
-	ParentWitch->ApplyAttack(OtherActor, DefaultDamage);
-	bActiveOverlapEvent = false;
-	DeactiveProjectile();
+	ParentWitch->ApplyAttack(OtherActor, AttackDamage);
+
+	if (bIsNotDelayDeactiveFromOverlap)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(DeactiveTimer);
+		bCompleteDeactive = true;
+		DeactiveProjectile();
+	}
+}
+
+void ABaseProjectile::OnEndedOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (bIsAgainAttack)
+	{
+		bActiveOverlapEvent = false;
+	}
 }
 
 void ABaseProjectile::OnActivedProjectile_Implementation()

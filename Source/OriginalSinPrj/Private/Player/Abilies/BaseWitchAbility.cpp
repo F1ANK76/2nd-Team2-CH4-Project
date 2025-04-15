@@ -9,7 +9,6 @@ ABaseWitchAbility::ABaseWitchAbility()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	//SetReplicates(true);
-	//SetReplicateMovement(true);
 }
 
 const EAbilityType& ABaseWitchAbility::GetAbilityType() const

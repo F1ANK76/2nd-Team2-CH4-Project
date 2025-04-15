@@ -6,13 +6,10 @@
 #include "Components/Image.h"
 #include "Components/Button.h"
 
-void UBuffSelectWidget::NativeConstruct()
-{
-    Super::NativeConstruct();
 
-    BuffButton1->OnClicked.RemoveDynamic(this, &UBuffSelectWidget::OnBuff1Clicked);
-    BuffButton2->OnClicked.RemoveDynamic(this, &UBuffSelectWidget::OnBuff2Clicked);
-    BuffButton3->OnClicked.RemoveDynamic(this, &UBuffSelectWidget::OnBuff3Clicked);
+void UBuffSelectWidget::InitWidget(UUISubsystem* uiSubsystem)
+{
+    Super::InitWidget(uiSubsystem);
 
     BuffButton1->OnClicked.AddDynamic(this, &UBuffSelectWidget::OnBuff1Clicked);
     BuffButton2->OnClicked.AddDynamic(this, &UBuffSelectWidget::OnBuff2Clicked);
@@ -47,15 +44,53 @@ void UBuffSelectWidget::InitializeBuffs(const TArray<FBuffInfo>& InBuffs)
 
 void UBuffSelectWidget::OnBuff1Clicked()
 {
-    UE_LOG(LogTemp, Log, TEXT("Buff 1 ╪╠ец╣й: %s"), *Buffs[0].BuffName.ToString());
+    DeactivateOhterWidgets(1);
+    //play animation
+    UE_LOG(LogTemp, Log, TEXT("Buff 1 О©╫О©╫О©╫ц╣О©╫: %s"), *Buffs[0].BuffName.ToString());
+    //О©╫О©╫О©╫с╦О©╫О©╫ О©╫О©╫О©╫О©╫
 }
 
 void UBuffSelectWidget::OnBuff2Clicked()
 {
-    UE_LOG(LogTemp, Log, TEXT("Buff 2 ╪╠ец╣й: %s"), *Buffs[1].BuffName.ToString());
+    DeactivateOhterWidgets(2);
+    //play animation
+    UE_LOG(LogTemp, Log, TEXT("Buff 2 О©╫О©╫О©╫ц╣О©╫: %s"), *Buffs[1].BuffName.ToString());
+    //О©╫О©╫О©╫с╦О©╫О©╫ О©╫О©╫О©╫О©╫
 }
 
 void UBuffSelectWidget::OnBuff3Clicked()
 {
-    UE_LOG(LogTemp, Log, TEXT("Buff 3 ╪╠ец╣й: %s"), *Buffs[2].BuffName.ToString());
+    DeactivateOhterWidgets(3);
+    //play animation
+    UE_LOG(LogTemp, Log, TEXT("Buff 3 О©╫О©╫О©╫ц╣О©╫: %s"), *Buffs[2].BuffName.ToString());
+    //О©╫О©╫О©╫с╦О©╫О©╫ О©╫О©╫О©╫О©╫
 }
+
+void UBuffSelectWidget::DeactivateOhterWidgets(int32 SelectedButtonIndex)
+{
+    //О©╫О©╫ф╟ О©╫О©╫О©╫О©╫ О©╫О©╫О©╫О©╫О©╫О©╫ О©╫н╟О©╫ О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫ О©╫О©╫ О©╫О©╫О©╫О©╫О©╫О©╫.
+    switch (SelectedButtonIndex)
+    {
+    case 1:
+        BuffButton2->SetIsEnabled(false); // О©╫О©╫ф╟ О©╫О©╫х╟О©╫О©╫х╜ (е╛О©╫О©╫ О©╫О©╫ О©╫О©╫)
+        BuffButton3->SetIsEnabled(false);
+        break;
+
+    case 2:
+        BuffButton1->SetIsEnabled(false);
+        BuffButton3->SetIsEnabled(false);
+        break;
+
+    case 3:
+        BuffButton1->SetIsEnabled(false);
+        BuffButton2->SetIsEnabled(false);
+        break;
+
+    default:
+        break;
+    }
+    BuffButton2->SetIsEnabled(false); // О©╫О©╫ф╟ О©╫О©╫х╟О©╫О©╫х╜ (е╛О©╫О©╫ О©╫О©╫ О©╫О©╫)
+    BuffButton3->SetIsEnabled(false);  // О©╫О©╫ф╟ х╟О©╫О©╫х╜ (е╛О©╫О©╫ О©╫О©╫О©╫О©╫)
+
+}
+

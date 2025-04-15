@@ -5,29 +5,25 @@
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 
-void UResultWidget::InitWidget(UUISubsystem* NewUIHandle)
+void UResultWidget::InitWidget(UUISubsystem* uiSubsystem)
 {
 	OpenAnimation = OpenAnim;
 
-	Super::InitWidget(NewUIHandle);
+	Super::InitWidget(uiSubsystem);
 
-	MoveNextButton->OnClicked.RemoveDynamic(this, &ThisClass::OnClickedMoveNext);
-	MoveTitleButton->OnClicked.RemoveDynamic(this, &ThisClass::OnClickedMoveTitle);	
 	MoveNextButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveNext);
 	MoveTitleButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveTitle);
 }
-
-
 
 void UResultWidget::UpdateResult(bool bIsClear)
 {
 	MoveNextButton->OnClicked.Clear();
 
-	if (bIsClear) // ½Â¸®½Ã
+	if (bIsClear) // ï¿½Â¸ï¿½ï¿½ï¿½
 	{
 
 	}
-	else // ÆÐ¹è½Ã
+	else // ï¿½Ð¹ï¿½ï¿½
 	{
 
 	}
@@ -35,8 +31,8 @@ void UResultWidget::UpdateResult(bool bIsClear)
 
 void UResultWidget::OnClickedRetry()
 {
-	//UISubsystem ¶Ç´Â UIHandlerÀÇ Á¸Àç ¿©ºÎ È®ÀÎ
-	// °ÔÀÓ ´Ù½Ã ½ÃÀÛÇÏ°Ô ÇØÁÖ¼¼¿ä ¿äÃ»
+	//UISubsystem ï¿½Ç´ï¿½ UIHandlerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½Ö¼ï¿½ï¿½ï¿½ ï¿½ï¿½Ã»
 	
 	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 	//UIHandle->ClickedRetry();

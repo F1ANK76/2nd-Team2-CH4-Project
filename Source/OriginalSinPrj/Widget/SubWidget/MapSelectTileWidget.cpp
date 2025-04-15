@@ -3,29 +3,23 @@
 
 #include "MapSelectTileWidget.h"
 #include "Components/Button.h"
+#include "Components/Image.h"
+#include "Components/TextBlock.h"
 
-//InitWidgetÀÌ ¾ÆÁ÷ ÀÛµ¿ÇÒ ¼ö ¾ø¾î¼­ ¸¸µç...
-void UMapSelectTileWidget::NativeConstruct()
+void UMapSelectTileWidget::InitWidget(UUISubsystem* uiSubsystem)
 {
-	Super::NativeConstruct();
+	Super::InitWidget(uiSubsystem);
 
 	MapSelectButton->OnClicked.AddDynamic(this, &ThisClass::HandleButtonClicked);
-}
+	MapName->SetText(FText::FromString("Name"));
 
-void UMapSelectTileWidget::InitWidget(UUISubsystem* NewUIHandle)
-{
-	Super::InitWidget(NewUIHandle);
-
-	//°¢ ¹öÆ°¿¡ Å¬¸¯½Ã ¹ßµ¿?µÉ ÇÔ¼ö ¿¬°áÇÏ±â
-	/*
-	OpenPlayerSettingButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveSingleMode);
-	*/
-	//°¢ ¹öÆ°¿¡ Å¬¸¯½Ã ¹ßµ¿?µÉ ÇÔ¼ö ¿¬°áÇÏ±â
-	MapSelectButton->OnClicked.AddDynamic(this, &ThisClass::HandleButtonClicked);
+	//FSlateBrush Brush;
+	//Brush.SetResourceObject(SomeTexture);
+	//MapImage->SetBrush(Brush);
 }
 
 void UMapSelectTileWidget::HandleButtonClicked()
 {
 	UE_LOG(LogTemp, Log, TEXT("Tile with was clicked!"));
-    OnMapSelectTileClicked.Broadcast(MyTileIndex); // ¹öÆ° ´­¸®¸é ÀÌº¥Æ® ³¯¸²
+    OnMapSelectTileClicked.Broadcast(MyTileIndex); // ï¿½ï¿½Æ° ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ® ï¿½ï¿½ï¿½ï¿½
 }

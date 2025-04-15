@@ -5,24 +5,96 @@
 #include "UISubsystem.h"
 #include "AudioSubsystem.h"
 #include "DataSubsystem.h"
-#include "GameInstance/MyOnlineSubsystem.h"
+#include "GameInstance/LevelSubsystem.h"
+#include "Player/Controller/WitchController.h"
 
 void UOriginalSinPrjGameInstance::Init()
 {
-    // ³»ºÎÀûÀ¸·Î ¼­ºê½Ã½ºÅÛ Initialize
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã½ï¿½ï¿½ï¿½ Initialize
     Super::Init();
 
     UISubsystem = GetSubsystem<UUISubsystem>();
 
-    // ¸ðµç °´Ã¼ »ý¼º ÀÌÈÄ¿¡? ½ÇÇàÀÌ ÇÊ¿äÇÒ ¼ö ÀÖÀ½
-    if (UISubsystem)
-    {
-        UISubsystem->ShowLevel(ELevelType::IntroLevel);
-    }
+    // ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ä¿ï¿½? ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    //if (UISubsystem)
+    //{
+    //    UISubsystem->ShowLevel(ELevelType::IntroLevel);
+    //}
 
     AudioSubsystem = GetSubsystem<UAudioSubsystem>();
 
     DataSubsystem = GetSubsystem<UDataSubsystem>();
 
-    MyOnlineSubsystem = GetSubsystem<UMyOnlineSubsystem>();
+    LevelSubsystem = GetSubsystem<ULevelSubsystem>();
+}
+
+void UOriginalSinPrjGameInstance::SetOwningPlayerController(APlayerController* OwningPC)
+{
+    UE_LOG(LogTemp, Warning, TEXT("Set Owning Player"));
+    OwningPlayer = OwningPC;
+}
+
+APlayerController* UOriginalSinPrjGameInstance::GetOwningPlayerController() const
+{
+    UE_LOG(LogTemp, Warning, TEXT("Get Owning Player"));
+    return OwningPlayer;
+}
+
+void UOriginalSinPrjGameInstance::RequestOpenLevel(const FString& LevelName)
+{
+    if (!IsValid(OwningPlayer))
+    {
+        return;
+    }
+
+    if (!OwningPlayer->HasAuthority())
+    {
+        return;
+    }
+
+    if (IsValid(GetWorld()))
+    {
+        GetWorld()->ServerTravel(LevelName);
+    }
+}
+
+void UOriginalSinPrjGameInstance::RequestOpenLevelByType(ELevelType Type, bool bIsSingle)
+{
+    checkf(IsValid(LevelSubsystem), TEXT("Level Sub is invalid"));
+
+    if (bIsSingle)
+    {
+        LevelSubsystem->ResponseOpenSingleLevelByType(Type);
+        return;
+    }
+
+    if (!IsValid(OwningPlayer))
+    {
+        return;
+    }
+
+    if (!OwningPlayer->HasAuthority())
+    {
+        return;
+    }
+
+    LevelSubsystem->ResponseServerTravelByType(Type);
+}
+
+void UOriginalSinPrjGameInstance::ResponseShowWidget()
+{
+    checkf(IsValid(UISubsystem), TEXT("UISubsystem is invalid"));
+    
+    UISubsystem->ShowLevelWidget(GetCurrentLevelType());
+
+    checkf(IsValid(AudioSubsystem), TEXT("AudioSubsystem is invalid"));
+
+    AudioSubsystem->PlayBGMByLevelType(GetCurrentLevelType());
+}
+
+const ELevelType UOriginalSinPrjGameInstance::GetCurrentLevelType()
+{
+    checkf(IsValid(LevelSubsystem), TEXT("LevelSubsystem is invalid"));
+    LevelSubsystem->CompareMapName();
+    return LevelSubsystem->GetCurrentLevel();
 }

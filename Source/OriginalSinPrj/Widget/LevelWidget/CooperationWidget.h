@@ -6,10 +6,10 @@
 #include "../BaseWidget.h"
 #include "CooperationWidget.generated.h"
 
-struct FPlayerUIData; //�ӽ� ����// ���߿� Data������ ���� ���ߵ�.
+struct FPlayerData; //�ӽ� ����// ���߿� Data������ ���� ���ߵ�.
 
 USTRUCT(BlueprintType)
-struct FBossUIData  //�ӽ� ����// ���߿� Data������ ���� ���ߵ�.
+struct FBossUIData  //�ӽ� ����// ���߿� Data������ ���� ���ߵ�.
 {
 	GENERATED_BODY()
 
@@ -30,6 +30,9 @@ class ORIGINALSINPRJ_API UCooperationWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 
+public:
+	virtual void InitWidget(UUISubsystem* uiSubsystem) override;
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -42,10 +45,10 @@ private:
 	class UPlayerStateWidget* Player2StateUI;
 
 public:
-	void InitPlayerUI(FPlayerUIData* Player1, FPlayerUIData* Player2);
-	void UpdatePlayerUI(FPlayerUIData* Player1, FPlayerUIData* Player2);
-	FPlayerUIData* Player1Data;
-	FPlayerUIData* Player2Data;
+	void InitPlayerUI(FPlayerData* Player1, FPlayerData* Player2);
+	void UpdatePlayerUI(FPlayerData* Player1, FPlayerData* Player2);
+	FPlayerData* Player1Data;
+	FPlayerData* Player2Data;
 
 
 	//stage2
@@ -64,13 +67,13 @@ private:
 	class UPlayerStateWidget* Enemy4StateUI;
 
 public:
-	void InitEnemyUI(FPlayerUIData* Enemy1, FPlayerUIData* Enemy2, FPlayerUIData* Enemy3, FPlayerUIData* Enemy4);
-	void UpdateEnemyUI(FPlayerUIData* Enemy1, FPlayerUIData* Enemy2, FPlayerUIData* Enemy3, FPlayerUIData* Enemy4);
+	void InitEnemyUI(FPlayerData* Enemy1, FPlayerData* Enemy2, FPlayerData* Enemy3, FPlayerData* Enemy4);
+	void UpdateEnemyUI(FPlayerData* Enemy1, FPlayerData* Enemy2, FPlayerData* Enemy3, FPlayerData* Enemy4);
 
-	FPlayerUIData* Enemy1Data;
-	FPlayerUIData* Enemy2Data;
-	FPlayerUIData* Enemy3Data;
-	FPlayerUIData* Enemy4Data;
+	FPlayerData* Enemy1Data;
+	FPlayerData* Enemy2Data;
+	FPlayerData* Enemy3Data;
+	FPlayerData* Enemy4Data;
 
 private:
 	UPROPERTY(meta = (BindWidget))
@@ -98,13 +101,22 @@ private:
 	int32 HPPerLine = 10;
 	int32 BossRemaingHPMaxLine = 99;
 
-	// Ÿ�̸� ����
+	// Ÿ�̸� ����
 	FTimerHandle StageTimerHandle;
 	float ElapsedTime = 0.0f;
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* BossModeTimer;
-
+	//Ÿ�̸� ���߿� ���Ӹ�忡�� �޾ƿ��� UI�� ǥ�ø� �ϴ°ŷ� �ٲ�ߵ�
+	//Ÿ�̸� ���߿� ���Ӹ�忡�� �޾ƿ��� UI�� ǥ�ø� �ϴ°ŷ� �ٲ�ߵ�
+	//Ÿ�̸� ���߿� ���Ӹ�忡�� �޾ƿ��� UI�� ǥ�ø� �ϴ°ŷ� �ٲ�ߵ�
+	//Ÿ�̸� ���߿� ���Ӹ�忡�� �޾ƿ��� UI�� ǥ�ø� �ϴ°ŷ� �ٲ�ߵ�
+	//Ÿ�̸� ���߿� ���Ӹ�忡�� �޾ƿ��� UI�� ǥ�ø� �ϴ°ŷ� �ٲ�ߵ�
+	//Ÿ�̸� ���߿� ���Ӹ�忡�� �޾ƿ��� UI�� ǥ�ø� �ϴ°ŷ� �ٲ�ߵ�
+	//Ÿ�̸� ���߿� ���Ӹ�忡�� �޾ƿ��� UI�� ǥ�ø� �ϴ°ŷ� �ٲ�ߵ�
+	//Ÿ�̸� ���߿� ���Ӹ�忡�� �޾ƿ��� UI�� ǥ�ø� �ϴ°ŷ� �ٲ�ߵ�
+	//Ÿ�̸� ���߿� ���Ӹ�忡�� �޾ƿ��� UI�� ǥ�ø� �ϴ°ŷ� �ٲ�ߵ�
+	//Ÿ�̸� ���߿� ���Ӹ�忡�� �޾ƿ��� UI�� ǥ�ø� �ϴ°ŷ� �ٲ�ߵ�
 	UFUNCTION()
 	void StartStageTimer();
 

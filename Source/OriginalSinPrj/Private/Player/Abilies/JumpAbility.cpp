@@ -32,6 +32,9 @@ bool AJumpAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 	Parent = Buffer.ParentWitch;
 	MoveComp = Buffer.MovementComp;
 
+	Buffer.bIsJumpable = false;
+	Buffer.bIsMoveable = false;
+
 	if (!IsValid(Parent))
 	{
 		return false;
@@ -41,7 +44,7 @@ bool AJumpAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 	
 	bIsJumping = true;
 
-	ResponseJumped(Buffer.ParentWitch);
+	Buffer.ParentWitch->SetMeshResponseToChanel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 	Buffer.ParentWitch->SetWitchState(EWitchStateType::Jump);
 	SetActorTickEnabled(true);
 
@@ -51,50 +54,16 @@ bool AJumpAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 void AJumpAbility::UndoAbility(FAbilityDataBuffer& Buffer)
 {
 	Super::UndoAbility(Buffer);
-	UE_LOG(LogTemp, Warning, TEXT("Call Undo Jump"));
 
 	if (IsActorTickEnabled())
 	{
 		SetActorTickEnabled(false);
-		ResponseEndJumped(Buffer.ParentWitch);
+		Buffer.ParentWitch->SetMeshResponseToChanel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
 	}
 
 	Buffer.ParentWitch->SetWitchState(EWitchStateType::Idle);
-}
-
-void AJumpAbility::ResponseJumped_Implementation(ABaseWitch* ParentWitch)
-{
-	if (!IsValid(ParentWitch))
-	{
-		return;
-	}
-
-	if (ParentWitch->IsLocallyControlled())
-	{
-		ParentWitch->Jump();
-	}
-
-	UCapsuleComponent* HitBox = Cast<UCapsuleComponent>(ParentWitch->GetRootComponent());
-
-	if (IsValid(HitBox))
-	{
-		HitBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
-	}
-}
-
-void AJumpAbility::ResponseEndJumped_Implementation(ABaseWitch* ParentWitch)
-{
-	if (!IsValid(ParentWitch))
-	{
-		return;
-	}
-
-	UCapsuleComponent* HitBox = Cast<UCapsuleComponent>(ParentWitch->GetRootComponent());
-
-	if (IsValid(HitBox))
-	{
-		HitBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
-	}
+	Buffer.bIsJumpable = true;
+	Buffer.bIsMoveable = true;
 }
 
 bool AJumpAbility::CheckExcuteable(FAbilityDataBuffer& Buffer)
@@ -119,17 +88,16 @@ void AJumpAbility::Tick(float DeltaTime)
 	}
 
 	float Direction = MoveComp->Velocity.Z;
+	//UE_LOG(LogTemp, Warning, TEXT("MoveComp Velocity %f"), Direction);
 
 	if (Direction < 0 && bIsJumping)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Current Direction Value : %f"), Direction);
 		bIsJumping = false;
-		ResponseEndJumped(Parent);
+		Parent->SetMeshResponseToChanel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
 	}
 
 	if (!MoveComp->IsFalling() && !bIsJumping)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Is not Falling And Ended Jumping"));
 		SetActorTickEnabled(false);
 		Parent->RequestEndedAnim();
 	}

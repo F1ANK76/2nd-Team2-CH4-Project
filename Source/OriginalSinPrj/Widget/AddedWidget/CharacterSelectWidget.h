@@ -14,15 +14,21 @@ class ORIGINALSINPRJ_API UCharacterSelectWidget : public UBaseWidget
 	GENERATED_BODY()
 	
 public:
-	virtual void NativeConstruct() override;
-	virtual void InitWidget(UUISubsystem* NewUIHandle) override;
+	virtual void InitWidget(UUISubsystem* uiHandle) override;
 
-public:
+private:
 	UFUNCTION()
-	void OnTileClickedFromTile(int32 TileIndex); // Å¸ÀÏ¿¡¼­ ³¯¶ó¿À´Â ÀÌº¥Æ® Ã³¸®
+	void OnTileClickedFromTile(int32 TileIndex); // Å¸ï¿½Ï¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ® Ã³ï¿½ï¿½
 
+	UFUNCTION()
+	void OnClickedClose();
 
-	
+	void InitDelegate();
+
+private:
+	UPROPERTY(Meta = (BindWidget))
+	TObjectPtr<UButton> UICloseButton = nullptr;
+
 	//UI Open animation
 	//UI close Animation
 };

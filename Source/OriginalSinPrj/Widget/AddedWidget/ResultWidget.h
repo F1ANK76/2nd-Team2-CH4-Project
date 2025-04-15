@@ -14,8 +14,8 @@ class ORIGINALSINPRJ_API UResultWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 
-public: // add notify
-	virtual void InitWidget(UUISubsystem* NewUIHandle) override;
+public:
+	virtual void InitWidget(UUISubsystem* uiSubsystem) override;
 
 private:
 	UFUNCTION()

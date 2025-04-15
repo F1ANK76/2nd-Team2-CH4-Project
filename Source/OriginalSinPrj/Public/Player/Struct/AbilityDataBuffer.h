@@ -44,10 +44,16 @@ public:
 	float AddedGuage = 0.0f;
 
 	UPROPERTY()
-	int32 MaxMana = 5;
+	float AddedDamage = 0.0f;
 
 	UPROPERTY()
-	int32 CurrentMana = 5;
+	float MaxMana = 5;
+
+	UPROPERTY()
+	float CurrentMana = 5;
+
+	UPROPERTY()
+	float NeedMana = 0;
 
 	UPROPERTY()
 	TObjectPtr<AActor> DamageCauser = nullptr;

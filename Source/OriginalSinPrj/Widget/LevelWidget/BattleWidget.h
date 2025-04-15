@@ -6,14 +6,30 @@
 #include "../BaseWidget.h"
 #include "BattleWidget.generated.h"
 
-struct FPlayerUIData; //ÀÓ½Ã ¼±¾ð// ³ªÁß¿¡ Data±¸Á¶·Î µû·Î »©¾ßµÊ.
+struct FPlayerData; //ï¿½Ó½ï¿½ ï¿½ï¿½ï¿½ï¿½// ï¿½ï¿½ï¿½ß¿ï¿½ Dataï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ßµï¿½.
 
 UCLASS()
 class ORIGINALSINPRJ_API UBattleWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 
-	//Å¸ÀÌ¸Ó
+protected:
+	virtual void NativeConstruct() override;
+
+	//Å¸ï¿½Ì¸ï¿½
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* FarmingModeTimer;
+	
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* TimeLimitModeTimer;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void UpdateFarmingModeTimerUI(float time);
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateTimerLimitModeTimerUI(float time);
 
 private:
 	//all stage
@@ -24,9 +40,25 @@ private:
 	class UPlayerStateWidget* Player2StateUI;
 
 public:
-	void InitPlayerUI(FPlayerUIData* Player1, FPlayerUIData* Player2);
-	void UpdatePlayerUI(FPlayerUIData* Player1, FPlayerUIData* Player2);
-	FPlayerUIData* Player1Data;
-	FPlayerUIData* Player2Data;
+	UFUNCTION(BlueprintCallable)
+	void InitPlayerUI(FPlayerData Player1, FPlayerData Player2);
+	
+	UFUNCTION(BlueprintCallable)
+	void UpdatePlayerUI(FPlayerData Player1, FPlayerData Player2);
+
+
+	UFUNCTION()
+	void ActiveFarmingModeWidget();
+	UFUNCTION()
+	void ActiveTimeLimitModeWidget();
+
+
+	UFUNCTION()
+	void DeactiveFarmingModeWidget();
+	UFUNCTION()
+	void DeactiveTimeLimitModeWidget();
+
+	FPlayerData* Player1Data;
+	FPlayerData* Player2Data;
 	
 };

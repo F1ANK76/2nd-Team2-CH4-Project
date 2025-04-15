@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Delegates/DelegateCombinations.h"
-#include "../AddedWidget/MapSelectWidget.h"
+#include "../BaseWidget.h"
 #include "MapSelectTileWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMapTileClicked, int32, TileIndex);
@@ -12,20 +12,21 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMapTileClicked, int32, TileIndex)
 class UButton;
 
 UCLASS()
-class ORIGINALSINPRJ_API UMapSelectTileWidget : public UMapSelectWidget
+class ORIGINALSINPRJ_API UMapSelectTileWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 	
-	virtual void InitWidget(UUISubsystem* uiHandle);
-	virtual void NativeConstruct() override;
 
-	//ÀÌº¥Æ® µð½ºÆÐÃÄ
+public:
+	virtual void InitWidget(UUISubsystem* uiSubsystem) override;
+
+	//ï¿½Ìºï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Event")
 	FOnMapTileClicked OnMapSelectTileClicked;
 
 	UFUNCTION()
-	void HandleButtonClicked(); // ¹öÆ°¿¡ ¿¬°áÇÒ ÇÔ¼ö
+	void HandleButtonClicked(); // ï¿½ï¿½Æ°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> MapSelectButton;
@@ -33,9 +34,12 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile")
 	int32 MyTileIndex;
 
-	
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* MapName;
 
-	//´Ý±â UI button
+	UPROPERTY(meta = (BindWidget))
+	class UImage* MapImage;
+	//ï¿½Ý±ï¿½ UI button
 	//UI Open animation
 	//UI close Animation
 };
