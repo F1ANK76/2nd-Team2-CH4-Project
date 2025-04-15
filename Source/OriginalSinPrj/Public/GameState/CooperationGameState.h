@@ -8,6 +8,9 @@
 #include "../Widget/AddedWidget/PlayerStateWidget.h"
 #include "../Player/BaseWitch.h"
 #include "OriginalSinPrj/Interface/CameraStateInterface.h"
+#include "OriginalSinPrj/Interface/BattleEvent.h"
+#include "OriginalSinPrj/Interface/MatchManage.h"
+#include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
 #include "CooperationGameState.generated.h"
 
 struct FBuffType;
@@ -15,10 +18,12 @@ class ACooperationGameMode;
 
 
 UCLASS()
-class ORIGINALSINPRJ_API ACooperationGameState : public AGameState, public ICameraStateInterface
+class ORIGINALSINPRJ_API ACooperationGameState : public AGameState, public ICameraStateInterface, public IBattleEvent
 {
 	GENERATED_BODY()
 
+public:
+    UOriginalSinPrjGameInstance* GameInstance = nullptr;
     
 protected:
     ACooperationGameState();
@@ -59,6 +64,17 @@ public:
     void InitPlayerUIInfo();
     void UpdatePlayerUIInfo();
 
+
+    UPROPERTY(ReplicatedUsing = OnRep_TurnOnStageUI)
+    int CurrentStageIndex = 0;
+
+    void TurnOnStage1Widget();
+    void TurnOnStage2Widget();
+    void TurnOnStage3Widget();
+
+    UFUNCTION()
+    void OnRep_TurnOnStageUI();
+
     void RequestPlayerToOpenBuffUI();//플레이어에게 버프 선택 UI 열도록 시키기
 
     void RequestPlayerToOpenResultUI(); //플레이어에게 결과 UI 열도록 시키기
@@ -74,7 +90,7 @@ private:
 
 
     FTimerHandle TimerHandle;
-    void CheckLevelUp(APlayerController* Player);
+    void CheckLevelUp(AActor* Player);
 
 public:
     void SetPlayerPawn(ABaseWitch* InPawn);
@@ -88,8 +104,14 @@ public:
     bool bPlayer2SelectedBuff = false;
 
 
+    void SetPlayerMove(bool bCanMove);
 
-  
+
+    UPROPERTY(ReplicatedUsing = OnRep_SetPlayerMove)
+    bool bIsPlayerCanMove = true;
+
+    UFUNCTION()
+    void OnRep_SetPlayerMove();
 
     UPROPERTY(Replicated)
     bool bIsStage3Started;
@@ -100,19 +122,21 @@ public:
     UFUNCTION()
     void OnRep_UpdateTimer();
 
+    void UpdateTimer();
+
     //////////////////////////////////////////////////////////// UI와 연동하는 함수////////////////////////////////////////////////////
     // Player 정보 관리
     UPROPERTY(BlueprintReadOnly)
-    TMap<APlayerController*, FPlayerData> PlayerInfos;
+    TMap<AActor*, FPlayerData> PlayerInfos;
 
     UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayerDataUI)
     TArray<FPlayerData> PlayerDatas;
 
+    bool bIsPlayerDataUpdated = false;
+
     UFUNCTION()
     void OnRep_UpdatePlayerDataUI();
 
-    UFUNCTION(Client, Reliable)
-    void SetPlayerUnReady();
     ///////////////////
 
 
@@ -130,14 +154,30 @@ public:
 
     void ApplyBuffStat(); // 게임모드가 허락해준 버프 적용시키기
 
-    void AddExperienceToPlayer(APlayerController* Player, int32 Amount);
-
-
-
-
+    void AddExperienceToPlayer(AActor* Player, int32 Amount);
 
 private:
     UPROPERTY()
     ABaseWitch* PlayerPawnRef;
 	
+
+
+public:
+    virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;
+    virtual void TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation) override;
+    virtual void OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation) override;
+    virtual void OnDeathMonster(AActor* Monster, const FVector& DeathLocation) override;
+
+
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation);
+
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation);
+
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_OnDeathPlayer(ACharacter* Player, const FVector& DeathLocatio);
+
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_OnDeathMonster(AActor* Monster, const FVector& DeathLocation);
 };

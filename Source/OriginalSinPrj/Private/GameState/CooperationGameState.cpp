@@ -7,6 +7,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Player/Controller/WitchController.h"
 #include "../GameInstance/DataSubsystem.h"
+#include "OriginalSinPrj/GameInstance/UISubsystem.h"
+
 
 ACooperationGameState::ACooperationGameState()
 {
@@ -20,16 +22,9 @@ ACooperationGameState::ACooperationGameState()
     bPlayer1SelectedBuff = false;
     bPlayer2SelectedBuff = false;
 
-
-
-    CameraLocation = FVector::ZeroVector;
-
-
+    CameraLocation = FVector(-400.f, 200.f, 0.f);
     CameraRotation = FRotator::ZeroRotator;
-
-
     CameraDistance = 0;
-
 }
 
 void ACooperationGameState::BeginPlay()
@@ -39,7 +34,7 @@ void ACooperationGameState::BeginPlay()
     // 게임 스테이트 클래스에서 게임 모드에 접근
     AGameModeBase* GameModeBase = UGameplayStatics::GetGameMode(this);
     CooperationGameGameMode = Cast<ACooperationGameMode>(GameModeBase);
-
+    GameInstance = Cast<UOriginalSinPrjGameInstance>(GetGameInstance());
     UE_LOG(LogTemp, Warning, TEXT("GameState BeginPlay"));
 }
 void ACooperationGameState::Tick(float DeltaSeconds)
@@ -87,46 +82,109 @@ void ACooperationGameState::TurnOnTimer()
     bIsStage3Started = true;
 }
 
+
+void ACooperationGameState::TurnOnStage1Widget()
+{
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
+        {
+            // 여기서 UISubsystem 사용 가능!
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->ActiveStage1Widget();
+        }
+    }
+}
+void ACooperationGameState::TurnOnStage2Widget()
+{
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
+        {
+            // 여기서 UISubsystem 사용 가능!
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->ActiveStage2Widget();
+        }
+    }
+}
+void ACooperationGameState::TurnOnStage3Widget()
+{
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
+        {
+            // 여기서 UISubsystem 사용 가능!
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->ActiveStage3Widget();
+        }
+    }
+}
+
+
+void ACooperationGameState::OnRep_TurnOnStageUI()
+{
+    if (CurrentStageIndex == 1)
+    {
+        TurnOnStage1Widget();
+    }
+    else if (CurrentStageIndex == 2)
+    {
+        TurnOnStage2Widget();
+    }
+    else if (CurrentStageIndex == 3)
+    {
+        TurnOnStage3Widget();
+    }
+}
+
 void ACooperationGameState::InitPlayerInfo()
 {
-    PlayerInfos.Empty(); // 기존 정보 삭제
+    if (HasAuthority())  // 서버에서만 실행되는 코드
+    {
+        PlayerInfos.Empty(); // 기존 정보 삭제
 
-    // 각 플레이어 정보 초기화
-    /*
-    플레이어의 정보를 받아오고 맵에 저장하기.
-    */
+        //어디선가 받아와야해...
+
+
+
+        PlayerInfos.Add(CooperationGameGameMode->ActivePlayers[0], FPlayerData{
+        "test1", nullptr, 40.0, 100.0f,1.0f, 100.0f, 40.0f,100.0f, 10, 2,10, 100 });
+        PlayerInfos.Add(CooperationGameGameMode->ActivePlayers[1], FPlayerData{
+        "test2", nullptr, 50.0, 100.0f,0.0f, 100.0f, 50.0f,100.0f, 10, 2,10, 100 });
+        // 각 플레이어 정보 초기화
+        /*
+        플레이어의 정보를 받아오고 맵에 저장하기.
+        */
+
+        PlayerDatas.Add(PlayerInfos[CooperationGameGameMode->ActivePlayers[0]]);
+        PlayerDatas.Add(PlayerInfos[CooperationGameGameMode->ActivePlayers[1]]);
+    }
+    InitPlayerUIInfo();
 
 }
 void ACooperationGameState::UpdatePlayerInfo()
 {
-    // 각 플레이어 정보 업뎃
-/*
 
-*/
 }
 void ACooperationGameState::InitPlayerUIInfo()
 {
-    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+    //위젯 접근해서 갱신
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
     {
-        APlayerController* PlayerController = Cast<APlayerController>(*It);
-        if (PlayerController)
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            //UISubSystem이나 gameInstance에게 UI 띄우라고 명령
-            //Player에게 UI정보 바꾸라고 명령.
-            //여기에 있는 PlayerInfo 활용해서...
+            // 여기서 UISubsystem 사용 가능!
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->InitPlayerUI(&PlayerDatas[0], &PlayerDatas[1]);
         }
     }
 }
 
 void ACooperationGameState::UpdatePlayerUIInfo()
 {
-    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+    //위젯 접근해서 갱신
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
     {
-        APlayerController* PlayerController = Cast<APlayerController>(*It);
-        if (PlayerController)
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            //Player에게 UI정보 바꾸라고 명령.
-            //여기에 있는 PlayerInfo 활용해서...
+            // 여기서 UISubsystem 사용 가능!
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->UpdatePlayerUI(&PlayerDatas[0], &PlayerDatas[1]);
         }
     }
 }
@@ -238,7 +296,7 @@ void ACooperationGameState::ApplyBuffStat()
     bPlayer2SelectedBuff = false;
 }
 
-void ACooperationGameState::AddExperienceToPlayer(APlayerController* Player, int32 Amount)
+void ACooperationGameState::AddExperienceToPlayer(AActor* Player, int32 Amount)
 {
     if (Player)
     {
@@ -254,7 +312,7 @@ void ACooperationGameState::AddExperienceToPlayer(APlayerController* Player, int
     }
 }
 
-void ACooperationGameState::CheckLevelUp(APlayerController* Player)
+void ACooperationGameState::CheckLevelUp(AActor* Player)
 {
     if (Player)
     {
@@ -376,28 +434,30 @@ void ACooperationGameState::SetStage2CameraTransform()
 
     for (AActor* Enemy : CooperationGameGameMode->ActiveEnemies)
     {
-        FVector EnemyLocation = Enemy->GetActorLocation();
-
-        SumEnemyLocation += EnemyLocation;
-
-        if (EnemyLocation.Y > maxY)
+        if (IsValid(Enemy))
         {
-            maxY = EnemyLocation.Y;
-        }
-        if (EnemyLocation.Y < minY)
-        {
-            minY = EnemyLocation.Y;
-        }
+            FVector EnemyLocation = Enemy->GetActorLocation();
 
-        if (EnemyLocation.Z > maxZ)
-        {
-            maxZ = EnemyLocation.Z;
-        }
-        if (EnemyLocation.Z < minZ)
-        {
-            minZ = EnemyLocation.Z;
-        }
+            SumEnemyLocation += EnemyLocation;
 
+            if (EnemyLocation.Y > maxY)
+            {
+                maxY = EnemyLocation.Y;
+            }
+            if (EnemyLocation.Y < minY)
+            {
+                minY = EnemyLocation.Y;
+            }
+
+            if (EnemyLocation.Z > maxZ)
+            {
+                maxZ = EnemyLocation.Z;
+            }
+            if (EnemyLocation.Z < minZ)
+            {
+                minZ = EnemyLocation.Z;
+            }
+        }
     }
 
     FVector MeanActorLocation = FVector::ZeroVector;
@@ -448,52 +508,33 @@ void ACooperationGameState::SetStage3CameraTransform()
 
 void ACooperationGameState::OnRep_UpdatePlayerDataUI()
 {
-    APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0); // 보통 로컬플레이어
-    if (APlayerController* MyPC = Cast<APlayerController>(PC))
+    if (bIsPlayerDataUpdated)
     {
-        // 로컬 플레이어인지 확인
-        if (MyPC->IsLocalPlayerController())
-        {
-            // 로컬 플레이어일 경우 로그 출력
-            //UE_LOG(LogTemp, Log, TEXT("This is the local player controller."));
+        UpdatePlayerUIInfo();
+    }
+    else
+    {
+        bIsPlayerDataUpdated;
+        InitPlayerInfo();
+    }
+}
 
-            // 로컬 플레이어의 UI를 업데이트
-            //MyPC->UpdateHealthUI(Health);
-        }
-        else
+void ACooperationGameState::UpdateTimer()
+{
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            // 로컬 플레이어가 아닐 경우 로그 출력
-            UE_LOG(LogTemp, Log, TEXT("This is NOT the local player controller."));
+            // 여기서 UISubsystem 사용 가능!
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->UpdateBossTimer(Timer);
         }
     }
-
 }
 
 void ACooperationGameState::OnRep_UpdateTimer()
 {
-    APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0); // 보통 로컬플레이어
-    if (AWitchController* MyPC = Cast<AWitchController>(PC))
-    {
-        // 로컬 플레이어인지 확인
-        if (MyPC->IsLocalPlayerController())
-        {
-            // 로컬 플레이어일 경우 로그 출력
-            UE_LOG(LogTemp, Warning, TEXT("MyPC: %s | Role: %s | LocalController: %s"),
-                *MyPC->GetName(),
-                *UEnum::GetValueAsString(MyPC->GetLocalRole()),
-                MyPC->IsLocalPlayerController() ? TEXT("Yes") : TEXT("No"));
-            DisableInput(PC);
-            UE_LOG(LogTemp, Warning, TEXT("Possessed Pawn: %s"), *GetNameSafe(MyPC->GetPawn()));
-
-            // 로컬 플레이어의 UI를 업데이트
-            //MyPC->UpdateHealthUI(Health);
-        }
-        else
-        {
-            // 로컬 플레이어가 아닐 경우 로그 출력
-            UE_LOG(LogTemp, Log, TEXT("This is NOT the local player controller."));
-        }
-    }
+    UE_LOG(LogTemp, Warning, TEXT("Timer: %f"), Timer);
+    UpdateTimer();
 }
 
 
@@ -509,31 +550,108 @@ void ACooperationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME(ACooperationGameState, CameraRotation);
     DOREPLIFETIME(ACooperationGameState, CameraDistance);
     DOREPLIFETIME(ACooperationGameState, PlayerDatas);
-    DOREPLIFETIME(ACooperationGameState, Timer);
+    DOREPLIFETIME(ACooperationGameState, Timer); 
+    DOREPLIFETIME(ACooperationGameState, bIsPlayerCanMove); 
+    DOREPLIFETIME(ACooperationGameState, CurrentStageIndex);
+
+}
+
+
+void ACooperationGameState::OnRep_SetPlayerMove()
+{
+    UE_LOG(LogTemp, Log, TEXT("This is NOT the local player controller."));
+    UWorld* WorldContext = GetWorld();
+    for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+    {
+        APlayerController* PC = It->Get();
+        if (PC && PC->GetPawn())
+        {
+            if (bIsPlayerCanMove)
+            {
+                PC->GetPawn()->DisableInput(PC);
+            }
+            else
+            {
+                PC->GetPawn()->EnableInput(PC);
+            }
+        }
+    }
+    
+}
+
+
+void ACooperationGameState::SetPlayerMove(bool bCanMove)
+{
+    bIsPlayerCanMove = bCanMove;
+
+    if (bIsPlayerCanMove)
+    {
+        bIsPlayerCanMove = false;
+        UWorld* WorldContext = GetWorld();
+
+        for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+        {
+            APlayerController* PC = It->Get();
+            if (PC && PC->GetPawn())
+            {
+                PC->GetPawn()->DisableInput(PC);
+            }
+        }
+    }
+    else
+    {
+        bIsPlayerCanMove = true;
+        UWorld* WorldContext = GetWorld();
+
+        for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+        {
+            APlayerController* PC = It->Get();
+            if (PC && PC->GetPawn())
+            {
+                PC->GetPawn()->EnableInput(PC);
+            }
+        }
+    }
+}
+
+
+
+
+
+void ACooperationGameState::ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation)
+{
+
+}
+
+void ACooperationGameState::TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation) 
+{
+
+}
+
+void ACooperationGameState::OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation) 
+{
+
+}
+
+void ACooperationGameState::OnDeathMonster(AActor* Monster, const FVector& DeathLocation) 
+{
 
 }
 
 
 
-void ACooperationGameState::SetPlayerUnReady_Implementation()
+void ACooperationGameState::Multicast_ApplyDamage_Implementation(AActor* Attacker, float Damage, const FVector& HitLocation)
 {
-    APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0); // 보통 로컬플레이어
+}
 
-    if (APlayerController* MyPC = Cast<APlayerController>(PC))
-    {
-        // 로컬 플레이어인지 확인
-        if (MyPC->IsLocalPlayerController())
-        {
-            // 로컬 플레이어일 경우 로그 출력
-            UE_LOG(LogTemp, Log, TEXT("This is the local player controller."));
-            MyPC->DisableInput(MyPC);
-            // 로컬 플레이어의 UI를 업데이트
-            //MyPC->UpdateHealthUI(Health);
-        }
-        else
-        {
-            // 로컬 플레이어가 아닐 경우 로그 출력
-            UE_LOG(LogTemp, Log, TEXT("This is NOT the local player controller."));
-        }
-    }
+void ACooperationGameState::Multicast_TakeDamage_Implementation(AActor* Victim, float Damage, const FVector& HitLocation)
+{
+}
+
+void ACooperationGameState::Multicast_OnDeathPlayer_Implementation(ACharacter* Player, const FVector& DeathLocation)
+{
+}
+
+void ACooperationGameState::Multicast_OnDeathMonster_Implementation(AActor* Monster, const FVector& DeathLocation)
+{
 }

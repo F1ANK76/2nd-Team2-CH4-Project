@@ -7,7 +7,8 @@
 #include "Player/BaseWitch.h"
 #include "GameFramework/PlayerController.h"
 #include "Player/Controller/WitchController.h"
-
+#include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
+#include "OriginalSinPrj/GameInstance/UISubsystem.h"
 
 ACooperationGameMode::ACooperationGameMode()
 {
@@ -21,6 +22,8 @@ ACooperationGameMode::ACooperationGameMode()
     Stage1ClearTrigger1 = false;
     Stage1ClearTrigger2 = false;
     StageIndex = 0;
+
+    //GameInstance = Cast<UOriginalSinPrjGameInstance>(GetGameInstance());
 
 }
 
@@ -46,6 +49,8 @@ void ACooperationGameMode::BeginPlay()
     //Open Player UI;
     InitPlayerUI();
 
+
+
     //Game Start Condition -> Start with a timer temporarily
     FTimerHandle TimerHandle;
     GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
@@ -54,38 +59,6 @@ void ACooperationGameMode::BeginPlay()
         }), 5.0f, false);
 
 
-}
-
-void ACooperationGameMode::SpawnCamera()
-{
-    UWorld* World = GetWorld();
-    if (!IsValid(World) || !IsValid(BaseCamera)) return;
-    
-    for (const FVector& SpawnLocation : CameraSpawnLocations)
-    {
-        FRotator SpawnRotation = FRotator::ZeroRotator;
-
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-        ABaseCamera* SpawnedCamera = World->SpawnActor<ABaseCamera>(BaseCamera, SpawnLocation, SpawnRotation, SpawnParams);
-        if (SpawnedCamera)
-        {
-            SpawnedBaseCamera.Add(SpawnedCamera);
-        }
-    }
-}
-
-void ACooperationGameMode::AttachPlayerToCamera(ACharacter* Player, ABaseCamera* Camera)
-{
-    APlayerController* PlayerController = Cast<APlayerController>(Player->GetController());
-    if (PlayerController == nullptr) return;  // 컨트롤러가 없으면 종료
-
-    if (PlayerController)
-    {
-        Camera->ActivateCamera(PlayerController);
-    }
-    
 }
 
 
@@ -134,27 +107,21 @@ int ACooperationGameMode::GetPlayerColorIndex(AController* PlayController)
 
 void ACooperationGameMode::StartGame()
 {
-
     //Camera Settings
-
     AttachPlayerToCamera(SpawnedCharacters[0], SpawnedBaseCamera[0]);
     AttachPlayerToCamera(SpawnedCharacters[1], SpawnedBaseCamera[0]);
+    
+    CooperationGameState->InitPlayerInfo();
 
     //Functions to be processed before loading and starting the stage
     //Prepare the game, display the start UI...
-
-    if (IsValid(CooperationGameState))
-    {
-        UE_LOG(LogTemp, Warning, TEXT("GameState is valid"));
-        CooperationGameState->SetActorTickEnabled(true);
-    }
 
     //Player Index Assignment
     SetPlayerColorIndex();
 
     //Set Stage index -> 1
     StageIndex = 1;
-
+    CooperationGameState->CurrentStageIndex = StageIndex;
     //Move Stage -> Prepare Stage 1 
     MoveNextStage();
 }
@@ -165,22 +132,37 @@ void ACooperationGameMode::EndGame()
     UE_LOG(LogTemp, Warning, TEXT("Game End "));
 
     //일단 플레이어 입력을 멈추기.
-    SetPlayerUnReady(SpawnedCharacters[0]);
-    SetPlayerUnReady(SpawnedCharacters[1]);
-
+    SetPlayerUnReady();
 
     SpawnedCharacters[0]->SetActorLocation(PlayerResultLocations[0]);
     SpawnedCharacters[1]->SetActorLocation(PlayerResultLocations[1]);
 
-    //result Page Open
     RequestOpenResultUI();
+    
 
+    TravelLevel();
 
 }
 
+void ACooperationGameMode::TravelLevel()
+{
+    UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance());
+    if (MyGI)
+    {
+        // 원하는 함수나 변수 사용 가능
+        MyGI->RequestOpenLevelByType(ELevelType::TitleLevel, false);
+    }
+    //게임인스턴스에 레벨 열어달라고 호출하기.
+}
+
+
 void ACooperationGameMode::RequestOpenResultUI()
 {
-    //CooperationGameState->RequestPlayerToOpenResultUI();
+    UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance());
+    if (MyGI)
+    {
+        MyGI->ResponseShowWidget();
+    }
 }
 
 //Stage1 준비 트리거
@@ -192,8 +174,7 @@ void ACooperationGameMode::ReadyStage1()
 
     //Turn off Player Input
 
-    SetPlayerUnReady(SpawnedCharacters[0]);
-    SetPlayerUnReady(SpawnedCharacters[1]);
+    SetPlayerUnReady();
 
     //Spawn Monster
     SpawnMonsters();
@@ -205,6 +186,7 @@ void ACooperationGameMode::ReadyStage1()
 
     //CooperationUI Turn on Stage1 UI
     //->ActiveStage1Widget();
+    CooperationGameState->TurnOnStage1Widget();
 
     //Game Start UI Open
     //When Game Start UI ...
@@ -217,24 +199,21 @@ void ACooperationGameMode::ReadyStage1()
 void ACooperationGameMode::ReadyStage2()
 {
     UE_LOG(LogTemp, Warning, TEXT("Ready Stage2"));
-    SetPlayerUnReady(SpawnedCharacters[0]);
-    SetPlayerUnReady(SpawnedCharacters[1]);
-    SpawnEnemies();
-    SetPlayerLocation();
-    //몬스터 못움직이게 잠시 세팅값 조정.
 
-    // 캐릭터도 못움직이게 동결 시켜놓고.
+
+    SetPlayerLocation();
+    //Enemy AI Spawn
+    SpawnEnemies();
+    // Character Input Block
+    SetPlayerUnReady();
 
     //Game Start UI Open까지 대기
-    //Game Start UI 끝나면
+    //When Game Start UI Ended...
 
 
     //CooperationUI Stage2로 바꾸기
-    //->ActiveStage2Widget();
-
-    //몬스터, 캐릭터 움직임 동결되어있는 것 풀기.
-
-
+    //CooperationWidget->ActiveStage2Widget();
+    CooperationGameState->TurnOnStage2Widget();
 
 
     //Test Code
@@ -253,8 +232,7 @@ void ACooperationGameMode::ReadyStage2()
 void ACooperationGameMode::ReadyStage3()
 {
     UE_LOG(LogTemp, Warning, TEXT("Ready Stage3"));
-    SetPlayerUnReady(SpawnedCharacters[0]);
-    SetPlayerUnReady(SpawnedCharacters[1]);
+    SetPlayerUnReady();
 
     SetPlayerLocation();
     SpawnBossMonsters();
@@ -268,7 +246,19 @@ void ACooperationGameMode::ReadyStage3()
     // 
     // 
     //CooperationUI Stage3로 바꾸기
-    //->ActiveStage3Widget();
+    CooperationGameState->TurnOnStage3Widget();
+
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
+        {
+            // 여기서 UISubsystem 사용 가능!
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->ActiveStage3Widget();
+        }
+    }
+
+
+
     CooperationGameState->SetStage3CameraTransform();
 
     AttachPlayerToCamera(SpawnedCharacters[0], SpawnedBaseCamera[0]);
@@ -290,12 +280,8 @@ void ACooperationGameMode::StartStage1()
     UE_LOG(LogTemp, Warning, TEXT("Start Stage1"));
 
     //Turn On Player Input
-    SetPlayerReady(SpawnedCharacters[0]);
-    SetPlayerReady(SpawnedCharacters[1]);
-    if (IsValid(CooperationGameState))
-    {
-        CooperationGameState->TurnOnTimer();
-    }
+    SetPlayerReady();
+
     //Monster Movement...
 }
 
@@ -305,10 +291,11 @@ void ACooperationGameMode::StartStage2()
     UE_LOG(LogTemp, Warning, TEXT("Start Stage2"));
 
     //Turn On Player Input
-    //SetPlayerReady(SpawnedCharacters[0]);
-    //SetPlayerReady(SpawnedCharacters[1]);
+    SetPlayerReady();
 
-    //Enemy Movement...
+    //몬스터, 캐릭터 움직임 동결되어있는 것 풀기. Enemy Movement UnBlock
+
+    //
 }
 
 //Stage3 시작 트리거
@@ -317,15 +304,15 @@ void ACooperationGameMode::StartStage3()
     UE_LOG(LogTemp, Warning, TEXT("Start Stage3"));
 
     //Turn On Player Input
-    SetPlayerReady(SpawnedCharacters[0]);
-    SetPlayerReady(SpawnedCharacters[1]);
+    SetPlayerReady();
     
-    //Turn on BossMonster Behaviour Function
-
     if (IsValid(CooperationGameState))
     {
-        //CooperationGameState->TurnOnTimer();
+        UE_LOG(LogTemp, Warning, TEXT("GameState is valid"));
+        CooperationGameState->SetActorTickEnabled(true);
+        CooperationGameState->TurnOnTimer();
     }
+
 }
 
 //Stage1 종료 트리거
@@ -333,10 +320,9 @@ void ACooperationGameMode::EndStage1()
 {
     UE_LOG(LogTemp, Warning, TEXT("End Stage1"));
     StageIndex++;
+    CooperationGameState->CurrentStageIndex = StageIndex;
     RequestTurnOnBuffSelectUI();
-
     MoveNextStage();
-
 }
 
 //Stage2 종료 트리거
@@ -344,6 +330,7 @@ void ACooperationGameMode::EndStage2()
 {
     UE_LOG(LogTemp, Warning, TEXT("End Stage2"));
     StageIndex++;
+    CooperationGameState->CurrentStageIndex = StageIndex;
     RequestTurnOnBuffSelectUI();
 
     MoveNextStage();
@@ -410,13 +397,12 @@ void ACooperationGameMode::MoveNextStage()
 
 void ACooperationGameMode::RequestTurnOnBuffSelectUI()
 {
-    /*
-    //게임 스테이트 보고 좀 열어달라고 요청하기
-    if (IsValid(CooperationGameState))
+
+    UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance());
+    if (MyGI)
     {
-        CooperationGameState->RequestPlayerToOpenBuffUI();
+        //MyGI->OpenWidget(BuffSelect);
     }
-    */
 }
     
 void ACooperationGameMode::ApplyBuffToBothPlayer()
@@ -474,43 +460,36 @@ void ACooperationGameMode::CheckUntilAllPlayerSelectBuff()
 }
 
 
-/*
-UFUNCTION(Client, Reliable)
-void Client_DisableInput();
-
-void AWitchController::Client_DisableInput_Implementation()
+void ACooperationGameMode::SetPlayerUnReady()
 {
-    DisableInput(this); // this는 Local PlayerController
-}
-*/
+    CooperationGameState->SetPlayerMove(false);
+    UWorld* WorldContext = GetWorld();
 
-/*
-AWitchController* CharacterController = Cast<AWitchController>(PlayerChar->GetController());
-if (CharacterController)
-{
-    CharacterController->Client_DisableInput(); // 클라이언트에서 입력 비활성
-}
-*/
-
-
-
-void ACooperationGameMode::SetPlayerUnReady(ACharacter* PlayerChar)
-{
-    if (!PlayerChar) return;
-    AWitchController* CharacterController = Cast<AWitchController>(PlayerChar->GetController());
-    //CharacterController->Client_DisableInput(); // 클라이언트에서 입력 비활성
+    for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+    {
+        APlayerController* PC = It->Get();
+        if (PC && PC->GetPawn())
+        {
+            PC->GetPawn()->DisableInput(PC);
+        }
+    }
 }
 
-void ACooperationGameMode::SetPlayerReady(ACharacter* PlayerChar)
+void ACooperationGameMode::SetPlayerReady()
 {
-    if (!PlayerChar) return;
-    AWitchController* CharacterController = Cast<AWitchController>(PlayerChar->GetController());
-    PlayerChar->EnableInput(CharacterController);
+    CooperationGameState->SetPlayerMove(true);
+    
+    UWorld* WorldContext = GetWorld();
+
+    for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+    {
+        APlayerController* PC = It->Get();
+        if (PC && PC->GetPawn())
+        {
+            PC->GetPawn()->EnableInput(PC);
+        }
+    }
 }
-
-
-
-
 
 void ACooperationGameMode::SpawnEnemies()
 {
@@ -532,8 +511,6 @@ void ACooperationGameMode::SpawnEnemies()
         }
     }
 }
-
-
 
 //초기 N마리 소환
 void ACooperationGameMode::SpawnMonsters()
@@ -557,7 +534,7 @@ void ACooperationGameMode::SpawnMonsters()
     }
 }
 
-//초기 N마리 소환
+//보스 소환
 void ACooperationGameMode::SpawnBossMonsters()
 {
     UWorld* World = GetWorld();
@@ -585,10 +562,7 @@ void ACooperationGameMode::HandlePlayerKilled(AActor* DeadPlayer, AController* K
     {
         //게임을 실패한거로 종료.
     }
-
 }
-
-
 
 
 //몬스터가 죽을 때 누구한테 죽었는지 정보를 넘기며 게임모드에 알려주면 호출되는 함수.
@@ -624,13 +598,6 @@ void ACooperationGameMode::TriggerStage1Clear(UObject* Object)
 }
 
 
-
-
-
-
-
-
-
 //적 AI가 죽을 때 누구한테 죽었는지 정보를 넘기며 게임모드에 알려주면 호출되는 함수.
 void ACooperationGameMode::HandleEnemyKilled(AActor* DeadMonster, AController* Killer)
 {
@@ -639,7 +606,6 @@ void ACooperationGameMode::HandleEnemyKilled(AActor* DeadMonster, AController* K
     // 죽은 몬스터를 ActiveMonsters 목록에서 제거
     ActiveEnemies.Remove(DeadMonster); // 알아서 내부에서 찾고 제거함
     
-
     if (CurrentEnemyCount <= 0)
     {
         EndStage2();
@@ -651,8 +617,6 @@ void ACooperationGameMode::HandleBossMonsterKilled(AController* Killer)
 {
     EndStage3();
 }
-
-
 
 void ACooperationGameMode::PostSeamlessTravel()
 {
@@ -682,7 +646,6 @@ void ACooperationGameMode::PostSeamlessTravel()
 
     UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Done"));
 }
-
 
 void ACooperationGameMode::HandleClientPossession(APlayerController* PC, int index)
 {
@@ -763,8 +726,6 @@ void ACooperationGameMode::SpawnPlayers()
     }
 }
 
-
-
 void ACooperationGameMode::PossessCharacter(APlayerController* PC, APawn* PawnToPossess)
 {
     if (!PC || !PawnToPossess) return;
@@ -778,20 +739,14 @@ void ACooperationGameMode::PossessCharacter(APlayerController* PC, APawn* PawnTo
 }
 
 
-
 void ACooperationGameMode::InitPlayerUI()
 {
-    //방법 2
-    /*
-    // 레벨 서브시스템에 레벨 변경 알림
-    UMyLevelSubsystem* LevelSubsystem = GetWorld()->GetSubsystem<UMyLevelSubsystem>();
-    if (LevelSubsystem)
+    UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance());
+    if (MyGI)
     {
-        LevelSubsystem->OnLevelChanged("NewLevel");
+        MyGI->ResponseShowWidget();
     }
-    */
 }
-
 
 
 void ACooperationGameMode::BossSetPlayerLocation(ACharacter* PlayerChar)
@@ -806,7 +761,6 @@ void ACooperationGameMode::BossSetPlayerLocation(ACharacter* PlayerChar)
         PlayerChar->SetActorLocation(BossHijackingLocation[0]);
     }
 }
-
 
 void ACooperationGameMode::BossReturnPlayerLocation(ACharacter* PlayerChar)
 {
@@ -824,5 +778,38 @@ void ACooperationGameMode::BossReturnPlayerLocation(ACharacter* PlayerChar)
 //납치하면 상대할 보스를 소환해놓기?
 void ACooperationGameMode::SpawnGhostBoss()
 {
+
+}
+
+
+void ACooperationGameMode::SpawnCamera()
+{
+    UWorld* World = GetWorld();
+    if (!IsValid(World) || !IsValid(BaseCamera)) return;
+
+    for (const FVector& SpawnLocation : CameraSpawnLocations)
+    {
+        FRotator SpawnRotation = FRotator::ZeroRotator;
+
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+        ABaseCamera* SpawnedCamera = World->SpawnActor<ABaseCamera>(BaseCamera, SpawnLocation, SpawnRotation, SpawnParams);
+        if (SpawnedCamera)
+        {
+            SpawnedBaseCamera.Add(SpawnedCamera);
+        }
+    }
+}
+
+void ACooperationGameMode::AttachPlayerToCamera(ACharacter* Player, ABaseCamera* Camera)
+{
+    APlayerController* PlayerController = Cast<APlayerController>(Player->GetController());
+    if (PlayerController == nullptr) return;  // 컨트롤러가 없으면 종료
+
+    if (PlayerController)
+    {
+        Camera->ActivateCamera(PlayerController);
+    }
 
 }

@@ -19,7 +19,6 @@ class ORIGINALSINPRJ_API ACooperationGameMode : public AGameMode
     //GameMode Default Function
 public:
     ACooperationGameMode();
-
     virtual void StartPlay() override; // BeginPlay보다 먼저 호출
     virtual void BeginPlay() override; // 게임을 시작할 준비가 되면 호출
 
@@ -32,6 +31,38 @@ public:
     
 public:
     TObjectPtr<ACooperationGameState> CooperationGameState = nullptr;
+
+
+    UPROPERTY(BlueprintReadWrite)
+    TArray<ABaseWitch*> SpawnedCharacters;
+    
+    // 생성된 캐릭터를 관리할 배열
+    TArray<AActor*> ActivePlayers;
+
+    // return Current Activated Players
+    TArray<AActor*> GetActivePlayers() const
+    {
+        return ActivePlayers;
+    }
+
+    int CurrentPlayerCount = 0;
+
+
+    // 게임모드 클래스에 선언
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Controller")
+    TSubclassOf<APlayerController> NewPlayerControllerClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+    TArray<FVector> PlayerSpawnLocations;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+    TArray<FVector> PlayerSettingLocations;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+    TArray<FVector> PlayerResultLocations;
+
+
+
 
     UPROPERTY(EditDefaultsOnly, Category = "Camera")
     TSubclassOf<ABaseCamera> BaseCamera;
@@ -128,31 +159,8 @@ public:
     TSubclassOf<UCooperationWidget> CooperationWidget;
 
 
-    // 생성된 캐릭터를 관리할 배열
-    UPROPERTY(BlueprintReadWrite)
-    TArray<ABaseWitch*> SpawnedCharacters;
-
-    TArray<AActor*> ActivePlayers;
-
-    int CurrentPlayerCount = 0;
-
-
-    // 게임모드 클래스에 선언
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Controller")
-    TSubclassOf<APlayerController> NewPlayerControllerClass;
-
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
-    TArray<FVector> PlayerSpawnLocations;
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
-    TArray<FVector> PlayerSettingLocations;
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
-    TArray<FVector> PlayerResultLocations;
 
     void RequestOpenResultUI();
-
 
     void CheckUntilAllPlayerSelectBuff(); // 모든 플레이어가 버프를 선택했는지 보고 대기하는 함수.
 
@@ -166,12 +174,9 @@ public:
 
     TSubclassOf<APlayerController> PlayerControllerClass;
 
+    void SetPlayerUnReady();
 
-
-
-    void SetPlayerUnReady(ACharacter* PlayerChar);
-
-    void SetPlayerReady(ACharacter* PlayerChar);
+    void SetPlayerReady();
 
 
     // Stage1
@@ -251,10 +256,17 @@ public:
     UFUNCTION(BlueprintCallable)
     void HandleBossMonsterKilled(AController* Killer);
 
+    UFUNCTION()
+    void TravelLevel();
+
 protected:
     //UFUNCTION(NetMulticast, Reliable)
     void InitPlayerUI();
 
     //멀티 전용
     virtual void PostSeamlessTravel() override;
+
+
+
+
 };
