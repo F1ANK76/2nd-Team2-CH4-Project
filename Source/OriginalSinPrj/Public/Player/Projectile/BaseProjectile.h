@@ -28,6 +28,7 @@ public:
 	virtual void DeactiveProjectile();
 
 	EProjectileType GetProjectileType() const;
+	bool GetIsActevated() const;
 
 protected:
 	UFUNCTION(NetMulticast, Unreliable)
@@ -42,6 +43,9 @@ protected:
 	UFUNCTION()
 	virtual void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	UFUNCTION()
+	virtual void OnEndedOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 	virtual void BeginPlay() override;
 	virtual void ApplyMove();
 	virtual void ApplyAttack();
@@ -51,6 +55,8 @@ protected:
 	void ActiveAttackDelayTimer(float TimeValue);
 	void ActiveVisibleDelayTimer(float TimeValue);
 	void ActiveDeactiveDelayTimer(float TimeValue);
+
+	void ResetProjectile();
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -71,12 +77,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	bool bIsNotDelayDeactiveFromOverlap = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	bool bIsAgainAttack = false;
+
 protected:
 	UPROPERTY()
 	TObjectPtr<ABaseWitch> ParentWitch = nullptr;
 
 	bool bActiveOverlapEvent = false;
 	bool bCompleteDeactive = false;
+	bool bIsActivated = false;
 
 	FTimerHandle DeactiveTimer;
 	FTimerHandle MoveDelayTimer;

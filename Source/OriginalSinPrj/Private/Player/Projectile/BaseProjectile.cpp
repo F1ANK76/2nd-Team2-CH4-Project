@@ -25,13 +25,19 @@ ABaseProjectile::ABaseProjectile()
 	
 	CollisionComp->SetGenerateOverlapEvents(true);
 	CollisionComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	CollisionComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
+	CollisionComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
 	MoveComp->bAutoActivate = false;
+
+	CollisionComp->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel2);
 }
 
 void ABaseProjectile::ActiveProjectile(const FProjectileDataBuffer& Buffer)
 {
+	ResetProjectile();
+	bIsActivated = true;
+
 	ParentWitch = Buffer.ParentWitch;
-	
 	AttackDamage = Buffer.AttackDamage;
 	MoveDirection = Buffer.MoveDirection;
 	MoveSpeed = Buffer.MoveSpeed;
@@ -48,7 +54,7 @@ void ABaseProjectile::DeactiveProjectile()
 	{
 		return;
 	}
-
+	
 	GetWorld()->GetTimerManager().ClearTimer(DeactiveTimer);
 	GetWorld()->GetTimerManager().ClearTimer(VisibleDelayTimer);
 	GetWorld()->GetTimerManager().ClearTimer(AttackDelayTimer);
@@ -63,15 +69,12 @@ void ABaseProjectile::DeactiveProjectile()
 	MoveComp->Velocity = FVector::ZeroVector;
 
 	OnDeactivedProjectile();
+	bIsActivated = false;
 }
 
 void ABaseProjectile::ApplyMove()
 {
-	if (
-		ProjectileType != EProjectileType::MoveWaitOnly &&
-		ProjectileType != EProjectileType::MoveAndOverlapWait &&
-		ProjectileType != EProjectileType::VisibleAndMoveWait
-		)
+	if (MoveDirection.Size() == 0)
 	{
 		return;
 	}
@@ -100,18 +103,19 @@ EProjectileType ABaseProjectile::GetProjectileType() const
 	return ProjectileType;
 }
 
+bool ABaseProjectile::GetIsActevated() const
+{
+	return bIsActivated;
+}
+
 void ABaseProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	CollisionComp->Deactivate();
-	SetActorEnableCollision(false);
-
-	MoveComp->Deactivate();
-	MoveComp->InitialSpeed = 0;
-	MoveComp->Velocity = FVector::ZeroVector;
+	ResetProjectile();
 
 	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
+	CollisionComp->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnEndedOverlap);
 }
 
 void ABaseProjectile::ActiveMoveDelayTimer(float TimeValue)
@@ -167,6 +171,12 @@ void ABaseProjectile::ActiveDeactiveDelayTimer(float TimeValue)
 	}
 }
 
+void ABaseProjectile::ResetProjectile()
+{
+	bCompleteDeactive = true;
+	DeactiveProjectile();
+}
+
 void ABaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (bActiveOverlapEvent)
@@ -194,7 +204,7 @@ void ABaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("%s : Overlapped %s"), *GetName(), *OtherActor->GetName());
+	//UE_LOG(LogTemp, Warning, TEXT("%s : Overlapped %s"), *GetName(), *OtherActor->GetName());
 
 	bActiveOverlapEvent = true;
 	ParentWitch->ApplyAttack(OtherActor, AttackDamage);
@@ -204,6 +214,14 @@ void ABaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor
 		GetWorld()->GetTimerManager().ClearTimer(DeactiveTimer);
 		bCompleteDeactive = true;
 		DeactiveProjectile();
+	}
+}
+
+void ABaseProjectile::OnEndedOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (bIsAgainAttack)
+	{
+		bActiveOverlapEvent = false;
 	}
 }
 
@@ -221,10 +239,5 @@ void ABaseProjectile::OnDeactivedProjectile_Implementation()
 	{
 		EffectComp->Deactivate();
 	}
-
-	/*if (IsValid(MoveComp))
-	{
-		MoveComp->Deactivate();
-	}*/
 }
 

@@ -19,7 +19,9 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 	void LoadDataTables();
+	void CheckLoadedLevelSound();
 
+	void PlayBGMByLevelType(ELevelType LevelType);
 	void PlayBGM(ELevelSoundType SoundType);
 	void PlaySFX(ESfxSoundType SoundType, uint8 DetailSoundType, FVector Location = FVector::ZeroVector);
 
@@ -46,7 +48,7 @@ public:
 	const UAudioDataSettings* AudioDataSettings;
 };
 
-// PlaySFX(ESfxSoundType::Monster, static_cast<uint8>(EMonsterSoundType::Attack), FVector(10.f, 0.f, 0.f)); ÀÌ·±½ÄÀ¸·Î »ç¿ë
+// PlaySFX(ESfxSoundType::Monster, static_cast<uint8>(EMonsterSoundType::Attack), FVector(10.f, 0.f, 0.f)); ï¿½Ì·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 template<typename EnumType, typename StructType>
 inline void UAudioSubsystem::PlaySFXByType(UObject* WorldContext, UDataTable* Table, uint8 DetailSoundType, FVector Location)
 {
@@ -65,13 +67,13 @@ inline void UAudioSubsystem::PlaySFXByType(UObject* WorldContext, UDataTable* Ta
 			{
 				if (Location.IsZero())
 				{
-					// UI »ç¿îµå °°Àº °æ¿ì
+					// UI ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 					UGameplayStatics::PlaySound2D(WorldContext, Sound, MasterVolume);
 					UE_LOG(LogTemp, Warning, TEXT("Play 2D Sound"));
 				}
 				else
 				{
-					// À§Ä¡ ±â¹Ý »ç¿îµå
+					// ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 					UGameplayStatics::PlaySoundAtLocation(WorldContext, Sound, Location, MasterVolume);
 					UE_LOG(LogTemp, Warning, TEXT("Play 3D Sound"));
 				}

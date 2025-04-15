@@ -33,6 +33,8 @@ public:
 
 	void ResponseEndAnim();
 	void PauseBufferTimer();
+	void AddCurrentMana(float Value);
+	void SetMaxMana(float Value);
 
 protected:
 	virtual void BeginPlay() override;

@@ -15,10 +15,12 @@ class ORIGINALSINPRJ_API UGameSettingWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 	
-	//ÆÄ¹Ö¸ðµå ¼³Á¤ UI
-	//½Ã°£Á¦ÇÑ ¼³Á¤ UI
-	//¹öÇÁ ¿©ºÎ ¼³Á¤ UI
+	//ï¿½Ä¹Ö¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ UI
+	//ï¿½Ã°ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ UI
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ UI
 
+public:
+    virtual void InitWidget(UUISubsystem* uiSubsystem) override;
 
 protected:
     virtual void NativeConstruct() override;
@@ -52,7 +54,7 @@ protected:
     bool bIsBuffModeChecked;
     bool bIsTimeLimitModeChecked;
 
-    //½Ã°£ ¼±ÅÃ
+    //ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½
     UPROPERTY(meta = (BindWidget))
     UCheckBox* CheckBox1;
 
@@ -85,7 +87,7 @@ protected:
 
     void UncheckAllExcept(UCheckBox* CheckedBox);
 
-    //¶óÀÌÇÁÆ÷ÀÎÆ®
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
 
     UPROPERTY(meta = (BindWidget))
     UButton* LifePointsIncreaseButton;
@@ -108,5 +110,5 @@ protected:
     int32 LifePoint = 1;
 
 public:
-    int32 SelectedTimeIndex = -1; // ¼±ÅÃµÈ ÀÎµ¦½º¸¦ ÀúÀå
+    int32 SelectedTimeIndex = -1; // ï¿½ï¿½ï¿½Ãµï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 };
