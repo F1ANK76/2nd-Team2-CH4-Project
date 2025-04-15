@@ -42,7 +42,8 @@ enum class ESfxSoundType : uint8
 UENUM(BlueprintType)
 enum class ELevelSoundType : uint8
 {
-	TitleSound = 0,
+	IntroSound = 0,
+	TitleSound,
 	MatchSound,
 	LobbySound,
 	MultiSound,
