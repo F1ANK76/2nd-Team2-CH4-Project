@@ -53,6 +53,13 @@ enum class ELevelSoundType : uint8
 };
 
 UENUM(BlueprintType)
+enum class EUISfxSoundType : uint8
+{
+	Click = 0,
+	OK
+};
+
+UENUM(BlueprintType)
 enum class EMonsterSoundType : uint8
 {
 	Attack = 0,
