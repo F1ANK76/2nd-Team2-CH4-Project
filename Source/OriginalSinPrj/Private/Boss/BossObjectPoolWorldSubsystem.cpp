@@ -12,7 +12,7 @@ void UBossObjectPoolWorldSubsystem::Initialize(FSubsystemCollectionBase& Collect
 {
 	Super::Initialize(Collection);
 
-	PoolConfig = LoadObject<UBossPoolObjectDataAsset>(nullptr, TEXT("/Game/Resources/Boss/DA_BossPoolObject"));
+	PoolConfig = LoadObject<UBossPoolObjectDataAsset>(nullptr, TEXT("/Game/DataAsset/DA_BossPoolObject"));
 
 	if (!IsValid(PoolConfig))
 	{
@@ -154,6 +154,17 @@ ADestructibleObject* UBossObjectPoolWorldSubsystem::SpawnDestructibleObject(cons
 	}
 
 	UE_LOG(LogTemp, Error, TEXT("No DestructibleObjectClass in Data Asset"));
+	return nullptr;
+}
+
+ABossPlatform* UBossObjectPoolWorldSubsystem::SpawnBossPlatform(const FVector& Location, const FRotator& Rotation)
+{
+	if (IsValid(PoolConfig->BossPlatformClass))
+	{
+		return SpawnPooledActor<ABossPlatform>(PoolConfig->BossPlatformClass, Location, Rotation);
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("No BossPlatformClass in Data Asset"));
 	return nullptr;
 }
 

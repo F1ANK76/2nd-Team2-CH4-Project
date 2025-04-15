@@ -8,24 +8,12 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Boss/BossObjectPoolWorldSubsystem.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/DamageEvents.h"
+#include "Player/BaseWitch.h"
 
 void ABossController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-
-	if (HasAuthority())
-	{
-		if (IsValid(BossBehaviorTree))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Running Behavior Tree!"));
-			RunBehaviorTree(BossBehaviorTree);
-			GetBlackboardComponent()->SetValueAsInt("BossHpPercent", 100);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Running Behavior Tree Failed!!"));
-		}
-	}
 }
 
 void ABossController::BeginPlay()
@@ -36,34 +24,11 @@ void ABossController::BeginPlay()
 	{
 		PoolWorldSubsystem = GetWorld()->GetSubsystem<UBossObjectPoolWorldSubsystem>();
 		PoolWorldSubsystem->SetBossReference(Cast<ABossCharacter>(GetPawn()));
+
 		FindPlatforms();
 
-		UpdateBossFacingDirection();
-
-		//플레이어 찾기
-		GetWorld()->GetTimerManager().SetTimer(
-			FindClosestPlayerTimerHandle,
-			this,
-			&ABossController::UpdateBossFacingDirection,
-			FindClosestPlayerDelay,
-			true
-		);
-
-		//주기적으로 보스 체력 체크 및 업데이트
-		GetWorld()->GetTimerManager().SetTimer(
-			BossHpCheckTimerHandle,
-			this,
-			&ABossController::UpdateBossHpForSpecialAttack,
-			CheckBossHpDelay,
-			true);
-		
-		//40초마다 특수공격
-		GetWorld()->GetTimerManager().SetTimer(
-			SpecialAttackTriggerTimerHandle,
-			this,
-			&ABossController::TriggerSpecialAttack,
-			40.0f,
-			true);
+		//일단 임시, 추후 GameMode에서 호출
+		StartBattle();
 	}
 }
 
@@ -118,10 +83,6 @@ APawn* ABossController::FindClosestPlayer()
 	}
 	if (IsValid(ClosestPlayer))
 	{
-		if (!bIsBattleStart)
-		{
-			StartBattle();
-		}
 		return ClosestPlayer;
 	}
 	else
@@ -133,14 +94,54 @@ APawn* ABossController::FindClosestPlayer()
 
 void ABossController::StartBattle()
 {
+	if (!HasAuthority()) return;
+
+	if (IsValid(BossBehaviorTree))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Running Behavior Tree!"));
+		RunBehaviorTree(BossBehaviorTree);
+		GetBlackboardComponent()->SetValueAsInt("BossHpPercent", 100);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Running Behavior Tree Failed!!"));
+		return;
+	}
+
 	bIsBattleStart = true;
 	GetBlackboardComponent()->SetValueAsBool("bIsBattleStart", true);
 
+	//파괴가능 오브젝트 스폰
 	GetWorld()->GetTimerManager().SetTimer(
 		ObjectSpawnTimerHandle,
 		this,
 		&ABossController::SpawnDestructibleObject,
 		DestructibleObjectSpawnDelay,
+		true);
+
+	//플레이어 찾기
+	GetWorld()->GetTimerManager().SetTimer(
+		FindClosestPlayerTimerHandle,
+		this,
+		&ABossController::UpdateBossFacingDirection,
+		FindClosestPlayerDelay,
+		true
+	);
+
+	//보스 체력 체크 및 업데이트
+	GetWorld()->GetTimerManager().SetTimer(
+		BossHpCheckTimerHandle,
+		this,
+		&ABossController::UpdateBossHpForSpecialAttack,
+		CheckBossHpDelay,
+		true);
+
+	//특수공격 타이머
+	GetWorld()->GetTimerManager().SetTimer(
+		SpecialAttackTriggerTimerHandle,
+		this,
+		&ABossController::TriggerSpecialAttack,
+		40.0f,
 		true);
 }
 
@@ -151,7 +152,7 @@ void ABossController::EndBattle()
 	bIsBattleStart = false;
 	GetWorldTimerManager().ClearTimer(FindClosestPlayerTimerHandle);
 	GetWorldTimerManager().ClearTimer(ObjectSpawnTimerHandle);
-	//GetWorldTimerManager().ClearTimer(SpecialAttackTriggerTimerHandle);
+	GetWorldTimerManager().ClearTimer(InstantDeathAttackTimerHandle);
 	GetBlackboardComponent()->SetValueAsBool("bIsBattleStart", false);
 	if (IsValid(BrainComponent))
 	{
@@ -169,33 +170,71 @@ void ABossController::UpdateBossHpForSpecialAttack()
 {
 	ABossCharacter* BossCharacter = Cast<ABossCharacter>(GetPawn());
 	if (!IsValid(BossCharacter)) return;
-	
+
 	int32 HpPercent = BossCharacter->GetCurrentHP() / BossCharacter->GetMaxHP() * 100;
 	int32 PreviousHpPercent = GetBlackboardComponent()->GetValueAsInt("BossHpPercent");
-	
+
 	GetBlackboardComponent()->SetValueAsInt("BossHpPercent", HpPercent);
 
 	// HP가 특정 임계값 아래로 떨어졌을 때 특수 공격 트리거 (최초 1회만)
-	if (PreviousHpPercent > 75 && HpPercent <= 75) {
+	if (PreviousHpPercent > 75 && HpPercent <= 75)
+	{
 		bool bAlreadyExecuted = GetBlackboardComponent()->GetValueAsBool("bIsHpUnder75AttackPlayed");
-		if (!bAlreadyExecuted) {
+		if (!bAlreadyExecuted)
+		{
 			UE_LOG(LogTemp, Warning, TEXT("Boss HP below 75%% - Triggering special attack!"));
 			GetBlackboardComponent()->SetValueAsBool("bTriggerHp75Attack", true);
 		}
 	}
-	else if (PreviousHpPercent > 50 && HpPercent <= 50) {
+	else if (PreviousHpPercent > 50 && HpPercent <= 50)
+	{
 		bool bAlreadyExecuted = GetBlackboardComponent()->GetValueAsBool("bIsHpUnder50AttackPlayed");
-		if (!bAlreadyExecuted) {
+		if (!bAlreadyExecuted)
+		{
 			UE_LOG(LogTemp, Warning, TEXT("Boss HP below 50%% - Triggering special attack!"));
 			GetBlackboardComponent()->SetValueAsBool("bTriggerHp50Attack", true);
 		}
 	}
-	else if (PreviousHpPercent > 25 && HpPercent <= 25) {
+	else if (PreviousHpPercent > 25 && HpPercent <= 25)
+	{
 		bool bAlreadyExecuted = GetBlackboardComponent()->GetValueAsBool("bIsHpUnder25AttackPlayed");
-		if (!bAlreadyExecuted) {
+		if (!bAlreadyExecuted)
+		{
 			UE_LOG(LogTemp, Warning, TEXT("Boss HP below 25%% - Triggering special attack!"));
 			GetBlackboardComponent()->SetValueAsBool("bTriggerHp25Attack", true);
 		}
+	}
+}
+
+void ABossController::KillAllPlayerAttack()
+{
+	if (!HasAuthority()) return;
+	
+	GetWorldTimerManager().ClearTimer(FindClosestPlayerTimerHandle);
+	GetWorldTimerManager().ClearTimer(ObjectSpawnTimerHandle);
+	GetWorldTimerManager().ClearTimer(InstantDeathAttackTimerHandle);
+	GetBlackboardComponent()->SetValueAsBool("bIsBattleStart", false);
+	if (IsValid(BrainComponent))
+	{
+		BrainComponent->StopLogic(TEXT("Boss Battle Ended"));
+	}
+
+	//즉사공격 애니메이션
+
+	//플레이어 사망처리
+	for (ACharacter* PlayerCharacter : PlayerCharacters)
+	{
+		ABaseWitch* PlayerWitch = Cast<ABaseWitch>(PlayerCharacter);
+		if (!IsValid(PlayerWitch))
+		{
+			UE_LOG(LogTemp, Error, TEXT("InValid PlayerCharacter"));
+			return;
+		}
+
+		float Damage = FLT_MAX;
+		FDamageEvent DamageEvent;
+
+		PlayerWitch->TakeDamage(Damage, DamageEvent, this, GetPawn());
 	}
 }
 
@@ -226,9 +265,9 @@ void ABossController::SpawnDestructibleObject()
 {
 	if (FoundPlatformActors.Num() == 0) return;
 	if (DestructibleObjectCount == MaxDestructibleObject) return;
-	
+
 	AActor* Platform = FoundPlatformActors[FMath::RandRange(0, FoundPlatformActors.Num() - 1)];
-	
+
 	ADestructibleObject* DefaultDestructible = Cast<ADestructibleObject>(
 		ADestructibleObject::StaticClass()->GetDefaultObject());
 	FVector ObjectOrigin, ObjectExtent;
@@ -285,4 +324,14 @@ void ABossController::ActiveObjectSpawnTimer()
 void ABossController::DeactiveObjectSpawnTimer()
 {
 	GetWorldTimerManager().ClearTimer(ObjectSpawnTimerHandle);
+}
+
+void ABossController::StartInstantDeathAttackTimer()
+{
+	GetWorld()->GetTimerManager().SetTimer(
+		InstantDeathAttackTimerHandle,
+		this,
+		&ABossController::KillAllPlayerAttack,
+		InstantDeathDelay,
+		false);
 }

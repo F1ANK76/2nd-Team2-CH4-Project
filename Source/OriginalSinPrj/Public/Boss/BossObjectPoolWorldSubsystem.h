@@ -41,6 +41,7 @@ public:
 	AWeaponToSpawn* SpawnWeaponToSpawn(const FVector& Location, const FRotator& Rotation);
 	ARushBossClone* SpawnRushBossClone(const FVector& Location, const FRotator& Rotation);
 	ADestructibleObject* SpawnDestructibleObject(const FVector& Location, const FRotator& Rotation);
+	ABossPlatform* SpawnBossPlatform(const FVector& Location, const FRotator& Rotation);
 
 	TMap<TSubclassOf<AActor>, FActorPoolList> GetObjectPools() const { return ObjectPools; }
 	void SetBossReference(ABossCharacter* InBossCharacter);
