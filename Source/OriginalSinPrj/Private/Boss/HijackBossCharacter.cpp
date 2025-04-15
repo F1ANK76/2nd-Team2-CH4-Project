@@ -3,32 +3,85 @@
 
 #include "Boss/HijackBossCharacter.h"
 
-// Sets default values
+#include "Boss/BossCharacter.h"
+#include "Boss/BossController.h"
+#include "Boss/HijackBossController.h"
+#include "Kismet/GameplayStatics.h"
+
 AHijackBossCharacter::AHijackBossCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
+	bIsDead = false;
+	
+	AIControllerClass = AHijackBossController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	bReplicates = true;
+	SetReplicateMovement(true);
 }
 
-// Called when the game starts or when spawned
+void AHijackBossCharacter::MulticastPlayCastingMontage_Implementation()
+{
+	if (CastingMontage && GetNetMode() != NM_DedicatedServer)
+	{
+		PlayAnimMontage(CastingMontage);
+	}
+}
+
+void AHijackBossCharacter::PlayCastingMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayCastingMontage();
+	}
+}
+
+void AHijackBossCharacter::UpdateFacingDirection(APawn* ClosestPlayer)
+{
+	if (!IsValid(ClosestPlayer)) return;
+
+	if (HasAuthority())
+	{
+		FVector BossLocation = GetActorLocation();
+		FVector PlayerLocation = ClosestPlayer->GetActorLocation();
+
+		float Direction = PlayerLocation.Y - BossLocation.Y;
+
+		SetFacingDirection(Direction);
+	}
+}
+
 void AHijackBossCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	BossCharacter = Cast<ABossCharacter>(UGameplayStatics::GetActorOfClass(GetWorld(), ABossCharacter::StaticClass()));
+	if (!IsValid(BossCharacter))
+	{
+		UE_LOG(LogTemp, Error, TEXT("BossController is null"));
+		return;
+	}
+	BossController = Cast<ABossController>(BossCharacter->GetController());
+	if (!IsValid(BossController))
+	{
+		UE_LOG(LogTemp, Error, TEXT("BossController is null"));
+		return;
+	}
 	
+	CurrentHP = BossCharacter->GetCurrentHP();
 }
 
-// Called every frame
-void AHijackBossCharacter::Tick(float DeltaTime)
+void AHijackBossCharacter::SetFacingDirection(float Direction)
 {
-	Super::Tick(DeltaTime);
-
+	if (Direction < 0)
+	{
+		//왼쪽 방향
+		SetActorRotation(FRotator(0.0f, -60.0f, 0.0f));
+	}
+	else
+	{
+		//오른쪽 방향
+		SetActorRotation(FRotator(0.0f, 60.0f, 0.0f));
+	}
 }
-
-// Called to bind functionality to input
-void AHijackBossCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
-

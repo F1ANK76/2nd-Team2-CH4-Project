@@ -6,24 +6,37 @@
 #include "GameFramework/Character.h"
 #include "HijackBossCharacter.generated.h"
 
+class ABossCharacter;
+class ABossController;
+
 UCLASS()
 class ORIGINALSINPRJ_API AHijackBossCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	AHijackBossCharacter();
 
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* CastingMontage;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayCastingMontage();
+
+	void PlayCastingMontage();
+	
+	void UpdateFacingDirection(APawn* ClosestPlayer);
+
+	int32 GetCurrentHP() const { return CurrentHP; }
+	
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+private:
+	int32 CurrentHP;
+	bool bIsDead;
+	ABossCharacter* BossCharacter;
+	ABossController* BossController;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	void SetFacingDirection(float Direction);
 };

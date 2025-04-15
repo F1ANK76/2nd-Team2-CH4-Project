@@ -7,6 +7,8 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "BossObjectPoolWorldSubsystem.generated.h"
 
+class ABossController;
+class ABossCharacter;
 class ADestructibleObject;
 class ARushBossClone;
 class ARangeAttackProjectile;
@@ -30,7 +32,7 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
-	
+
 	template <typename T>
 	T* SpawnPooledActor(TSubclassOf<AActor> ClassToSpawn, const FVector& Location, const FRotator& Rotation);
 	void ReturnActorToPool(AActor* Actor);
@@ -40,10 +42,15 @@ public:
 	ARushBossClone* SpawnRushBossClone(const FVector& Location, const FRotator& Rotation);
 	ADestructibleObject* SpawnDestructibleObject(const FVector& Location, const FRotator& Rotation);
 
+	TMap<TSubclassOf<AActor>, FActorPoolList> GetObjectPools() const { return ObjectPools; }
+	void SetBossReference(ABossCharacter* InBossCharacter);
+
 protected:
 	UPROPERTY()
 	UBossPoolObjectDataAsset* PoolConfig;
 
 	UPROPERTY()
 	TMap<TSubclassOf<AActor>, FActorPoolList> ObjectPools;
+
+	ABossCharacter* BossCharacter;
 };

@@ -8,8 +8,6 @@ EBTNodeResult::Type UBTTask_SetRandomAttack::ExecuteTask(UBehaviorTreeComponent&
 {
 	RandomValue = FMath::RandRange(1, 100);
 	FName BTTaskName;
-
-	UE_LOG(LogTemp, Warning, TEXT("RandomValue : %d"), RandomValue);
 	
 	if (RandomValue <= 80)
 	{
@@ -24,7 +22,6 @@ EBTNodeResult::Type UBTTask_SetRandomAttack::ExecuteTask(UBehaviorTreeComponent&
 		BTTaskName = "RushBossCloneAttack";
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("ChosenAction : %s"), *BTTaskName.ToString());
 	BTComponent.GetBlackboardComponent()->SetValueAsName("ChosenAction", BTTaskName);
 	return EBTNodeResult::Succeeded;
 }

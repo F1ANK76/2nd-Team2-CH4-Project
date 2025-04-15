@@ -32,6 +32,8 @@ public:
 	UAnimMontage* AreaSpawnWeaponMontage;
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	UAnimMontage* RushBossAttackMontage;
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* HijackAttackMontage;
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastPlayStartBattleMontage();
@@ -43,17 +45,22 @@ public:
 	void MulticastPlayAreaSpawnWeaponMontage();
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastPlayRushBossAttackMontage();
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayHijackAttackMontage();
 
 	void PlayStartBattleMontage();
 	void PlayDeathMontage();
 	void PlayRangeAttackMontage();
 	void PlayAreaSpawnWeaponMontage();
 	void PlayRushBossAttackMontage();
+	void PlayHijackAttackMontage();
 
 	void UpdateFacingDirection(APawn* ClosestPlayer);
 
 	bool GetIsDead() const { return bIsDead; }
-
+	int32 GetCurrentHP() const { return CurrentHP; }
+	int32 GetMaxHP() const { return MaxHP; }
+	
 private:
 	int32 CurrentHP;
 	bool bIsDead;

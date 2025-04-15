@@ -4,6 +4,7 @@
 #include "Boss/Object/RushBossClone.h"
 
 #include "Boss/BossController.h"
+#include "Boss/HijackBossController.h"
 #include "Boss/BTTask/BTTask_RushBossCloneAttack.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -57,13 +58,35 @@ void ARushBossClone::Tick(float DeltaTime)
 void ARushBossClone::OnPooledObjectSpawn_Implementation()
 {
 	if (!HasAuthority()) return;
-	
+
 	bIsActivate = true;
 	MulticastSetActive(bIsActivate);
-	
+
 	ABossController* BossController = Cast<ABossController>(
 		UGameplayStatics::GetActorOfClass(this, ABossController::StaticClass()));
-	if (IsValid(BossController) && IsValid(BossController->GetPawn()))
+	if (!IsValid(BossController) && !IsValid(BossController->GetPawn())) return;
+	
+	AHijackBossController* HijackBossController = Cast<AHijackBossController>(
+		UGameplayStatics::GetActorOfClass(this, AHijackBossController::StaticClass()));
+	if (!IsValid(HijackBossController) && !IsValid(HijackBossController->GetPawn())) return;
+
+	//납치패턴 보스가 활성화 상태일 경우, 거리 비교하여 가까운 플레이어 타겟팅
+	//비활성화 상태일 경우, 일반보스의 타겟플레이어 타겟팅
+	if (HijackBossController->GetBattleState())
+	{
+		float BossDistanceToTarget = FVector::Dist(BossController->GetTargetPlayerPawnLocation(), GetActorLocation());
+		float HijackBossDistanceToTarget = FVector::Dist(HijackBossController->GetTargetPlayerPawnLocation(), GetActorLocation());
+	
+		if (BossDistanceToTarget > HijackBossDistanceToTarget)
+		{
+			InitializeClone(HijackBossController->GetTargetPlayerPawnLocation());
+		}
+		else if (BossDistanceToTarget < HijackBossDistanceToTarget)
+		{
+			InitializeClone(BossController->GetTargetPlayerPawnLocation());
+		}
+	}
+	else
 	{
 		InitializeClone(BossController->GetTargetPlayerPawnLocation());
 	}
@@ -72,10 +95,10 @@ void ARushBossClone::OnPooledObjectSpawn_Implementation()
 void ARushBossClone::OnPooledObjectReset_Implementation()
 {
 	if (!HasAuthority()) return;
-	
+
 	bIsActivate = false;
 	MulticastSetActive(bIsActivate);
-	
+
 	bIsRushing = false;
 	bHasArrived = false;
 
@@ -122,7 +145,7 @@ void ARushBossClone::CheckArrival()
 		FVector FinalLocation = TargetLocation + OffsetVector;
 		FinalLocation.Z += ZOffset;
 		SetActorLocation(FinalLocation);
-		
+
 		StartAttack();
 	}
 }
@@ -147,18 +170,14 @@ void ARushBossClone::StartAttack()
 void ARushBossClone::FinishAttack()
 {
 	if (!HasAuthority()) return;
-	
+
 	IBossPoolableActorInterface::Execute_OnPooledObjectReset(this);
 }
 
 void ARushBossClone::SetFacingDirection()
 {
 	if (!HasAuthority()) return;
-	
-	UE_LOG(LogTemp, Warning, TEXT("Clone: TargetLocation = %s"), *TargetLocation.ToString());
-	UE_LOG(LogTemp, Warning, TEXT("Clone: MyLocation = %s"), *GetActorLocation().ToString());
-	UE_LOG(LogTemp, Warning, TEXT("Clone: TargetDirection = %s"), *TargetDirection.ToString());
-	UE_LOG(LogTemp, Warning, TEXT("Clone: Yaw = %f"), TargetDirection.Rotation().Yaw);
+
 	if (!TargetDirection.IsNearlyZero())
 	{
 		FRotator LookAtRotation = TargetDirection.Rotation();
