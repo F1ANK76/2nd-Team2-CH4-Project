@@ -25,6 +25,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ObjectManager")
 	void SpawnDeathZone();
 
+	UFUNCTION(BlueprintCallable, Category = "ObjectManager")
+	AActor* GetRespawnPlatform();
+
 protected:
 	virtual void BeginPlay() override;
 

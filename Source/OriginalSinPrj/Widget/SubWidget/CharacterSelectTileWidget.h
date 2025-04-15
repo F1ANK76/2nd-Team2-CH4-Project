@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Delegates/DelegateCombinations.h"
-#include "../AddedWidget/CharacterSelectWidget.h"
+#include "../BaseWidget.h"
 #include "CharacterSelectTileWidget.generated.h"
 
 
@@ -13,32 +13,36 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterTileClicked, int32, Tile
 class UButton;
 
 UCLASS()
-class ORIGINALSINPRJ_API UCharacterSelectTileWidget : public UCharacterSelectWidget
+class ORIGINALSINPRJ_API UCharacterSelectTileWidget : public UBaseWidget
 {
 	GENERATED_BODY()
-	
-	virtual void NativeConstruct() override;
-	//ÀÌº¥Æ® µð½ºÆÐÃÄ
+
+	//ï¿½Ìºï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+public:
+	virtual void InitWidget(UUISubsystem* uiSubsystem) override;
+
+private:
+	UFUNCTION()
+	void HandleButtonClicked(); // ï¿½ï¿½Æ°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
+
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Event")
 	FOnCharacterTileClicked OnCharacterSelectTileClicked;
 
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> CharacterSelectButton;
-
-	UFUNCTION()
-	void HandleButtonClicked(); // ¹öÆ°¿¡ ¿¬°áÇÒ ÇÔ¼ö
-
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile")
 	int32 MyTileIndex;
 
+private:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* CharacterName;
 
 	UPROPERTY(meta = (BindWidget))
 	class UImage* CharacterImage;
 
-	//¹öÆ° ´Þ±â
-	//ÀÌ¹ÌÁö UI
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> CharacterSelectButton;
+
+	//ï¿½ï¿½Æ° ï¿½Þ±ï¿½
+	//ï¿½Ì¹ï¿½ï¿½ï¿½ UI
 	//
 };

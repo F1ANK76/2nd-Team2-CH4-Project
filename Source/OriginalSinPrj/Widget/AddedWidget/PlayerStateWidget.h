@@ -50,10 +50,6 @@ struct FPlayerData
     float MaxEXP;
 };
 
-
-
-
-
 UCLASS()
 class ORIGINALSINPRJ_API UPlayerStateWidget : public UBaseWidget
 {
@@ -62,10 +58,10 @@ class ORIGINALSINPRJ_API UPlayerStateWidget : public UBaseWidget
 
 public:
     void InitPlayerState(const FPlayerData& Data);
-    void UpdateStatus(const FPlayerData& Data); // ½Ç½Ã°£ ¾÷µ¥ÀÌÆ® ¿ë
+    void UpdateStatus(const FPlayerData& Data); // ï¿½Ç½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½
 
 protected:
-    // À§Á¬ ÂüÁ¶
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     UPROPERTY(meta = (BindWidget))
     class UTextBlock* PlayerNameText;
 

@@ -16,8 +16,8 @@ class ORIGINALSINPRJ_API UTrainingWidget : public UBaseWidget
 	GENERATED_BODY()
 	
 public:
+	virtual void InitWidget(UUISubsystem* uiSubsystem) override;
 
-	virtual void NativeConstruct() override;
 private:
 	UFUNCTION()
 	void OnClickedPlayerSettingButton();
@@ -32,7 +32,7 @@ private:
 	TObjectPtr<UButton> OpenPlayerSettingButton;
 	
 
-	//ÀÓ½Ã·Î ºí·çÇÁ¸°Æ®¿¡¼­ ±¸ÇöÁß...
+	//ï¿½Ó½Ã·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½...
 	UPROPERTY(Meta = (BindWidgetAnim), Transient)
 	TObjectPtr<UWidgetAnimation> SettingWindowSlideInAnim;
 

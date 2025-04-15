@@ -55,7 +55,7 @@ void AMultiBattleGameMode::SpawnPlayer()
 		{
 			if (AWitchController* WitchController = Cast<AWitchController>(PC))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("컨트롤러 할당, 플레이어 스폰"))
+				UE_LOG(LogTemp, Warning, TEXT("컨트롤러 할당, 플레이어 스폰"));
 				SpawnManager->SpawnPlayer(WitchController, FVector(0.0f, 0.0f + DeltaY, 100.0f));
 				DeltaY += 100.0f;
 			}
@@ -63,6 +63,33 @@ void AMultiBattleGameMode::SpawnPlayer()
 			{
 				UE_LOG(LogTemp, Warning, TEXT("컨트롤러 캐스팅 실패"))
 			}
+		}
+	}
+}
+
+void AMultiBattleGameMode::RespawnPlayer(APlayerController* PlayerController)
+{
+	/*
+	플레이어 스테이트에서 플레이어의 정보 가져오기
+	리스폰된 액터에 플레이어 정보 저장하기
+	*/
+
+	if (PlayerController)
+	{
+		FVector RespawnLocation;
+		if (LevelObjectManager)
+		{
+			AActor* RespawnedPlatform = LevelObjectManager->GetRespawnPlatform();
+			RespawnLocation = RespawnedPlatform->GetActorLocation();
+		}
+		if (AWitchController* WitchController = Cast<AWitchController>(PlayerController))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("컨트롤러 할당, 플레이어 스폰"));
+			SpawnManager->SpawnPlayer(WitchController, RespawnLocation);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("컨트롤러 캐스팅 실패"))
 		}
 	}
 }
@@ -147,33 +174,3 @@ void AMultiBattleGameMode::SpawnAndDestroyObject()
 {
 	LevelObjectManager->SpawnAndDestroyObject();
 }
-
-/*테스트용*/
-//void AMultiBattleGameMode::CreateTestPlatform(FVector SpawnLocation, FRotator SpawnRotator)
-//{
-//	if (HasAuthority())
-//	{
-//		UE_LOG(LogTemp, Warning, TEXT("플랫폼 생성"));
-//		if (GEngine)
-//		{
-//			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("플랫폼 생성"));
-//		}
-//		FActorSpawnParameters SpawnParams;
-//		// 선택 사항: 소유자 설정 등 필요한 파라미터 설정
-//		SpawnParams.Owner = this;
-//
-//		ATestPlatform* SpawnedActor = GetWorld()->SpawnActor<ATestPlatform>(
-//			TestPlatform,
-//			SpawnLocation,
-//			SpawnRotator,
-//			SpawnParams
-//		);
-//	}
-//	else
-//	{
-//		if (GEngine)
-//		{
-//			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("플랫폼 생성 불가"));
-//		}
-//	}
-//}

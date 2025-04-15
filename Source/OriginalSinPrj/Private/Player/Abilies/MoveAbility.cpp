@@ -75,9 +75,6 @@ void AMoveAbility::ExcuteMove(FAbilityDataBuffer& Buffer)
 		ResponseRotated(Buffer.ParentWitch, true);
 	}
 
-	//Buffer.ParentWitch->AddMovementInput(GetActorRightVector(), MoveValue);
-	ResponseMoved(Buffer.ParentWitch, MoveValue);
-
 	Buffer.ParentWitch->SetWitchState(EWitchStateType::Move);
 }
 
@@ -130,19 +127,3 @@ void AMoveAbility::ResponseRotated_Implementation(APawn* ParentWitch, bool bIsRo
 		ParentWitch->AddControllerYawInput(RotateValue);
 	}
 }
-
-void AMoveAbility::ResponseMoved_Implementation(APawn* ParentWitch, float MoveValue)
-{
-	if (!IsValid(ParentWitch))
-	{
-		return;
-	}
-
-	/*if (!ParentWitch->IsLocallyControlled())
-	{
-		return;
-	}*/
-
-	ParentWitch->AddMovementInput(GetActorRightVector(), MoveValue);
-}
-
