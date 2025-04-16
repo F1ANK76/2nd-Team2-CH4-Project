@@ -132,11 +132,19 @@ void AAttackAbility::ExcuteSpawnAttack(const FAbilityDataBuffer& Buffer)
 		ActiveProjectilePool.Add(ProjectileObj);
 		ProjectilePool.Remove(ProjectileObj);
 	}
+
+	if (bIsPlayWitchEffect)
+	{
+		Buffer.ParentWitch->PlayEffect(MelleType);
+	}
 }
 
 void AAttackAbility::ExcuteSkillAttack(FAbilityDataBuffer& Buffer)
 {
-	
+	if (bIsPlayWitchEffect)
+	{
+		Buffer.ParentWitch->PlayEffect(MelleType);
+	}
 }
 
 void AAttackAbility::UndoMelleAttack(const FAbilityDataBuffer& Buffer)
@@ -147,6 +155,11 @@ void AAttackAbility::UndoMelleAttack(const FAbilityDataBuffer& Buffer)
 
 void AAttackAbility::UndoSpawnAttack(const FAbilityDataBuffer& Buffer)
 {
+	if (bIsPlayWitchEffect)
+	{
+		Buffer.ParentWitch->StopEffect();
+	}
+
 	if (ActiveProjectilePool.IsEmpty())
 	{
 		return;
@@ -164,7 +177,10 @@ void AAttackAbility::UndoSpawnAttack(const FAbilityDataBuffer& Buffer)
 
 void AAttackAbility::UndoSkillAttack(const FAbilityDataBuffer& Buffer)
 {
-
+	if (bIsPlayWitchEffect)
+	{
+		Buffer.ParentWitch->StopEffect();
+	}
 }
 
 void AAttackAbility::UpdateProjectileData(const FAbilityDataBuffer& Buffer)

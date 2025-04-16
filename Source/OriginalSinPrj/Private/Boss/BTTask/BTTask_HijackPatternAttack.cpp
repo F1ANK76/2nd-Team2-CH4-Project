@@ -9,6 +9,7 @@
 #include "Boss/HijackBossController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/BaseWitch.h"
 
 EBTNodeResult::Type UBTTask_HijackPatternAttack::ExecuteTask(UBehaviorTreeComponent& BTComponent, uint8* NodeMemory)
 {
@@ -67,7 +68,7 @@ void UBTTask_HijackPatternAttack::TickTask(UBehaviorTreeComponent& BTComponent, 
 	{
 		HijackBossController->SwitchBattleState();
 		
-		//플레이어 귀환 로직
+		//플레이어 귀환 로직(합치고 게임모드에 요청하도록 수정필요함)
 		TargetPlayer->SetActorLocation(BossCharacter->GetActorLocation() + FVector(0.0f, 2000.0f, 0.0f));
 		
 		//파괴가능 오브젝트 생성 타이머 활성화
@@ -79,8 +80,10 @@ void UBTTask_HijackPatternAttack::TickTask(UBehaviorTreeComponent& BTComponent, 
 
 	//플레이어 사망 여부, 남은 플레이어의 오브젝트 파괴 여부, 보스의 사망 여부
 	bool bIsPlayerDead = false;
+	//아직 캐릭터에 체력 없음
+	//if (Cast<ABaseWitch>(TargetPlayer)->GetCurrentHP() <= 0) 
 	bool bIsAllObjectDestroyed = BossController->GetDestructibleObjectCount() == 0 ? true : false;
-	bool bIsBossDead = HijackBossCharacter->GetCurrentHP() <= 0 ? true : false;
+	bool bIsBossDead = HijackBossCharacter->GetCurrentHP() == 0 ? true : false;
 
 	if (bIsBossDead || bIsAllObjectDestroyed || bIsPlayerDead)
 	{

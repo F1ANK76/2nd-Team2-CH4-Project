@@ -5,6 +5,7 @@
 #include "Player/Abilies/BaseWitchAbility.h"
 #include "Player/BaseWitch.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Player/Struct/CharacterStateBuffer.h"
 
 UWitchAbilityComponent::UWitchAbilityComponent()
 {
@@ -258,9 +259,28 @@ void UWitchAbilityComponent::AddCurrentMana(float Value)
 	AbilityBuffer.CurrentMana = FMath::Clamp(AbilityBuffer.CurrentMana + Value, 0, AbilityBuffer.MaxMana);
 }
 
-void UWitchAbilityComponent::SetMaxMana(float Value)
+void UWitchAbilityComponent::ResetAbility()
 {
-	AbilityBuffer.MaxMana = Value;
+	if (IsValid(AbilityBuffer.CurrentAbility))
+	{
+		AbilityBuffer.CurrentAbility->UndoAbility(AbilityBuffer);
+	}
+
+	GetWorld()->GetTimerManager().ClearTimer(BufferTimer);
+	ClearLastAbilities();
+
+	AbilityBuffer.bIsInAir = false;
+	AbilityBuffer.bIsJumpable = true;
+	AbilityBuffer.bIsLeft = false;
+	AbilityBuffer.bIsMoveable = true;
+	AbilityBuffer.bIsUseable = true;
+}
+
+void UWitchAbilityComponent::OnChangedCharacterState(const FCharacterStateBuffer& Buffer)
+{
+	AbilityBuffer.CurrentMana = Buffer.CurrentMana;
+	AbilityBuffer.MaxMana = Buffer.MaxMana;
+	AbilityBuffer.KnockGuage = Buffer.AirbornePercent;
 }
 
 void UWitchAbilityComponent::BeginPlay()
@@ -274,10 +294,14 @@ void UWitchAbilityComponent::BeginPlay()
 
 	checkf(IsValid(ParentWitch), TEXT("Ability Component : Parent is invalid. Parent == nullptr || Not BaseWitch type"));
 
-
 	ParentMovementComp = ParentWitch->GetCharacterMovement();
 	AbilityBuffer.ParentWitch = ParentWitch;
 	AbilityBuffer.MovementComp = ParentMovementComp;
+
+	if (ParentWitch->HasAuthority())
+	{
+		ParentWitch->OnChangedState.AddDynamic(this, &ThisClass::OnChangedCharacterState);
+	}
 }
 
 ABaseWitchAbility* UWitchAbilityComponent::SpawnAbility(UClass* TargetClass)
@@ -379,6 +403,7 @@ void UWitchAbilityComponent::ClearLastAbilities()
 {
 	AbilityBuffer.LastAbilities.Empty();
 	AbilityBuffer.CurrentAbility = nullptr;
+	AbilityBuffer.ComandDirection = EDirectionType::None;
 	AbilityBuffer.MoveValueVector = FVector2D::ZeroVector;
 }
 

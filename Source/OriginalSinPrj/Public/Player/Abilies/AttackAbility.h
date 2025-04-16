@@ -46,6 +46,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Attack")
 	TSubclassOf<ABaseProjectile> ProjectileClass = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Attack")
+	bool bIsPlayWitchEffect = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Melle")
 	EEffectVisibleType MelleType = EEffectVisibleType::Right;
 

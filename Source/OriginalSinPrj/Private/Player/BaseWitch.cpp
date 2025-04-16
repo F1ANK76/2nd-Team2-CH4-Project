@@ -7,6 +7,7 @@
 #include "Player/Controller/WitchController.h"
 #include "Player/WitchAnimInstance.h"
 #include "Player/WitchAbilityComponent.h"
+#include "Player/BuffComponent.h"
 #include "Components/BoxComponent.h"
 #include <Kismet/GameplayStatics.h>
 #include "NiagaraFunctionLibrary.h"
@@ -29,6 +30,7 @@ ABaseWitch::ABaseWitch()
 	FootItem = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Foot"));
 
 	AbilityComp = CreateDefaultSubobject<UWitchAbilityComponent>(TEXT("Ability Component"));
+	BuffComp = CreateDefaultSubobject<UBuffComponent>(TEXT("Buff Component"));
 
 	LeftHandDamager = CreateDefaultSubobject<UBoxComponent>(TEXT("Left Hand Damager"));
 	RightHandDamager = CreateDefaultSubobject<UBoxComponent>(TEXT("Right Hand Damager"));
@@ -88,21 +90,25 @@ void ABaseWitch::PlayAnimation_Implementation(UAnimMontage* Target)
 	if (IsValid(WitchAnimInstance))
 	{
 		WitchAnimInstance->Montage_Play(Target);
+		CheckAttackSpeed(WitchAnimInstance, Target);
 	}
 
 	if (IsValid(DressAnimInstance))
 	{
 		DressAnimInstance->Montage_Play(Target);
+		CheckAttackSpeed(DressAnimInstance, Target);
 	}
 
 	if (IsValid(StockingsAnimInstance))
 	{
 		StockingsAnimInstance->Montage_Play(Target);
+		CheckAttackSpeed(StockingsAnimInstance, Target);
 	}
 
 	if (IsValid(ShoesAnimInstance))
 	{
 		ShoesAnimInstance->Montage_Play(Target);
+		CheckAttackSpeed(ShoesAnimInstance, Target);
 	}
 }
 
@@ -195,6 +201,45 @@ void ABaseWitch::SetDamagerEnabled(UBoxComponent* Target, bool bIsActive)
 	}
 }
 
+void ABaseWitch::CheckAttackSpeed(UAnimInstance* TargetInstance, UAnimMontage* TargetMontage)
+{
+	if (CurrentState == EWitchStateType::Attack)
+	{
+		float OriginRate = TargetInstance->Montage_GetPlayRate(TargetMontage);
+		OriginRate *= AttackSpeed;
+		TargetInstance->Montage_SetPlayRate(TargetMontage);
+	}
+}
+
+bool ABaseWitch::CompareColorIndex(AActor* DamageCauser)
+{
+	if (!bIsColorMode)
+	{
+		return true;
+	}
+	
+	if (!DamageCauser->FindFunction("GetColorIndex"))
+	{
+		return true;
+	}
+
+	ABaseWitch* CauserWitch = Cast<ABaseWitch>(DamageCauser);
+
+	if (IsValid(CauserWitch))
+	{
+		if (CauserWitch->GetColorIndex() == bIsFirstIndex)
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+
+	return true;
+}
+
 void ABaseWitch::SetMeshResponseToChanel_Implementation(ECollisionChannel Chanel, ECollisionResponse Response)
 {
 	MainMesh->SetCollisionResponseToChannel(Chanel, Response);
@@ -223,8 +268,14 @@ void ABaseWitch::ApplyAttack(AActor* Target, float ApplyValue)
 	//UE_LOG(LogTemp, Warning, TEXT("%s : Apply Attack. Target = %s, Value = %f"), *GetName(), *Target->GetName(), ApplyValue);
 	//UGameplayStatics::ApplyDamage(Target, ApplyValue, GetController(), this, UDamageType::StaticClass());
 
-	Target->TakeDamage(ApplyValue, FDamageEvent(), GetController(), this);
-	AbilityComp->AddCurrentMana(AddedMana);
+	float RealDamage = ApplyValue + BuffComp->GetBuffData().AddedKnockGauge;
+
+	float Result = Target->TakeDamage(RealDamage, FDamageEvent(), GetController(), this);
+
+	if (Result > 0)
+	{
+		IncreaseCurrentMana();
+	}
 }
 
 void ABaseWitch::EndAnimNotify()
@@ -265,17 +316,117 @@ const FVector ABaseWitch::GetFootLocation() const
 	return FootItem->GetComponentLocation();
 }
 
-void ABaseWitch::SetColorIndex(bool Value)
+const UBuffComponent* ABaseWitch::GetBuffComponent() const
 {
-	bIsFirstIndex = Value;
+	return BuffComp;
 }
 
 void ABaseWitch::SetPlayerLevel(int32 LevelValue)
 {
-	if (IsValid(AbilityComp))
+	CharacterBuffer.PlayerLevel = FMath::Clamp(LevelValue, 0, 5);
+	CharacterBuffer.MaxMana = FMath::Clamp(LevelValue, 0, 5);
+	OnChangedState.Broadcast(CharacterBuffer);
+}
+
+void ABaseWitch::SetCharacterLifePoint(int32 LifeValue)
+{
+	CharacterBuffer.LifePoint = LifeValue;
+	OnChangedState.Broadcast(CharacterBuffer);
+}
+
+void ABaseWitch::IncreaseLifePoint()
+{
+	++CharacterBuffer.LifePoint;
+	OnChangedState.Broadcast(CharacterBuffer);
+}
+
+void ABaseWitch::DecreaseLifePoint()
+{
+	CharacterBuffer.LifePoint = FMath::Clamp(--CharacterBuffer.LifePoint, 0, 10);
+	OnChangedState.Broadcast(CharacterBuffer);
+}
+
+void ABaseWitch::SetCharacterLevel(int32 LevelValue)
+{
+	CharacterBuffer.PlayerLevel = LevelValue;
+	OnChangedState.Broadcast(CharacterBuffer);
+}
+
+void ABaseWitch::IncreaseExp()
+{
+	CharacterBuffer.CurrentEXP = CharacterBuffer.CurrentEXP + AddedExpValue;
+
+	if (CharacterBuffer.CurrentEXP >= CharacterBuffer.MaxEXP)
 	{
-		AbilityComp->SetMaxMana(LevelValue);
+		if (CharacterBuffer.PlayerLevel < 5)
+		{
+			CharacterBuffer.CurrentEXP -= CharacterBuffer.MaxEXP;
+			++CharacterBuffer.PlayerLevel;
+		}
+		else
+		{
+			CharacterBuffer.CurrentEXP = 100;
+		}
 	}
+
+	OnChangedState.Broadcast(CharacterBuffer);
+}
+
+void ABaseWitch::IncreaseCircle()
+{
+	++CharacterBuffer.MaxMana;
+	OnChangedState.Broadcast(CharacterBuffer);
+}
+
+void ABaseWitch::IncreaseCurrentMana()
+{
+	float MaxValue = CharacterBuffer.MaxMana;
+	float AddedValue = BuffComp->GetBuffData().AddedMana;
+
+	CharacterBuffer.CurrentMana = FMath::Clamp(CharacterBuffer.CurrentMana + AddedValue, 0, MaxValue);
+	OnChangedState.Broadcast(CharacterBuffer);
+}
+
+void ABaseWitch::AddKnockGauge(float KnockValue)
+{
+	CharacterBuffer.AirbornePercent += KnockValue;
+	OnChangedState.Broadcast(CharacterBuffer);
+}
+
+void ABaseWitch::InitCharacterState()
+{
+	CharacterBuffer.MaxHP = 100;
+	CharacterBuffer.MaxMana = 0;
+	CharacterBuffer.CurrentEXP = 0;
+	CharacterBuffer.PlayerLevel = 0;
+
+	ResetCharacterState();
+}
+
+void ABaseWitch::ResetCharacterState()
+{
+	AbilityComp->ResetAbility();
+
+	CharacterBuffer.CurrentHP = CharacterBuffer.MaxHP;
+	CharacterBuffer.AirbornePercent = 0;
+	CharacterBuffer.CurrentMana = 0;
+	
+	OnChangedState.Broadcast(CharacterBuffer);
+}
+
+const bool ABaseWitch::GetColorIndex() const
+{
+	return bIsFirstIndex;
+}
+
+void ABaseWitch::SetColorMode(bool Value)
+{
+	bIsColorMode = Value;
+}
+
+void ABaseWitch::SetColorIndex(bool Value)
+{
+	bIsFirstIndex = Value;
 }
 
 void ABaseWitch::RequestMoveToAbility_Implementation(float Value)
@@ -283,6 +434,14 @@ void ABaseWitch::RequestMoveToAbility_Implementation(float Value)
 	if (IsValid(AbilityComp))
 	{
 		AbilityComp->CallMove(FVector2D(Value, 0));
+	}
+}
+
+void ABaseWitch::RequestEndMoveToAbility_Implementation()
+{
+	if (CurrentState == EWitchStateType::Move)
+	{
+		SetWitchState(EWitchStateType::Idle);
 	}
 }
 
@@ -385,6 +544,8 @@ void ABaseWitch::BeginPlay()
 
 	LeftHandDamager->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
 	RightHandDamager->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
+
+	SetPlayerLevel(5); //Test
 }
 
 void ABaseWitch::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -429,7 +590,12 @@ float ABaseWitch::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 
 	//UE_LOG(LogTemp, Warning, TEXT("%s : TakeDamage. Causer = %s, Value = %f"), *GetName(), *DamageCauser->GetName(), DamageAmount);
 
-	AbilityComp->CallHit(DamageCauser, DamageAmount);
+	if (CompareColorIndex(DamageCauser))
+	{
+		AbilityComp->CallHit(DamageCauser, DamageAmount);
+		return 1.0f;
+	}
+
 	//RequestHitToAbility(DamageCauser);
 
 	return 0.0f;
@@ -460,6 +626,7 @@ void ABaseWitch::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		if (IsValid(TargetAction))
 		{
 			EnhancedInputComponent->BindAction(TargetAction, ETriggerEvent::Triggered, this, &ThisClass::OnPressedMoveKey);
+			EnhancedInputComponent->BindAction(TargetAction, ETriggerEvent::Completed, this, &ThisClass::OnEndPressedMoveKey);
 		}
 
 		TargetAction = WitchController->UpDownAction;
@@ -588,6 +755,11 @@ void ABaseWitch::OnPressedMoveKey(const FInputActionValue& Value)
 	RequestMoveToAbility(MoveValue);
 }
 
+void ABaseWitch::OnEndPressedMoveKey(const FInputActionValue& Value)
+{
+	RequestEndMoveToAbility();
+}
+
 void ABaseWitch::OnPressedUpDownKey(const FInputActionValue& Value)
 {
 	float UpDownValue = Value.Get<float>();
@@ -659,3 +831,5 @@ void ABaseWitch::OnPressedSkill5Key(const FInputActionValue& Value)
 {
 	RequestSkillAttackToAbility(4);
 }
+
+

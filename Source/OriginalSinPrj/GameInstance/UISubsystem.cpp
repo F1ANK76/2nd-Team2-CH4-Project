@@ -21,6 +21,9 @@ void UUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 void UUISubsystem::ShowLevelWidget(ELevelType LevelType)
 {
     UE_LOG(LogTemp, Warning, TEXT("Show Level Widget"));
+
+    bool isMouseMode;
+
     switch (LevelType)
     {
     case ELevelType::IntroLevel:
@@ -29,6 +32,7 @@ void UUISubsystem::ShowLevelWidget(ELevelType LevelType)
             IntroLevelWidget = CreateWidgetByClass(UISettings->IntroWidgetClass);
         }
         CurrentActiveWidget = IntroLevelWidget;
+        isMouseMode = true;
         break;
 
     case ELevelType::TitleLevel:
@@ -37,6 +41,7 @@ void UUISubsystem::ShowLevelWidget(ELevelType LevelType)
             TitleLevelWidget = CreateWidgetByClass(UISettings->TitleWidgetClass);
         }
         CurrentActiveWidget = TitleLevelWidget;
+        isMouseMode = true;
         break;
 
     case ELevelType::MatchLevel:
@@ -45,6 +50,7 @@ void UUISubsystem::ShowLevelWidget(ELevelType LevelType)
             MatchLevelWidget = CreateWidgetByClass(UISettings->MatchWidgetClass);
         }
         CurrentActiveWidget = MatchLevelWidget;
+        isMouseMode = true;
         break;
 
     case ELevelType::LobbyLevel:
@@ -53,6 +59,7 @@ void UUISubsystem::ShowLevelWidget(ELevelType LevelType)
             LobbyLevelWidget = CreateWidgetByClass(UISettings->LobbyWidgetClass);
         }
         CurrentActiveWidget = LobbyLevelWidget;
+        isMouseMode = true;
         break;
 
     case ELevelType::MultiLevel:
@@ -61,6 +68,7 @@ void UUISubsystem::ShowLevelWidget(ELevelType LevelType)
             MultiLevelWidget = CreateWidgetByClass(UISettings->MultiWidgetClass);
         }
         CurrentActiveWidget = MultiLevelWidget;
+        isMouseMode = false;
         break;
 
     case ELevelType::CooperationLevel:
@@ -69,6 +77,7 @@ void UUISubsystem::ShowLevelWidget(ELevelType LevelType)
             CooperationLevelWidget = CreateWidgetByClass(UISettings->CooperationWidgetClass);
         }
         CurrentActiveWidget = CooperationLevelWidget;
+        isMouseMode = false;
         break;
 
     case ELevelType::SingleLevel:
@@ -77,6 +86,7 @@ void UUISubsystem::ShowLevelWidget(ELevelType LevelType)
             SingleLevelWidget = CreateWidgetByClass(UISettings->SingleWidgetClass);
         }
         CurrentActiveWidget = SingleLevelWidget;
+        isMouseMode = false;
         break;
 
     case ELevelType::TrainingLevel:
@@ -85,6 +95,7 @@ void UUISubsystem::ShowLevelWidget(ELevelType LevelType)
             TrainingLevelWidget = CreateWidgetByClass(UISettings->TrainingWidgetClass);
         }
         CurrentActiveWidget = TrainingLevelWidget;
+        isMouseMode = false;
         break;
 
     case ELevelType::FarmingLevel:
@@ -93,6 +104,7 @@ void UUISubsystem::ShowLevelWidget(ELevelType LevelType)
             FarmingLevelWidget = CreateWidgetByClass(UISettings->FarmingWidgetClass);
         }
         CurrentActiveWidget = FarmingLevelWidget;
+        isMouseMode = false;
         break;
 
     default:
@@ -103,6 +115,7 @@ void UUISubsystem::ShowLevelWidget(ELevelType LevelType)
     if (IsValid(CurrentActiveWidget))
     {
         CurrentActiveWidget->AddToViewport();
+        SetMouseMode(isMouseMode);
     }
     else
     {
