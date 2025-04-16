@@ -49,6 +49,9 @@ public:
 	TObjectPtr<UBaseWidget> MatchLevelWidget = nullptr;
 
 	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBaseWidget> MultiLobbyLevelWidget = nullptr;
+	
+	UPROPERTY(EditAnywhere)
 	TObjectPtr<UBaseWidget> LobbyLevelWidget = nullptr;
 
 	UPROPERTY(EditAnywhere)

@@ -177,15 +177,20 @@ void UBaseWidget::OnClickedMoveSingleMode()
 	UIHandle->OnClickedMoveLevel(ELevelType::SingleLevel, true);
 }
 
-
 void UBaseWidget::OnClickedMoveMultiMode()
+{
+	UIHandle->OnClickedMoveLevel(ELevelType::MultiLevel, false); // change bool value to true, Level Type Value to Match
+}
+
+
+void UBaseWidget::OnClickedMoveMultiLobbyMode()
 {
 	//fade out
 	//�� ��ȯ? Ȥ�� ���� ��ȯ? UIsubsystem Ȥ�� UIhandler�� ��û
 	//fade in
 	//UIHandle->ShowLevel(ELevelType::LobbyLevel);
 
-	UIHandle->OnClickedMoveLevel(ELevelType::LobbyLevel, false); // change bool value to true, Level Type Value to Match
+	UIHandle->OnClickedMoveLevel(ELevelType::MultiLobbyLevel, true); // change bool value to true, Level Type Value to Match
 }
 
 
@@ -212,7 +217,7 @@ void UBaseWidget::OnClickedMoveTitle()
 	UE_LOG(LogTemp, Warning, TEXT("ShowLevel called - this: %p"), this);
 
 	//UIHandle->ShowLevel(ELevelType::TitleLevel);
-	UIHandle->OnClickedMoveLevel(ELevelType::TitleLevel, false); // change bool value to true
+	UIHandle->OnClickedMoveLevel(ELevelType::TitleLevel, true); // change bool value to true
 
 }
 

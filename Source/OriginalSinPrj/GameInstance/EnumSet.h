@@ -15,7 +15,8 @@ enum class ELevelType : uint8
 	CooperationLevel,
 	SingleLevel,
 	TrainingLevel,
-	FarmingLevel
+	FarmingLevel,
+	MultiLobbyLevel
 };
 
 UENUM(BlueprintType)
