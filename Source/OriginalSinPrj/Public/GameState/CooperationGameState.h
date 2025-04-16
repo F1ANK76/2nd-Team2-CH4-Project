@@ -12,6 +12,7 @@
 #include "OriginalSinPrj/Interface/BattleEvent.h"
 #include "OriginalSinPrj/Interface/MatchManage.h"
 #include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
+#include "OriginalSinPrj/Public/Player/Struct/CharacterStateBuffer.h"
 #include "CooperationGameState.generated.h"
 
 struct FBuffType;
@@ -26,8 +27,6 @@ class ORIGINALSINPRJ_API ACooperationGameState : public AGameState, public ICame
 public:
     UOriginalSinPrjGameInstance* GameInstance = nullptr;
     ACooperationGameMode* CooperationGameGameMode;
-    
-    TArray<FBuffInfo> Temp;
     
 protected:
     ACooperationGameState();
@@ -69,7 +68,7 @@ public:
     void RegisterInitialController(APlayerController* PC);
 
     void InitPlayerInfo();
-    void UpdatePlayerInfo();
+    void UpdatePlayerInfo(const FCharacterStateBuffer& State);
     void InitPlayerUIInfo();
     void UpdatePlayerUIInfo();
 
@@ -84,6 +83,22 @@ public:
     void TurnOnStage2Widget();
     void TurnOnStage3Widget();
     void TurnOffStage3Widget();
+
+
+    UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayerInitData)
+    int PlayerDataChanged = 0;
+
+    UFUNCTION()
+    void OnRep_UpdatePlayerInitData();
+
+
+
+    UPROPERTY(Replicated)
+    FPlayerData Player1StateData;
+
+    UPROPERTY(Replicated)
+    FPlayerData Player2StateData;
+
 
     UPROPERTY(Replicated)
     bool bIsStage3Started;
@@ -129,13 +144,19 @@ public:
     UPROPERTY(BlueprintReadOnly)
     TMap<AActor*, FPlayerData> PlayerInfos;
 
-    UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayerDataUI)
-    TArray<FPlayerData> PlayerDatas;
+    UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayer1DataUI)
+    int Player1DataChanged = 0;
 
     UFUNCTION()
-    void OnRep_UpdatePlayerDataUI();
+    void OnRep_UpdatePlayer1DataUI();
 
-    bool bIsPlayerDataUpdated = false;   //Check UI Data has been Updated... Flag
+    UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayer2DataUI)
+    int Player2DataChanged = 0;
+
+    UFUNCTION()
+    void OnRep_UpdatePlayer2DataUI();
+
+
     ///////////////////
     //플레이어 컨트롤러 저장해놓기
     UPROPERTY()
