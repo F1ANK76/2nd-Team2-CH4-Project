@@ -175,16 +175,19 @@ void UAudioSubsystem::PlayBGMSoundByLevel(ELevelType Type)
 
 void UAudioSubsystem::PlayBGMSound(ELevelSoundType Type)
 {
-    USoundBase* SoundSource = GetBgmSoundSource(Type);
+    if (!CheckValidOfBgmSource(Type))
+    {
+        return;
+    }
 
-    if (!IsValid(SoundSource))
+    if (!IsValid(BgmSoundMap[Type]))
     {
         return;
     }
 
     if (!IsValid(BgmComp))
     {
-        BgmComp = UGameplayStatics::CreateSound2D(GetGameInstance(), SoundSource, BgmVoume);
+        BgmComp = UGameplayStatics::CreateSound2D(GetGameInstance(), BgmSoundMap[Type], BgmVolume);
         BgmComp->bAutoDestroy = false;
     }
 
@@ -193,22 +196,25 @@ void UAudioSubsystem::PlayBGMSound(ELevelSoundType Type)
         BgmComp->Stop();
     }
 
-    BgmComp->SetSound(SoundSource);
+    BgmComp->SetSound(BgmSoundMap[Type]);
     BgmComp->Play();
 }
 
 void UAudioSubsystem::PlayUISound(EUISfxSoundType Type)
 {
-    USoundBase* SoundSource = GetUISoundSource(Type);
+    if (!CheckValidOfUISoundSource(Type))
+    {
+        return;
+    }
 
-    if (!IsValid(SoundSource))
+    if (!IsValid(UISoundMap[Type]))
     {
         return;
     }
 
     if (!IsValid(UIAudioComp))
     {
-        UIAudioComp = UGameplayStatics::CreateSound2D(GetGameInstance(), SoundSource, EffectVolume);
+        UIAudioComp = UGameplayStatics::CreateSound2D(GetGameInstance(), UISoundMap[Type], EffectVolume);
         UIAudioComp->bAutoDestroy = false;
     }
 
@@ -217,7 +223,7 @@ void UAudioSubsystem::PlayUISound(EUISfxSoundType Type)
         UIAudioComp->Stop();
     }
 
-    UIAudioComp->SetSound(SoundSource);
+    UIAudioComp->SetSound(UISoundMap[Type]);
     UIAudioComp->Play();
 }
 
@@ -242,40 +248,100 @@ TArray<FMonsterAudioDataStruct*>& UAudioSubsystem::GetMonsterSoundArray()
     return SoundDataArraySet.MonsterAudioArray;
 }
 
-USoundBase* UAudioSubsystem::GetBgmSoundSource(ELevelSoundType SoundType)
+const float UAudioSubsystem::GetEffectVolume() const
 {
-    if (!CheckValidOfBgmAudio())
-    {
-        return nullptr;
-    }
-
-    for (FLevelAudioDataStruct* BgmData : SoundDataArraySet.BgmAudioArray)
-    {
-        if (BgmData->LevelSoundType == SoundType)
-        {
-            return BgmData->Sound.LoadSynchronous();
-        }
-    }
-
-    return nullptr;
+    return EffectVolume;
 }
 
-USoundBase* UAudioSubsystem::GetUISoundSource(EUISfxSoundType SoundType)
+const float UAudioSubsystem::GetBgmVolume() const
 {
-    if (!CheckValidOfUIAudio())
+    return BgmVolume;
+}
+
+void UAudioSubsystem::SetBgmVolume(float VolumeValue)
+{
+    BgmVolume = FMath::Clamp(VolumeValue, 0.0f, 1.0f);
+
+    if (IsValid(BgmComp))
     {
-        return nullptr;
+        BgmComp->SetVolumeMultiplier(BgmVolume);
+    }
+}
+
+void UAudioSubsystem::SetEffectVolume(float VolumeValue)
+{
+    EffectVolume = FMath::Clamp(VolumeValue, 0.0f, 1.0f);
+
+    if (IsValid(UIAudioComp))
+    {
+        UIAudioComp->SetVolumeMultiplier(BgmVolume);
+    }
+}
+
+bool UAudioSubsystem::CheckValidOfBgmSource(ELevelSoundType SoundType)
+{
+    if (BgmSoundMap.Contains(SoundType))
+    {
+        return true;
     }
 
-    for (FUISfxAudioDataStruct* UISoundData : SoundDataArraySet.UIAudioArray)
+    if (!CheckValidOfBgmAudio())
     {
-        if (UISoundData->UISfxSoundType == SoundType)
+        return false;
+    }
+
+    USoundBase* SoundSource = nullptr;
+
+    for (FLevelAudioDataStruct* SoundData : SoundDataArraySet.BgmAudioArray)
+    {
+        if (SoundData->LevelSoundType == SoundType)
         {
-            return UISoundData->Sound.LoadSynchronous();
+            SoundSource = SoundData->Sound.LoadSynchronous();
+            break;
+        }
+    }
+    
+    if (!IsValid(SoundSource))
+    {
+        return false;
+    }
+
+    BgmSoundMap.Add(SoundType, SoundSource);
+
+    return true;
+}
+
+bool UAudioSubsystem::CheckValidOfUISoundSource(EUISfxSoundType SoundType)
+{
+    if (UISoundMap.Contains(SoundType))
+    {
+        return true;
+    }
+
+    if (!CheckValidOfUIAudio())
+    {
+        return false;
+    }
+
+    USoundBase* SoundSource = nullptr;
+
+    for (FUISfxAudioDataStruct* SoundData : SoundDataArraySet.UIAudioArray)
+    {
+        if (SoundData->UISfxSoundType == SoundType)
+        {
+            SoundSource = SoundData->Sound.LoadSynchronous();
+            break;
         }
     }
 
-    return nullptr;
+    if (!IsValid(SoundSource))
+    {
+        return false;
+    }
+
+    UISoundMap.Add(SoundType, SoundSource);
+
+    return true;
 }
 
 bool UAudioSubsystem::CheckValidOfBgmAudio()

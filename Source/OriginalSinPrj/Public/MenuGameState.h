@@ -8,6 +8,7 @@
 #include "OriginalSinPrj/GameInstance/EnumSet.h"
 #include "MenuGameState.generated.h"
 
+class UAudioSubsystem;
 struct FCharacterAudioDataStruct;
 struct FBossAudioDataStruct;
 struct FMonsterAudioDataStruct;
@@ -96,10 +97,30 @@ protected:
 	UFUNCTION(NetMulticast, Unreliable)
 	void PlayMonsterSound(UAudioComponent* AudioComp, EMonsterSoundType SoundType);
 
+	void PlaySound(UAudioComponent* AudioComp, USoundBase* SoundSource);
+
+	bool LoadCharacterSoundSourceFromArray(ECharacterSoundType SoundType);
+	bool LoadBossSoundSourceFromArray(EBossSoundType SoundType);
+	bool LoadMonsterSoundSourceFromArray(EMonsterSoundType SoundType);
+	bool CheckValidOfAudioHandle();
+
 protected:
+	UPROPERTY()
+	TMap<ECharacterSoundType, USoundBase*> CharacterSoundMap;
+
+	UPROPERTY()
+	TMap<EBossSoundType, USoundBase*> BossSoundMap;
+
+	UPROPERTY()
+	TMap<EMonsterSoundType, USoundBase*> MonsterSoundMap;
+
+
 	TArray<FCharacterAudioDataStruct*> CharacterSounds;
 	TArray<FBossAudioDataStruct*> BossSounds;
 	TArray<FMonsterAudioDataStruct*> MonsterSounds;
+
+	UPROPERTY()
+	TObjectPtr<UAudioSubsystem> AudioHandle = nullptr;
 
 // ����
 private: /*------------------------����------------------------*/

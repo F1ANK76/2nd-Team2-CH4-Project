@@ -42,9 +42,15 @@ public:
 	TArray<FBossAudioDataStruct*>& GetBossSoundArray();
 	TArray<FMonsterAudioDataStruct*>& GetMonsterSoundArray();
 
+	const float GetEffectVolume() const;
+	const float GetBgmVolume() const;
+
+	void SetBgmVolume(float VolumeValue);
+	void SetEffectVolume(float VolumeValue);
+
 private:
-	USoundBase* GetBgmSoundSource(ELevelSoundType SoundType);
-	USoundBase* GetUISoundSource(EUISfxSoundType SoundType);
+	bool CheckValidOfBgmSource(ELevelSoundType SoundType);
+	bool CheckValidOfUISoundSource(EUISfxSoundType SoundType);
 
 	bool CheckValidOfBgmAudio();
 	bool CheckValidOfUIAudio();
@@ -55,6 +61,12 @@ private:
 private:
 	UPROPERTY()
 	FSoundDataArrayStruct SoundDataArraySet;
+
+	UPROPERTY()
+	TMap<ELevelSoundType, USoundBase*> BgmSoundMap;
+
+	UPROPERTY()
+	TMap<EUISfxSoundType, USoundBase*> UISoundMap;
 
 	UPROPERTY()
 	UDataTable* LevelSoundTable;
@@ -84,10 +96,10 @@ private:
 	float MasterVolume = 1.0f;
 
 	UPROPERTY()
-	float EffectVolume = 1.0f;
+	float EffectVolume = 0.5f;
 
 	UPROPERTY()
-	float BgmVoume = 1.0f;
+	float BgmVolume = 0.5f;
 };
 
 // Use EX : PlaySFX(ESfxSoundType::Monster, static_cast<uint8>(EMonsterSoundType::Attack), FVector(10.f, 0.f, 0.f));

@@ -68,6 +68,7 @@ void UUISubsystem::ShowLevelWidget(ELevelType LevelType)
             MultiLobbyLevelWidget = CreateWidgetByClass(UISettings->MultiLobbyWidgetClass);
         }
         CurrentActiveWidget = MultiLobbyLevelWidget;
+        isMouseMode = true;
         break;
 
     case ELevelType::MultiLevel:
