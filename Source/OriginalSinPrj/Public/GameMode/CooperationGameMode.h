@@ -12,11 +12,19 @@
 
 
 UCLASS()
-class ORIGINALSINPRJ_API ACooperationGameMode : public AGameMode
+class ORIGINALSINPRJ_API ACooperationGameMode : public AGameMode, public IBattleEvent
 {
 	GENERATED_BODY()
 
     //GameMode Default Function
+public: //for test
+    UFUNCTION()
+    void HandleBuffSelection(AActor* SourceActor, int32 BuffIndex);
+
+    void ApplyBuffToPlayer(APlayerController* Controller, int32 BuffIndex, FBuffInfo buff);
+    
+    void RequestTurnOffBuffSelectUI();
+
 public:
     ACooperationGameMode();
     virtual void StartPlay() override; // BeginPlay보다 먼저 호출
@@ -183,10 +191,13 @@ public:
     //몬스터 스포너 갖고 있기
     //UPROPERTY(BlueprintReadWrite, Category = "Spawn")
     //TSubclassOf<AMonsterSpawner> MonsterSpawner;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> MonsterSpawnLocations;
 
     TArray<AActor*> ActiveMonsters;
+
+
 
 
     void SpawnMonsters();
@@ -235,6 +246,15 @@ public:
     void SpawnBossMonsters();
 
 
+    UPROPERTY(BlueprintReadWrite)
+    TArray<AActor*> ActiveBossMonster;
+
+    //스테이트에서 0이면 -> end battle 호출 -> 보스 내부적으로 로직 해제 -> 사망모션은 보스쪽에서. -> 게임모드는 그대로....
+
+    TArray<AActor*> StartBattle(TArray<AActor*> Players);
+
+
+
     //플레이어 강제이동(캐릭터, 로케이션)
     UFUNCTION(BlueprintCallable)
     void BossSetPlayerLocation(ACharacter* PlayerChar);
@@ -266,7 +286,9 @@ protected:
     //멀티 전용
     virtual void PostSeamlessTravel() override;
 
-
-
-
+public:
+    virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;
+    virtual void TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation) override;
+    virtual void OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation) override;
+    virtual void OnDeathMonster(AActor* Monster, const FVector& DeathLocation) override;
 };

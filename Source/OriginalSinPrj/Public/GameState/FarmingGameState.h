@@ -4,17 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "OriginalSinPrj/Interface/BattleEvent.h"
-#include "OriginalSinPrj/Interface/MatchManage.h"
 #include "../Widget/LevelWidget/BattleWidget.h"
 #include "../Widget/AddedWidget/PlayerStateWidget.h"
 #include "../Player/BaseWitch.h"
+#include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
 #include "GameFramework/GameState.h"
 #include "FarmingGameState.generated.h"
 
 class AFarmingGameMode;
 
 UCLASS()
-class ORIGINALSINPRJ_API AFarmingGameState : public AGameState, public IBattleEvent, public IMatchManage
+class ORIGINALSINPRJ_API AFarmingGameState : public AGameState, public IBattleEvent
 {
 	GENERATED_BODY()
 	
@@ -31,13 +31,29 @@ public:
     UPROPERTY(Replicated)
     bool bIsFarmingStarted;
 
-    UPROPERTY(Replicated, BlueprintReadOnly)
+
+    UPROPERTY(ReplicatedUsing = OnRep_UpdateTimer)
     float TimeRemaining;
+
+    UFUNCTION()
+    void OnRep_UpdateTimer();
+
+    void UpdateTimer();
+
 
     // Player 정보 관리
     UPROPERTY(BlueprintReadOnly)
     TMap<APlayerController*, FPlayerData> PlayerInfos;
 
+
+    void TurnOnPlayerUI();
+    void TurnOnAllUI();
+
+    UPROPERTY(ReplicatedUsing = OnRep_TurnOnAllUI)
+    int MultiPlayer = 0;
+    
+    UFUNCTION()
+    void OnRep_TurnOnAllUI();
 
     void InitPlayerInfo();
     void UpdatePlayerInfo();
@@ -65,12 +81,6 @@ private:
     UPROPERTY()
     ABaseWitch* PlayerPawnRef;
 
-public:
-    
-    virtual void FinishMatch() override {};
-    virtual void VictoryMatch() override {};
-    virtual void DefeatMatch() override {};
-    virtual void DrawMatch() override {};
 public:
     virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override {};
     virtual void TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation) override {};

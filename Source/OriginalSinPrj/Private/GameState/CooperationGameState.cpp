@@ -19,12 +19,9 @@ ACooperationGameState::ACooperationGameState()
     Timer = 0.0f;
     bReplicates = true;
 
-    bPlayer1SelectedBuff = false;
-    bPlayer2SelectedBuff = false;
-
     CameraLocation = FVector(-400.f, 200.f, 0.f);
     CameraRotation = FRotator::ZeroRotator;
-    CameraDistance = 0;
+    CameraDistance = 0;    
 }
 
 void ACooperationGameState::BeginPlay()
@@ -68,6 +65,7 @@ void ACooperationGameState::Tick(float DeltaSeconds)
     if (HasAuthority() && bIsStage3Started)
     {
         Timer += DeltaSeconds;
+        UpdateTimer();
     }
 }
 
@@ -80,6 +78,11 @@ void ACooperationGameState::Tick(float DeltaSeconds)
 void ACooperationGameState::TurnOnTimer()
 {
     bIsStage3Started = true;
+}
+
+void ACooperationGameState::TurnOffTimer()
+{
+    bIsStage3Started = false;
 }
 
 
@@ -117,6 +120,53 @@ void ACooperationGameState::TurnOnStage3Widget()
     }
 }
 
+void ACooperationGameState::TurnOffStage3Widget()
+{
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
+        {
+            // 여기서 UISubsystem 사용 가능!
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->DeactivateAllWidgets();
+        }
+    }
+}
+
+void ACooperationGameState::CreateBuffSelectUI()
+{
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Show Buff Widget"));
+            UISubsystem->ShowWidget(EAddWidgetType::BuffSelectWidget);
+            UISubsystem->SetMouseMode(true);
+            bIsPlayerBuffSelect = 0;
+        }
+    }
+}
+
+
+
+void ACooperationGameState::OnRep_TurnOffBuffUI()
+{
+    CloseBuffSelectUI();
+}
+
+
+void ACooperationGameState::CloseBuffSelectUI()
+{
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Show Buff Widget"));            
+            UISubsystem->CloseWidget(EAddWidgetType::BuffSelectWidget);
+            UISubsystem->SetMouseMode(false);
+        }
+    }
+}
+
 
 void ACooperationGameState::OnRep_TurnOnStageUI()
 {
@@ -126,13 +176,35 @@ void ACooperationGameState::OnRep_TurnOnStageUI()
     }
     else if (CurrentStageIndex == 2)
     {
+        CreateBuffSelectUI();
         TurnOnStage2Widget();
     }
     else if (CurrentStageIndex == 3)
     {
+        CreateBuffSelectUI();
         TurnOnStage3Widget();
     }
+    else if (CurrentStageIndex == 4)
+    {
+        TurnOffStage3Widget();
+        TurnOnResultWidget();
+    }
 }
+
+void ACooperationGameState::TurnOnResultWidget()
+{
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Show Result Widget"));
+            UISubsystem->ShowWidget(EAddWidgetType::ResultWidget);
+            // 여기서 UISubsystem 사용 가능!
+            //Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->ActiveStage2Widget();
+        }
+    }
+}
+
 
 void ACooperationGameState::InitPlayerInfo()
 {
@@ -189,55 +261,6 @@ void ACooperationGameState::UpdatePlayerUIInfo()
     }
 }
 
-//플레이어에게 버프 선택 UI 열도록 시키기
-
-void ACooperationGameState::RequestPlayerToOpenBuffUI()
-{
-    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-    {
-        APlayerController* PlayerController = Cast<APlayerController>(*It);
-        if (PlayerController)
-        {
-            //Player에게 BuffSelect U열라고 명령
-            //버프 종류는 여기서 결정.
-            //버프 종류가 기록되어있는 목록을 받아서, 겹치지 않게 세개를 받아 선택지에 올리기
-            /*
-            TArray<FBuffType> Buff = {}; //  { 1번, 2번, ... , n번 };
-            TArray<FBuffType> SelectedBuff;
-            if (Buff.Num() > 0)
-            {
-                int RandomIndex = FMath::RandRange(0, Buff.Num() - 1);
-            }
-
-            for (int i = 0; i < 3; i++)
-            {
-                int32 Index = FMath::RandRange(0, Buff.Num() - 1);
-                SelectedBuff.Add(Buff[Index]);
-                Buff.RemoveAt(Index);
-            }
-            */
-            //PlayerController?->UISubsystem->OpenWidget(EWidgetType::BuffSelectWidget);
-            //PlayerController?->BuffSelectWidget->InitializeBuffs(SelectedBuff);
-        }
-    }
-}
-
-void ACooperationGameState::RequestPlayerToOpenResultUI()
-{
-    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-    {
-        APlayerController* PlayerController = Cast<APlayerController>(*It);
-        if (PlayerController)
-        {
-            //Player에게 Result UI 열라고 명령
-            //UI에 들어갈 결과는 게임모드에서 받아오던가, 여기에 있는 데이터로 표시...
-
-        }
-    }
-}
-
-
-
 
 void ACooperationGameState::ReceiveSelectedBuff(APlayerController* player, FBuffType* Bufftype)
 {
@@ -257,13 +280,11 @@ void ACooperationGameState::ReceiveSelectedBuff(APlayerController* player, FBuff
     {
         Player1Stage1SelectedBuff = Bufftype;
 
-        bPlayer1SelectedBuff = true;
     }
 
     if (player == PlayerControllerSet[1])
     {
         Player2Stage1SelectedBuff = Bufftype;
-        bPlayer2SelectedBuff = true;
     }
 
     
@@ -277,23 +298,22 @@ void ACooperationGameState::ApplyBuffStat()
         {
             /*
             PlayerInfo += 
-            Player1Stage1SelectedBuff;
-            Player2Stage1SelectedBuff;
+            SelectedBuff[0];
+            SelectedBuff[1];
             */
         }
         else if (CooperationGameGameMode->StageIndex == 3)
         {
             /*
             PlayerInfo += 
-            Player1Stage2SelectedBuff;
-            Player2Stage2SelectedBuff;
+            SelectedBuff[2];
+            SelectedBuff[3];
             */
         }
     }
-    
+    //UI 끄라고 명령
 
-    bPlayer1SelectedBuff = false;
-    bPlayer2SelectedBuff = false;
+    bIsPlayerBuffSelect = 0;
 }
 
 void ACooperationGameState::AddExperienceToPlayer(AActor* Player, int32 Amount)
@@ -508,13 +528,13 @@ void ACooperationGameState::SetStage3CameraTransform()
 
 void ACooperationGameState::OnRep_UpdatePlayerDataUI()
 {
-    if (bIsPlayerDataUpdated)
+    if (bIsPlayerDataUpdated)   //already Initiated
     {
         UpdatePlayerUIInfo();
     }
-    else
-    {
-        bIsPlayerDataUpdated;
+    else   // Initiate
+    {    
+        bIsPlayerDataUpdated = true;
         InitPlayerInfo();
     }
 }
@@ -526,7 +546,7 @@ void ACooperationGameState::UpdateTimer()
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
             // 여기서 UISubsystem 사용 가능!
-            //Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->UpdateBossTimer(Timer);
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->UpdateBossTimer(Timer);
         }
     }
 }
@@ -543,9 +563,6 @@ void ACooperationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-
-    DOREPLIFETIME(ACooperationGameState, bPlayer1SelectedBuff);
-    DOREPLIFETIME(ACooperationGameState, bPlayer2SelectedBuff);
     DOREPLIFETIME(ACooperationGameState, CameraLocation);
     DOREPLIFETIME(ACooperationGameState, CameraRotation);
     DOREPLIFETIME(ACooperationGameState, CameraDistance);
@@ -553,6 +570,8 @@ void ACooperationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME(ACooperationGameState, Timer); 
     DOREPLIFETIME(ACooperationGameState, bIsPlayerCanMove); 
     DOREPLIFETIME(ACooperationGameState, CurrentStageIndex);
+    DOREPLIFETIME(ACooperationGameState, bIsPlayerBuffSelect);
+    DOREPLIFETIME(ACooperationGameState, SelectBuffPlayer);
 
 }
 
@@ -615,43 +634,121 @@ void ACooperationGameState::SetPlayerMove(bool bCanMove)
 }
 
 
+void ACooperationGameState::OnRep_UpdateBossDataUI()
+{
+    UpdateBossDataUI();
+}
 
+void ACooperationGameState::UpdateBossDataUI()
+{
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
+        {
+            // 여기서 UISubsystem 사용 가능!
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->UpdateBossUI(BossData[0]);
+        }
+    }
+}
 
 
 void ACooperationGameState::ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation)
 {
-
+    Multicast_ApplyDamage(Attacker, Damage, HitLocation);
 }
 
 void ACooperationGameState::TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation) 
 {
-
+    Multicast_TakeDamage(Victim, Damage, HitLocation);
 }
 
 void ACooperationGameState::OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation) 
 {
-
+    Multicast_OnDeathPlayer(Player, DeathLocation);
 }
 
 void ACooperationGameState::OnDeathMonster(AActor* Monster, const FVector& DeathLocation) 
 {
-
+    Multicast_OnDeathMonster(Monster, DeathLocation);
 }
 
 
 
 void ACooperationGameState::Multicast_ApplyDamage_Implementation(AActor* Attacker, float Damage, const FVector& HitLocation)
 {
+    // 모든 클라이언트에서 실행됨
+    if (IsValid(Attacker))
+    {
+        // 예: 피격 위치에 이펙트 생성
+        // UGameplayStatics::SpawnEmitterAtLocation(...);
+    }
+
+    // 실제 데미지 처리도 필요하다면 여기서 실행 (또는 서버에서만 할 수도 있음)
 }
 
 void ACooperationGameState::Multicast_TakeDamage_Implementation(AActor* Victim, float Damage, const FVector& HitLocation)
 {
+    if (IsValid(Victim))
+    {
+        // 예: 피해 반응 애니메이션 재생
+    }
+   
+    /*
+    Victim.HP -= Damage;
+    If(Victim.HP <= MaxHP)
+    {
+        if(Victim == Player)
+            Multicast_OnDeathPlayer_Implementation(Victim, HitLocation);
+        if Victim == enemy
+            Multicast_OnDeathPlayer_Implementation(Victim, HitLocation);
+        if Victim == monster
+            Multicast_OnDeathMonster_Implementation(Victim, HitLocation);
+    }
+
+    */
 }
 
 void ACooperationGameState::Multicast_OnDeathPlayer_Implementation(ACharacter* Player, const FVector& DeathLocation)
 {
+    if (IsValid(Player))
+    {
+        /*
+        if (Victim == Player)
+            Multicast_OnDeathPlayer_Implementation(Victim, HitLocation);
+            playDeathAnim
+            if Victim.Life > 0
+                Respawn
+            else
+                HandlePlayerKilled
+
+        if Victim == enemy
+            Multicast_OnDeathPlayer_Implementation(Victim, HitLocation);
+            GameMode->HandleEnemyKilled(Monster, AController* Killer)
+        */
+
+        // 예: 사망 애니메이션, 효과 등
+        // Player->PlayDeathAnimation(); 같은 함수 호출
+    }
 }
 
 void ACooperationGameState::Multicast_OnDeathMonster_Implementation(AActor* Monster, const FVector& DeathLocation)
 {
+    if (IsValid(Monster))
+    {
+        /*
+        
+
+        if monster?
+        GameMode->HandleMonsterKilled(Monster, AController* Killer)
+
+
+
+        */
+        
+
+    }
 }
+
+
+//델리게이트로 브로드 캐스트
+//게임모드에서 Adddynamic으로 받아서 쓰기./

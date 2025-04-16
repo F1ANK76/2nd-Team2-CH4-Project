@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
 #include "../Widget/LevelWidget/CooperationWidget.h"
+#include "../Widget/AddedWidget/BuffSelectWidget.h"
 #include "../Widget/AddedWidget/PlayerStateWidget.h"
 #include "../Player/BaseWitch.h"
 #include "OriginalSinPrj/Interface/CameraStateInterface.h"
@@ -24,6 +25,9 @@ class ORIGINALSINPRJ_API ACooperationGameState : public AGameState, public ICame
 
 public:
     UOriginalSinPrjGameInstance* GameInstance = nullptr;
+    ACooperationGameMode* CooperationGameGameMode;
+    
+    TArray<FBuffInfo> Temp;
     
 protected:
     ACooperationGameState();
@@ -33,6 +37,11 @@ protected:
     //리플리케이트 함수
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 public:
+
+    void SetPlayerPawn(ABaseWitch* InPawn);
+
+
+
     //카메라 처리용 함수.
     virtual FVector GetCameraLocation() const override { return CameraLocation; }
     virtual FRotator GetCameraRotation() const override { return CameraRotation; }
@@ -56,7 +65,7 @@ protected:
 public:
     //보스전 타이머 켜기
     void TurnOnTimer(); 
-
+    void TurnOffTimer();
     void RegisterInitialController(APlayerController* PC);
 
     void InitPlayerInfo();
@@ -68,50 +77,13 @@ public:
     UPROPERTY(ReplicatedUsing = OnRep_TurnOnStageUI)
     int CurrentStageIndex = 0;
 
+    UFUNCTION()
+    void OnRep_TurnOnStageUI();
+    
     void TurnOnStage1Widget();
     void TurnOnStage2Widget();
     void TurnOnStage3Widget();
-
-    UFUNCTION()
-    void OnRep_TurnOnStageUI();
-
-    void RequestPlayerToOpenBuffUI();//플레이어에게 버프 선택 UI 열도록 시키기
-
-    void RequestPlayerToOpenResultUI(); //플레이어에게 결과 UI 열도록 시키기
-
-    void ReceiveSelectedBuff(APlayerController* player, FBuffType* Bufftype); // 플레이어 UI에서 선택된 버프 내용 받고 어디다가 저장시켜놓자.
-
-
-
-private:
-
-    UPROPERTY(EditDefaultsOnly, Category = "UI")
-    TSubclassOf<class UCooperationWidget> CooperationWidgetClass; // UI 클래스
-
-
-    FTimerHandle TimerHandle;
-    void CheckLevelUp(AActor* Player);
-
-public:
-    void SetPlayerPawn(ABaseWitch* InPawn);
-
-    ACooperationGameMode* CooperationGameGameMode;
-
-    UPROPERTY(Replicated)
-    bool bPlayer1SelectedBuff = false;
-
-    UPROPERTY(Replicated)
-    bool bPlayer2SelectedBuff = false;
-
-
-    void SetPlayerMove(bool bCanMove);
-
-
-    UPROPERTY(ReplicatedUsing = OnRep_SetPlayerMove)
-    bool bIsPlayerCanMove = true;
-
-    UFUNCTION()
-    void OnRep_SetPlayerMove();
+    void TurnOffStage3Widget();
 
     UPROPERTY(Replicated)
     bool bIsStage3Started;
@@ -124,6 +96,34 @@ public:
 
     void UpdateTimer();
 
+
+    void TurnOnResultWidget();
+
+    void CreateBuffSelectUI();
+    void ReceiveSelectedBuff(APlayerController* player, FBuffType* Bufftype); // 플레이어 UI에서 선택된 버프 내용 받고 어디다가 저장시켜놓자.
+    void CloseBuffSelectUI();
+
+    UPROPERTY(ReplicatedUsing = OnRep_TurnOffBuffUI)
+    int SelectBuffPlayer = 0;
+
+    UFUNCTION()
+    void OnRep_TurnOffBuffUI();
+
+    UPROPERTY(Replicated)
+    int bIsPlayerBuffSelect = 0;
+
+
+    void CheckLevelUp(AActor* Player);
+
+
+    void SetPlayerMove(bool bCanMove);
+
+    UPROPERTY(ReplicatedUsing = OnRep_SetPlayerMove)
+    bool bIsPlayerCanMove = true;
+
+    UFUNCTION()
+    void OnRep_SetPlayerMove();
+
     //////////////////////////////////////////////////////////// UI와 연동하는 함수////////////////////////////////////////////////////
     // Player 정보 관리
     UPROPERTY(BlueprintReadOnly)
@@ -132,18 +132,17 @@ public:
     UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayerDataUI)
     TArray<FPlayerData> PlayerDatas;
 
-    bool bIsPlayerDataUpdated = false;
-
     UFUNCTION()
     void OnRep_UpdatePlayerDataUI();
 
+    bool bIsPlayerDataUpdated = false;   //Check UI Data has been Updated... Flag
     ///////////////////
-
-
     //플레이어 컨트롤러 저장해놓기
     UPROPERTY()
     TArray<TWeakObjectPtr<APlayerController>> PlayerControllerSet;
     
+    UPROPERTY()
+    TArray<FBuffInfo> SelectedBuff;
 
     FBuffType* Player1Stage1SelectedBuff;
     FBuffType* Player2Stage1SelectedBuff;
@@ -151,23 +150,32 @@ public:
     FBuffType* Player1Stage2SelectedBuff;
     FBuffType* Player2Stage2SelectedBuff;
     
-
     void ApplyBuffStat(); // 게임모드가 허락해준 버프 적용시키기
 
     void AddExperienceToPlayer(AActor* Player, int32 Amount);
+
+
+
+    //////보스모드//////
+    UPROPERTY(ReplicatedUsing = OnRep_UpdateBossDataUI)
+    TArray<FBossUIData> BossData; //초기화 필요
+
+    UFUNCTION()
+    void OnRep_UpdateBossDataUI();
+
+    void UpdateBossDataUI();
+
+
 
 private:
     UPROPERTY()
     ABaseWitch* PlayerPawnRef;
 	
-
-
 public:
     virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;
     virtual void TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation) override;
     virtual void OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation) override;
     virtual void OnDeathMonster(AActor* Monster, const FVector& DeathLocation) override;
-
 
     UFUNCTION(NetMulticast, Reliable)
     void Multicast_ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation);
@@ -176,7 +184,7 @@ public:
     void Multicast_TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation);
 
     UFUNCTION(NetMulticast, Reliable)
-    void Multicast_OnDeathPlayer(ACharacter* Player, const FVector& DeathLocatio);
+    void Multicast_OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation);
 
     UFUNCTION(NetMulticast, Reliable)
     void Multicast_OnDeathMonster(AActor* Monster, const FVector& DeathLocation);

@@ -50,7 +50,6 @@ void ACooperationGameMode::BeginPlay()
     InitPlayerUI();
 
 
-
     //Game Start Condition -> Start with a timer temporarily
     FTimerHandle TimerHandle;
     GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
@@ -139,8 +138,17 @@ void ACooperationGameMode::EndGame()
 
     RequestOpenResultUI();
     
+    /*
+    FTimerHandle TimerHandle;
+    GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
+        {
+            TravelLevel();
+        }), 5.0f, false);
 
-    TravelLevel();
+
+        */
+    //일단 임시로 여기
+    //TravelLevel();
 
 }
 
@@ -158,11 +166,8 @@ void ACooperationGameMode::TravelLevel()
 
 void ACooperationGameMode::RequestOpenResultUI()
 {
-    UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance());
-    if (MyGI)
-    {
-        MyGI->ResponseShowWidget();
-    }
+    CooperationGameState->CurrentStageIndex = 4;
+    CooperationGameState->TurnOnResultWidget();
 }
 
 //Stage1 준비 트리거
@@ -203,7 +208,7 @@ void ACooperationGameMode::ReadyStage2()
 
     SetPlayerLocation();
     //Enemy AI Spawn
-    SpawnEnemies();
+
     // Character Input Block
     SetPlayerUnReady();
 
@@ -216,15 +221,9 @@ void ACooperationGameMode::ReadyStage2()
     CooperationGameState->TurnOnStage2Widget();
 
 
-    //Test Code
-    //Delay for Test
-
-    FTimerHandle DelayHandle;
-    GetWorldTimerManager().SetTimer(DelayHandle, this, &ACooperationGameMode::CheckUntilAllPlayerSelectBuff, 5.0f, false);
-
     
     // 버프 완료 되었는지 확인하기
-    //CheckUntilAllPlayerSelectBuff();
+    CheckUntilAllPlayerSelectBuff();
 
 }
 
@@ -266,12 +265,9 @@ void ACooperationGameMode::ReadyStage3()
     //Test Code
     //임시 딜레이 기능
 
-    FTimerHandle DelayHandle;
-    GetWorldTimerManager().SetTimer(DelayHandle, this, &ACooperationGameMode::CheckUntilAllPlayerSelectBuff, 5.0f, false);
-
 
     // 버프 완료 되었는지 확인하기
-    //CheckUntilAllPlayerSelectBuff();
+    CheckUntilAllPlayerSelectBuff();
 }
 
 //Stage1 시작 트리거
@@ -289,7 +285,7 @@ void ACooperationGameMode::StartStage1()
 void ACooperationGameMode::StartStage2()
 {
     UE_LOG(LogTemp, Warning, TEXT("Start Stage2"));
-
+    SpawnEnemies();
     //Turn On Player Input
     SetPlayerReady();
 
@@ -305,7 +301,8 @@ void ACooperationGameMode::StartStage3()
 
     //Turn On Player Input
     SetPlayerReady();
-    
+
+    StartBattle(ActivePlayers);
     if (IsValid(CooperationGameState))
     {
         UE_LOG(LogTemp, Warning, TEXT("GameState is valid"));
@@ -340,7 +337,8 @@ void ACooperationGameMode::EndStage2()
 void ACooperationGameMode::EndStage3()
 {
     UE_LOG(LogTemp, Warning, TEXT("End Stage3"));
-
+    CooperationGameState->TurnOffTimer();
+    CooperationGameState->TurnOffStage3Widget();
     EndGame();
 }
 
@@ -397,12 +395,13 @@ void ACooperationGameMode::MoveNextStage()
 
 void ACooperationGameMode::RequestTurnOnBuffSelectUI()
 {
+    CooperationGameState->CreateBuffSelectUI();
+}
 
-    UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance());
-    if (MyGI)
-    {
-        //MyGI->OpenWidget(BuffSelect);
-    }
+void ACooperationGameMode::RequestTurnOffBuffSelectUI()
+{
+    CooperationGameState->SelectBuffPlayer++;
+    CooperationGameState->CloseBuffSelectUI();
 }
     
 void ACooperationGameMode::ApplyBuffToBothPlayer()
@@ -412,32 +411,16 @@ void ACooperationGameMode::ApplyBuffToBothPlayer()
     {
         CooperationGameState->ApplyBuffStat();
     }
+    RequestTurnOffBuffSelectUI();
 }
 
 void ACooperationGameMode::CheckUntilAllPlayerSelectBuff()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Check All Player Selects Buff"));
+    //UE_LOG(LogTemp, Warning, TEXT("Check All Player Selects Buff: %d"), CooperationGameState->bIsPlayerBuffSelect);
 
     if (!IsValid(CooperationGameState)) return;
 
-
-    //testCode
-    switch (StageIndex)
-    {
-    case 2:
-        ApplyBuffToBothPlayer();
-        StartStage2();
-        break;
-    case 3:
-        ApplyBuffToBothPlayer();
-        StartStage3();
-        break;
-    }
-
-    //testCode
-
-    /* //테스트중... 주석 해제 해야됨
-    if (CooperationGameState->bPlayer1SelectedBuff && CooperationGameState->bPlayer2SelectedBuff)
+    if (CooperationGameState->bIsPlayerBuffSelect >= 2)
     {
         UE_LOG(LogTemp, Log, TEXT("All Player has Selected Buffs! Move Next Stage."));
         switch (StageIndex)
@@ -456,7 +439,7 @@ void ACooperationGameMode::CheckUntilAllPlayerSelectBuff()
     {
         GetWorldTimerManager().SetTimerForNextTick(this, &ACooperationGameMode::CheckUntilAllPlayerSelectBuff);
     }
-    */
+
 }
 
 
@@ -548,6 +531,10 @@ void ACooperationGameMode::SpawnBossMonsters()
         SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
         AActor* SpawnedMonster = World->SpawnActor<AActor>(BossBlueprintClass, SpawnLocation, SpawnRotation, SpawnParams);
+        if (SpawnedMonster)
+        {
+            ActiveBossMonster.Add(SpawnedMonster);
+        }
     }
 }
 
@@ -775,6 +762,14 @@ void ACooperationGameMode::BossReturnPlayerLocation(ACharacter* PlayerChar)
 }
 
 
+TArray<AActor*> ACooperationGameMode::StartBattle(TArray<AActor*> Players)
+{
+    return Players;
+}
+
+
+
+
 //납치하면 상대할 보스를 소환해놓기?
 void ACooperationGameMode::SpawnGhostBoss()
 {
@@ -813,3 +808,43 @@ void ACooperationGameMode::AttachPlayerToCamera(ACharacter* Player, ABaseCamera*
     }
 
 }
+
+void ACooperationGameMode::HandleBuffSelection(AActor* SourceActor, int32 BuffIndex)
+{
+    UE_LOG(LogTemp, Log, TEXT("Received Buff Index %d from %s"), BuffIndex, *SourceActor->GetName());
+    CooperationGameState->bIsPlayerBuffSelect += BuffIndex;
+    // 여기서 버프 적용 로직 처리
+}
+
+
+void ACooperationGameMode::ApplyBuffToPlayer(APlayerController* Controller, int32 BuffIndex, FBuffInfo buff)
+{
+    // 예시: 모든 플레이어에 버프 부여
+    
+    CooperationGameState->SelectedBuff.Add(buff);
+
+    CooperationGameState->bIsPlayerBuffSelect++;
+}
+
+
+void ACooperationGameMode::ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation)
+{
+    CooperationGameState->ApplyDamage(Attacker, Damage, HitLocation);
+}
+
+void ACooperationGameMode::TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation)
+{
+    CooperationGameState->TakeDamage(Victim, Damage, HitLocation);
+}
+
+void ACooperationGameMode::OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation)
+{
+    CooperationGameState->OnDeathPlayer(Player, DeathLocation);
+}
+
+void ACooperationGameMode::OnDeathMonster(AActor* Monster, const FVector& DeathLocation)
+{
+    CooperationGameState->OnDeathMonster(Monster, DeathLocation);
+}
+
+

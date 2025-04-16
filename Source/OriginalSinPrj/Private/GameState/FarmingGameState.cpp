@@ -4,6 +4,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "Player/BaseWitch.h"
+#include "OriginalSinPrj/GameInstance/UISubsystem.h"
 
 AFarmingGameState::AFarmingGameState()
 {
@@ -33,6 +34,7 @@ void AFarmingGameState::Tick(float DeltaSeconds)
         {
             TimeRemaining -= DeltaSeconds;
             TimeRemaining = FMath::Max(TimeRemaining, 0.0f);
+            UpdateTimer();
             if (TimeRemaining <= 0.0f)
             {
                 EndFarmingMode();
@@ -77,6 +79,38 @@ void AFarmingGameState::EndFarmingMode()
 }
 
 
+
+void AFarmingGameState::TurnOnPlayerUI()
+{
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
+        {
+            // 여기서 UISubsystem 사용 가능!
+            Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->ActivePlayerWidget();
+            Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->ActiveFarmingModeWidget();
+        }
+    }
+}
+
+void AFarmingGameState::TurnOnAllUI()
+{
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
+        {
+            // 여기서 UISubsystem 사용 가능!
+            Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->ActivePlayerWidget();
+            Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->ActiveEnemyWidget();
+            Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->ActiveFarmingModeWidget();
+        }
+    }
+}
+
+void AFarmingGameState::OnRep_TurnOnAllUI()
+{
+    TurnOnAllUI();
+}
 
 // 몬스터 죽을 때 경험치를 추가하는 함수
 void AFarmingGameState::AddExperienceToPlayer(APlayerController* Player, int32 Amount)
@@ -163,6 +197,24 @@ void AFarmingGameState::UpdatePlayerUIInfo()
 }
 
 
+void AFarmingGameState::UpdateTimer()
+{
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
+        {
+            // 여기서 UISubsystem 사용 가능!
+            Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->UpdateFarmingModeTimerUI(TimeRemaining);
+        }
+    }
+}
+
+void AFarmingGameState::OnRep_UpdateTimer()
+{
+    UpdateTimer();
+}
+
+
 
 void AFarmingGameState::SetPlayerPawn(ABaseWitch* InPawn)
 {
@@ -176,4 +228,5 @@ void AFarmingGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
     DOREPLIFETIME(AFarmingGameState, bIsFarmingStarted); 
     DOREPLIFETIME(AFarmingGameState, TimeRemaining);
+    DOREPLIFETIME(AFarmingGameState, MultiPlayer);
 }

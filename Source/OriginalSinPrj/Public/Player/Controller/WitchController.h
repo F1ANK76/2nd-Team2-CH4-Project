@@ -10,6 +10,7 @@ class UInputMappingContext;
 class UInputAction;
 class UOriginalSinPrjGameInstance;
 class AMenuGameMode;
+struct FBuffInfo;
 
 UCLASS()
 class ORIGINALSINPRJ_API AWitchController : public APlayerController
@@ -24,6 +25,8 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ResponseShowLevelWidget();
 
+	UFUNCTION(Server, Reliable)
+	void Server_SelectBuff(int32 BuffIndex, FBuffInfo buff);
 protected:
 	UFUNCTION(Server, Reliable)
 	void RequestOnReadied();
