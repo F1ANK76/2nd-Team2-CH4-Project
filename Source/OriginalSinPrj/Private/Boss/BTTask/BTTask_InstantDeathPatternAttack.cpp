@@ -6,6 +6,7 @@
 #include "Boss/BossCharacter.h"
 #include "Boss/BossObjectPoolWorldSubsystem.h"
 #include "Boss/PlatformSpawnTarget.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 EBTNodeResult::Type UBTTask_InstantDeathPatternAttack::ExecuteTask(UBehaviorTreeComponent& BTComponent,
@@ -39,6 +40,11 @@ EBTNodeResult::Type UBTTask_InstantDeathPatternAttack::ExecuteTask(UBehaviorTree
 	{
 		PoolWorldSubsystem->ReturnActorToPool(Object);
 	}
+
+	//플래그 설정
+	BTComponent.GetBlackboardComponent()->SetValueAsBool("bIsHpUnder25AttackPlayed", true);
+	BTComponent.GetBlackboardComponent()->SetValueAsBool("bTriggerHp25Attack", false);
+	BTComponent.GetBlackboardComponent()->SetValueAsBool("bCanSpecialAttack", false);
 	
 	return EBTNodeResult::InProgress;
 }
@@ -108,9 +114,5 @@ void UBTTask_InstantDeathPatternAttack::OnMontageEnded(UAnimMontage* Montage, bo
 		SpawnPlatform();
 		BossController->StartInstantDeathAttackTimer();
 		FinishLatentTask(*BTComp, EBTNodeResult::Succeeded);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("RangeAttack : BTComp가 이미 Destroy됨"));
 	}
 }

@@ -4,10 +4,13 @@
 #include "Boss/Object/RushBossClone.h"
 
 #include "Boss/BossController.h"
+#include "Boss/BossCharacter.h"
 #include "Boss/HijackBossController.h"
 #include "Boss/BTTask/BTTask_RushBossCloneAttack.h"
+#include "Boss/Object/DestructibleObject.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,16 +19,15 @@ ARushBossClone::ARushBossClone()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	ZOffset = 100.0f;
-	AcceptableDistance = 300.0f;
-	RushSpeed = 12000.0f;
-	AttackDuration = 2.0f;
-	bIsRushing = false;
-	bHasArrived = false;
-
 	bReplicates = true;
 	SetReplicateMovement(true);
 
+	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
+	SphereComponent->SetupAttachment(RootComponent);
+	SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	SphereComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	SphereComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
+	
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->Deactivate();
 }
@@ -36,6 +38,7 @@ void ARushBossClone::BeginPlay()
 
 	if (!HasAuthority()) return;
 
+	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &ARushBossClone::OnBeginOverlap);
 	bIsActivate = false;
 	MulticastSetActive(bIsActivate);
 }
@@ -45,7 +48,7 @@ void ARushBossClone::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	if (!HasAuthority()) return;
-
+	
 	if (bIsRushing && !bHasArrived)
 	{
 		FVector NewLocation = GetActorLocation() + TargetDirection * RushSpeed * DeltaTime;
@@ -61,7 +64,7 @@ void ARushBossClone::OnPooledObjectSpawn_Implementation()
 
 	bIsActivate = true;
 	MulticastSetActive(bIsActivate);
-
+	
 	ABossController* BossController = Cast<ABossController>(
 		UGameplayStatics::GetActorOfClass(this, ABossController::StaticClass()));
 	if (!IsValid(BossController) && !IsValid(BossController->GetPawn())) return;
@@ -74,22 +77,19 @@ void ARushBossClone::OnPooledObjectSpawn_Implementation()
 	//비활성화 상태일 경우, 일반보스의 타겟플레이어 타겟팅
 	if (HijackBossController->GetBattleState())
 	{
-		float BossDistanceToTarget = FVector::Dist(BossController->GetTargetPlayerPawnLocation(), GetActorLocation());
-		float HijackBossDistanceToTarget = FVector::Dist(HijackBossController->GetTargetPlayerPawnLocation(), GetActorLocation());
-	
-		if (BossDistanceToTarget > HijackBossDistanceToTarget)
-		{
-			InitializeClone(HijackBossController->GetTargetPlayerPawnLocation());
-		}
-		else if (BossDistanceToTarget < HijackBossDistanceToTarget)
-		{
-			InitializeClone(BossController->GetTargetPlayerPawnLocation());
-		}
+		InitializeClone(HijackBossController->GetTargetPlayerPawnLocation());
 	}
 	else
 	{
 		InitializeClone(BossController->GetTargetPlayerPawnLocation());
 	}
+
+	GetWorld()->GetTimerManager().SetTimer(
+		LifeTimeTimerHandle,
+		this,
+		&ARushBossClone::OnPooledObjectReset_Implementation,
+		LifeTime,
+		false);
 }
 
 void ARushBossClone::OnPooledObjectReset_Implementation()
@@ -104,20 +104,42 @@ void ARushBossClone::OnPooledObjectReset_Implementation()
 
 	TargetLocation = FVector::ZeroVector;
 	TargetDirection = FVector::ZeroVector;
+
+	GetWorld()->GetTimerManager().ClearTimer(LifeTimeTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(DisappearTimerHandle);
 }
 
 void ARushBossClone::MulticastSetActive_Implementation(bool bIsActive)
 {
 	SetActorHiddenInGame(!bIsActive);
+	SphereComponent->SetActive(bIsActive);
 }
 
 void ARushBossClone::MulticastPlayCloneAttackMontage()
 {
-	if (CloneAttackMontage && GetNetMode() != NM_DedicatedServer)
+	if (CloneAttackMontage)
 	{
 		PlayAnimMontage(CloneAttackMontage);
 	}
 }
+
+void ARushBossClone::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (IsValid(OtherActor) && OtherActor->ActorHasTag("Destructible"))
+	{
+		ABossController* BossController = Cast<ABossController>(
+		UGameplayStatics::GetActorOfClass(this, ABossController::StaticClass()));
+		ADestructibleObject* DestructibleObject = Cast<ADestructibleObject>(OtherActor);
+		
+		if (IsValid(BossController) && IsValid(DestructibleObject))
+		{
+			BossController->EnterToStunState();
+		}
+		IBossPoolableActorInterface::Execute_OnPooledObjectReset(this);
+		IBossPoolableActorInterface::Execute_OnPooledObjectReset(Cast<ADestructibleObject>(DestructibleObject));
+	}
+}
+
 
 void ARushBossClone::InitializeClone(const FVector& InTargetLocation)
 {
@@ -125,6 +147,7 @@ void ARushBossClone::InitializeClone(const FVector& InTargetLocation)
 
 	TargetLocation = InTargetLocation + FVector(0, 0, ZOffset);
 	TargetDirection = (TargetLocation - GetActorLocation()).GetSafeNormal();
+
 	SetFacingDirection();
 
 	bIsRushing = true;
