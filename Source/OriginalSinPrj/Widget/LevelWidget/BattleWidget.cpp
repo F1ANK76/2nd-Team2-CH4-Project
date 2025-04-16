@@ -15,17 +15,17 @@ void UBattleWidget::NativeConstruct()
     FarmingModeTimer->SetVisibility(ESlateVisibility::Collapsed);
 }
 
-void UBattleWidget::InitPlayerUI(FPlayerData Player1, FPlayerData Player2)
+void UBattleWidget::InitPlayerUI(FPlayerData* Player1, FPlayerData* Player2)
 {
-    Player1StateUI->InitPlayerState(Player1);
-    Player2StateUI->InitPlayerState(Player2);
+    Player1StateUI->InitPlayerState(*Player1);
+    Player2StateUI->InitPlayerState(*Player2);
 }
 
 //GameMode Ȥ�� Subsystem�ʿ��� ������Ʈ ���ָ�, UI�� ���� �ٲٴ� �Լ�.
-void UBattleWidget::UpdatePlayerUI(FPlayerData Player1, FPlayerData Player2)
+void UBattleWidget::UpdatePlayerUI(FPlayerData* Player1, FPlayerData* Player2)
 {
-    Player1StateUI->UpdateStatus(Player1);
-    Player2StateUI->UpdateStatus(Player2);
+    Player1StateUI->UpdateStatus(*Player1);
+    Player2StateUI->UpdateStatus(*Player2);
 }
 
 

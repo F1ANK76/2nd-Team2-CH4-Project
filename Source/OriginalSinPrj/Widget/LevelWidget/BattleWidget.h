@@ -40,11 +40,8 @@ private:
 	class UPlayerStateWidget* Player2StateUI;
 
 public:
-	UFUNCTION(BlueprintCallable)
-	void InitPlayerUI(FPlayerData Player1, FPlayerData Player2);
-	
-	UFUNCTION(BlueprintCallable)
-	void UpdatePlayerUI(FPlayerData Player1, FPlayerData Player2);
+	void InitPlayerUI(FPlayerData* Player1, FPlayerData* Player2);
+	void UpdatePlayerUI(FPlayerData* Player1, FPlayerData* Player2);
 
 
 	UFUNCTION()
