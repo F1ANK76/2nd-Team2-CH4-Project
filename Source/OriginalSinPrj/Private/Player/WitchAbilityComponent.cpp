@@ -95,7 +95,7 @@ void UWitchAbilityComponent::CallSpecialAttack(float AttackSpeed)
 void UWitchAbilityComponent::CallSkillAttack(int32 SkillNum, float AttackSpeed)
 {
 	AbilityBuffer.AttackSpeed = AttackSpeed;
-
+	//UE_LOG(LogTemp, Warning, TEXT("Request Active Skill Num is %d"), SkillNum);
 	switch (SkillNum)
 	{
 	case 0:
@@ -339,6 +339,7 @@ void UWitchAbilityComponent::ExcuteCurrentAbility()
 {
 	if (AbilityBuffer.ParentWitch->GetWitchState() == EWitchStateType::Die)
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("Character is Die State"));
 		return;
 	}
 

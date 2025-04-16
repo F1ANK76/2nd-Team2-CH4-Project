@@ -111,6 +111,7 @@ public:
 	const ECharacterType GetWitchType() const;
 	const FVector GetHeadLocation() const;
 	const FVector GetFootLocation() const;
+	AActor* GetLastDamageCasuser() const;
 
 	void ResponseSelectedBuff(EBuffType TargetType);
 	void SetCharacterLifePoint(int32 LifeValue);
@@ -132,6 +133,8 @@ public:
 	void SetHpMode(bool Value);
 	void SetColorMode(bool Value);
 	void SetColorIndex(bool Value);
+
+	void RequestDieToGameMode();
 
 protected:
 	UFUNCTION(BlueprintCallable)

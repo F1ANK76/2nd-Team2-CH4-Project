@@ -16,6 +16,8 @@
 #include "Player/Projectile/BaseProjectile.h"
 #include "Components/CapsuleComponent.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "OriginalSinPrj/Interface/BattleEvent.h"
+#include "GameFramework/GameModeBase.h"
 
 ABaseWitch::ABaseWitch()
 {
@@ -231,6 +233,7 @@ bool ABaseWitch::CheckAvoid()
 
 	if (RandomValue < BuffComp->GetBuffData().AddedAvoidRate)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Success Avoid. Avoid Rate : %f, Random Value : %f"), BuffComp->GetBuffData().AddedAvoidRate, RandomValue);
 		return true;
 	}
 
@@ -330,7 +333,7 @@ void ABaseWitch::OnOverlapedDeathZone()
 	}
 
 	SetWitchState(EWitchStateType::Die);
-	//Request Respone Character To GameMode
+	RequestDieToGameMode();
 	//LastDamageCauser = nullptr;
 }
 
@@ -357,6 +360,11 @@ const FVector ABaseWitch::GetHeadLocation() const
 const FVector ABaseWitch::GetFootLocation() const
 {
 	return FootItem->GetComponentLocation();
+}
+
+AActor* ABaseWitch::GetLastDamageCasuser() const
+{
+	return LastDamageCauser;
 }
 
 void ABaseWitch::SetPlayerLevel(int32 LevelValue)
@@ -432,6 +440,7 @@ void ABaseWitch::IncreaseCurrentMana()
 	float AddedValue = BuffComp->GetBuffData().AddedMana;
 
 	CharacterBuffer.CurrentMana = FMath::Clamp(CharacterBuffer.CurrentMana + AddedValue, 0, MaxValue);
+	//UE_LOG(LogTemp, Warning, TEXT("Max Mana : %f, Current Mana : %f"), MaxValue, CharacterBuffer.CurrentMana);
 	OnChangedState.Broadcast(CharacterBuffer);
 }
 
@@ -500,6 +509,28 @@ void ABaseWitch::SetColorMode(bool Value)
 void ABaseWitch::SetColorIndex(bool Value)
 {
 	bIsFirstIndex = Value;
+}
+
+void ABaseWitch::RequestDieToGameMode()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	AGameModeBase* CurrentGM = GetWorld()->GetAuthGameMode();
+
+	if (!IsValid(CurrentGM))
+	{
+		return;
+	}
+
+	IBattleEvent* BattleMode = Cast<IBattleEvent>(CurrentGM);
+
+	if (BattleMode)
+	{
+		BattleMode->OnDeathPlayer(this, GetActorLocation());
+	}
 }
 
 void ABaseWitch::RequestMoveToAbility_Implementation(float Value)
@@ -602,7 +633,7 @@ void ABaseWitch::RequestEndedAnim_Implementation()
 {
 	if (CurrentState == EWitchStateType::Die)
 	{
-		//Request Respone Character To GameMode
+		RequestDieToGameMode();
 		//LastDamageCauser = nullptr;
 		return;
 	}
