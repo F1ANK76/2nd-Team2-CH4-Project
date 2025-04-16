@@ -71,6 +71,11 @@ public:
     
     // 생성된 캐릭터를 관리할 배열
     TArray<AActor*> ActivePlayers;
+    TArray<AActor*> AlivePlayers;
+
+    void ResetAlivePlayers();
+
+
 
     // return Current Activated Players
     TArray<AActor*> GetActivePlayers() const
@@ -219,6 +224,7 @@ public:
     TSubclassOf<APlayerController> PlayerControllerClass;
 
     void SetPlayerUnReady();
+    void SetPlayerUnReady(AActor* actor);
 
     void SetPlayerReady();
 

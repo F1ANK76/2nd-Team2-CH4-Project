@@ -61,7 +61,7 @@ void AKillZone::OnOverlapBegin(
 
 void AKillZone::Server_TriggerOverlapMonsterEvent_Implementation(AMonsterCharacter* Monster)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Overlap Event Begin"));
+	UE_LOG(LogTemp, Warning, TEXT("Server_TriggerOverlapMonsterEvent_Implementation Overlap Event Begin"));
 
 	if (ACooperationGameMode* CoopMode = Cast<ACooperationGameMode>(GetWorld()->GetAuthGameMode()))
 	{
@@ -71,8 +71,10 @@ void AKillZone::Server_TriggerOverlapMonsterEvent_Implementation(AMonsterCharact
 
 void AKillZone::Server_TriggerOverlapWitchEvent_Implementation(ABaseWitch* WitchActor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Overlap Event Begin"));
+	UE_LOG(LogTemp, Warning, TEXT("Server_TriggerOverlapWitchEvent_Implementation Overlap Event Begin"));
 
+
+	//WitchActor->OnOverLappedDeathZone();
 	if (ACooperationGameMode* CoopMode = Cast<ACooperationGameMode>(GetWorld()->GetAuthGameMode()))
 	{
 		CoopMode->OnDeathPlayer(WitchActor, WitchActor->GetActorLocation());

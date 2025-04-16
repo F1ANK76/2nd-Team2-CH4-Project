@@ -178,7 +178,7 @@ void ACooperationGameMode::ReadyStage1()
     //Prepare Stage 1
 
     UE_LOG(LogTemp, Warning, TEXT("Ready Stage1"));
-
+    ResetAlivePlayers();
     //Turn off Player Input
 
     SetPlayerUnReady();
@@ -207,7 +207,7 @@ void ACooperationGameMode::ReadyStage2()
 {
     UE_LOG(LogTemp, Warning, TEXT("Ready Stage2"));
 
-
+    ResetAlivePlayers();
     SetPlayerLocation();
     //Enemy AI Spawn
 
@@ -233,6 +233,8 @@ void ACooperationGameMode::ReadyStage2()
 void ACooperationGameMode::ReadyStage3()
 {
     UE_LOG(LogTemp, Warning, TEXT("Ready Stage3"));
+    ResetAlivePlayers();
+
     SetPlayerUnReady();
 
     SetPlayerLocation();
@@ -369,6 +371,24 @@ void ACooperationGameMode::SetPlayerLocation()
     }
 }
 
+void ACooperationGameMode::ResetAlivePlayers()
+{
+    CurrentPlayerCount = 2;
+    if (HasAuthority())
+    {
+        AlivePlayers.Empty(); // 기존 내용을 지우고
+        for (AActor* Player : ActivePlayers)
+        {
+
+            if (Player) // null 체크 등 조건 넣을 수 있음
+            {
+                AlivePlayers.Add(Player);
+            }
+        }
+    }
+}
+
+
     //set color mode
     //set player level
 
@@ -477,6 +497,21 @@ void ACooperationGameMode::SetPlayerUnReady()
     }
 }
 
+void ACooperationGameMode::SetPlayerUnReady(AActor* actor)
+{
+    CooperationGameState->SetPlayerMove(false);
+    UWorld* WorldContext = GetWorld();
+
+    for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+    {
+        APlayerController* PC = It->Get();
+        if (PC && (PC->GetPawn() == actor))
+        {
+            PC->GetPawn()->DisableInput(PC);
+        }
+    }
+}
+
 void ACooperationGameMode::SetPlayerReady()
 {
     CooperationGameState->SetPlayerMove(true);
@@ -559,10 +594,47 @@ void ACooperationGameMode::SpawnBossMonsters()
 
 void ACooperationGameMode::HandlePlayerKilled(AActor* DeadPlayer, AActor* Killer)
 {
-    CurrentPlayerCount--;
 
-    ActivePlayers.Remove(DeadPlayer); // 알아서 내부에서 찾고 제거함
-    DeadPlayer->Destroy();
+    UE_LOG(LogTemp, Warning, TEXT("HandlePlayerKilled Event Begin"));
+    UE_LOG(LogTemp, Warning, TEXT("ActivePlayers Size: %d"), ActivePlayers.Num());
+    UE_LOG(LogTemp, Warning, TEXT("AlivePlayers Size: %d"), AlivePlayers.Num());
+    CurrentPlayerCount--;
+    if (CurrentPlayerCount > 1)
+    {
+        if (!IsValid(DeadPlayer))
+        {
+            UE_LOG(LogTemp, Warning, TEXT("DeadPlayer Is invalid"));
+        }
+
+        if (DeadPlayer == AlivePlayers[0])
+        {
+            UE_LOG(LogTemp, Warning, TEXT("PlayerWitch1 Die"));
+            AlivePlayers.Remove(DeadPlayer);
+        }
+        else if (DeadPlayer == AlivePlayers[1])
+        {
+            UE_LOG(LogTemp, Warning, TEXT("PlayerWitch2 Die"));
+            AlivePlayers.Remove(DeadPlayer);
+        }
+    }
+    else if (CurrentPlayerCount > 0)
+    {
+        if (DeadPlayer == AlivePlayers[0])
+        {
+            UE_LOG(LogTemp, Warning, TEXT("PlayerWitch1 Die"));
+            AlivePlayers.Remove(DeadPlayer);
+        }
+    }
+    else
+    {
+
+    }
+    
+    
+
+
+    //ActivePlayers.Remove(DeadPlayer); // 알아서 내부에서 찾고 제거함 너무 위험.
+    //DeadPlayer->Destroy();   // 너무 위험
     //test Code
     if (CurrentPlayerCount <= 0)
     {
@@ -599,21 +671,24 @@ void ACooperationGameMode::PlayerFallDie(AActor* DeadPlayer, AActor* Killer)
 
 void ACooperationGameMode::PlayerDie(AActor* DeadPlayer, AActor* Killer)
 {    
+    UE_LOG(LogTemp, Warning, TEXT("PlayerDie Event Begin"));
     ABaseWitch* Witch = Cast<ABaseWitch>(DeadPlayer);
-    
-    CooperationGameState->PlayerInfos[Witch].LifePoint--;
     //test Code
+    CooperationGameState->PlayerInfos[Witch].LifePoint--;
+
     if (IsValid(Witch))
     {
-        UE_LOG(LogTemp, Warning, TEXT("PlayerWitch Die"));
+        UE_LOG(LogTemp, Warning, TEXT("Witch IsValid"));
         if (CooperationGameState->PlayerInfos[Witch].LifePoint < 0)
         {
-            UE_LOG(LogTemp, Warning, TEXT("PlayerWitch kill"));
+            UE_LOG(LogTemp, Warning, TEXT("LifePoint < 0"));
+            Witch->ResetCharacterState();
             HandlePlayerKilled(DeadPlayer, Killer);
         }
         else
         {
-            UE_LOG(LogTemp, Warning, TEXT("PlayerWitch respawn"));
+
+            Witch->ResetCharacterState();
             Respawn(DeadPlayer);
         }
     }
@@ -622,6 +697,7 @@ void ACooperationGameMode::PlayerDie(AActor* DeadPlayer, AActor* Killer)
 
 void ACooperationGameMode::Respawn(AActor* DeadPlayer)
 {
+    UE_LOG(LogTemp, Warning, TEXT("PlayerWitch respawn"));
     DeadPlayer->SetActorLocation(RespawnLocation[0]);    
     //DeadPlayer 상태 초기화?
 }
@@ -783,6 +859,16 @@ void ACooperationGameMode::SpawnPlayers()
     {
         UE_LOG(LogTemp, Warning, TEXT("Managed Character: %s"), *GetNameSafe(Character));
     }
+
+    AlivePlayers.Empty(); // 기존 내용을 지우고
+    for (AActor* Player : ActivePlayers)
+    {
+        if (Player) // null 체크 등 조건 넣을 수 있음
+        {
+            AlivePlayers.Add(Player);
+        }
+    }
+
 }
 
 void ACooperationGameMode::SpawnKillZone()
@@ -939,6 +1025,7 @@ void ACooperationGameMode::TakeDamage(AActor* Victim, float Damage, const FVecto
 
 void ACooperationGameMode::OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation)
 {
+    UE_LOG(LogTemp, Warning, TEXT("OnDeathPlayer Event Begin"));
     CooperationGameState->OnDeathPlayer(Player, DeathLocation);
     PlayerDie(Player, nullptr);
 }
@@ -947,5 +1034,3 @@ void ACooperationGameMode::OnDeathMonster(AActor* Monster, const FVector& DeathL
 {
     CooperationGameState->OnDeathMonster(Monster, DeathLocation);
 }
-
-

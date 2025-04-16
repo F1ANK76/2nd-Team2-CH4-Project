@@ -221,7 +221,7 @@ void ACooperationGameState::InitPlayerInfo()
         0, 0.0f, 
         0, 
         0, 
-        0, 100 });
+        0, 100, 1 });
         Player1StateData = PlayerInfos[CooperationGameGameMode->ActivePlayers[0]];
         PlayerInfos.Add(CooperationGameGameMode->ActivePlayers[1], FPlayerData{
         "Player2", nullptr,
@@ -230,7 +230,7 @@ void ACooperationGameState::InitPlayerInfo()
         0, 0.0f,
         0,
         0,
-        0, 100 });
+        0, 100, 1 });
         Player2StateData = PlayerInfos[CooperationGameGameMode->ActivePlayers[1]];
     }
     InitPlayerUIInfo();
@@ -273,8 +273,6 @@ void ACooperationGameState::UpdatePlayerInfo(const FCharacterStateBuffer& State)
         Player2StateData = PlayerInfos[CooperationGameGameMode->ActivePlayers[1]];
         CooperationGameGameMode->RequestUpdateUI(1);
     }
-    
-    
 }
 
 
@@ -418,7 +416,7 @@ void ACooperationGameState::SetStage1CameraTransform()
     float maxZ = -99999.f;
 
 
-    for (AActor* Player : CooperationGameGameMode->ActivePlayers)
+    for (AActor* Player : CooperationGameGameMode->AlivePlayers)
     {
         FVector PlayerLocation = Player->GetActorLocation();
 
@@ -443,9 +441,9 @@ void ACooperationGameState::SetStage1CameraTransform()
     }
 
     FVector MeanPlayerLocation = FVector::ZeroVector;
-    if (CooperationGameGameMode->ActivePlayers.Num() > 0)
+    if (CooperationGameGameMode->AlivePlayers.Num() > 0)
     {
-        MeanPlayerLocation = SumPlayerLocation / CooperationGameGameMode->ActivePlayers.Num();
+        MeanPlayerLocation = SumPlayerLocation / CooperationGameGameMode->AlivePlayers.Num();
     }
 
     if (HasAuthority()) // 서버인지 확인
@@ -471,7 +469,7 @@ void ACooperationGameState::SetStage2CameraTransform()
     float maxY = -99999.f;
     float maxZ = -99999.f;
 
-    for (AActor* Player : CooperationGameGameMode->ActivePlayers)
+    for (AActor* Player : CooperationGameGameMode->AlivePlayers)
     {
         FVector PlayerLocation = Player->GetActorLocation();
 
@@ -525,9 +523,9 @@ void ACooperationGameState::SetStage2CameraTransform()
 
     FVector MeanActorLocation = FVector::ZeroVector;
 
-    int32 NumOfActors = CooperationGameGameMode->ActivePlayers.Num() + CooperationGameGameMode->ActiveEnemies.Num();
+    int32 NumOfActors = CooperationGameGameMode->AlivePlayers.Num() + CooperationGameGameMode->ActiveEnemies.Num();
 
-    if (CooperationGameGameMode->ActivePlayers.Num() + CooperationGameGameMode->ActiveEnemies.Num() > 0)
+    if (CooperationGameGameMode->AlivePlayers.Num() + CooperationGameGameMode->ActiveEnemies.Num() > 0)
     {
         MeanActorLocation = (SumPlayerLocation + SumEnemyLocation) / NumOfActors;
     }
