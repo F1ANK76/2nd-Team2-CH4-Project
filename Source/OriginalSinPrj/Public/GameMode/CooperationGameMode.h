@@ -22,7 +22,7 @@ public: //for test
     UFUNCTION()
     void HandleBuffSelection(AActor* SourceActor, int32 BuffIndex);
 
-    void ApplyBuffToPlayer(APlayerController* Controller, int32 BuffIndex, FBuffInfo buff);
+    void ApplyBuffToPlayer(APlayerController* Controller, int32 BuffIndex, EBuffType buff);
     
     void RequestTurnOffBuffSelectUI();
     
@@ -321,12 +321,16 @@ public:
     UFUNCTION()
     void TravelLevel();
 
+
+
+
 protected:
     //UFUNCTION(NetMulticast, Reliable)
     void InitPlayerUI();
 
     //멀티 전용
     virtual void PostSeamlessTravel() override;
+
 
 public:
     virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;

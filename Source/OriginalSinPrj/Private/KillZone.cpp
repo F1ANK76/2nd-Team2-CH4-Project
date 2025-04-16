@@ -73,10 +73,6 @@ void AKillZone::Server_TriggerOverlapWitchEvent_Implementation(ABaseWitch* Witch
 {
 	UE_LOG(LogTemp, Warning, TEXT("Server_TriggerOverlapWitchEvent_Implementation Overlap Event Begin"));
 
-
-	//WitchActor->OnOverLappedDeathZone();
-	if (ACooperationGameMode* CoopMode = Cast<ACooperationGameMode>(GetWorld()->GetAuthGameMode()))
-	{
-		CoopMode->OnDeathPlayer(WitchActor, WitchActor->GetActorLocation());
-	}
+	WitchActor->DecreaseLifePoint();
+	WitchActor->OnOverlapedDeathZone();
 }

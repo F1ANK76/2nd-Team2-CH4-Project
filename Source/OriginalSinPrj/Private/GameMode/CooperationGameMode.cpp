@@ -9,6 +9,7 @@
 #include "Player/Controller/WitchController.h"
 #include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
 #include "OriginalSinPrj/GameInstance/UISubsystem.h"
+#include "Player/BuffComponent.h"
 
 ACooperationGameMode::ACooperationGameMode()
 {
@@ -139,7 +140,6 @@ void ACooperationGameMode::EndGame()
     SpawnedCharacters[1]->SetActorLocation(PlayerResultLocations[1]);
 
     RequestOpenResultUI();
-    
     /*
     FTimerHandle TimerHandle;
     GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
@@ -281,7 +281,7 @@ void ACooperationGameMode::StartStage1()
 
     //Turn On Player Input
     SetPlayerReady();
-
+    CooperationGameState->bIsStage1Started = true;
     //Monster Movement...
 }
 
@@ -292,7 +292,7 @@ void ACooperationGameMode::StartStage2()
     SpawnEnemies();
     //Turn On Player Input
     SetPlayerReady();
-
+    CooperationGameState->bIsStage2Started = true;
     //몬스터, 캐릭터 움직임 동결되어있는 것 풀기. Enemy Movement UnBlock
 
     //
@@ -322,6 +322,7 @@ void ACooperationGameMode::EndStage1()
     UE_LOG(LogTemp, Warning, TEXT("End Stage1"));
     StageIndex++;
     CooperationGameState->CurrentStageIndex = StageIndex;
+    CooperationGameState->bIsStage1Started = false;
     RequestTurnOnBuffSelectUI();
     MoveNextStage();
 }
@@ -332,6 +333,7 @@ void ACooperationGameMode::EndStage2()
     UE_LOG(LogTemp, Warning, TEXT("End Stage2"));
     StageIndex++;
     CooperationGameState->CurrentStageIndex = StageIndex;
+    CooperationGameState->bIsStage2Started = false;
     RequestTurnOnBuffSelectUI();
 
     MoveNextStage();
@@ -343,6 +345,7 @@ void ACooperationGameMode::EndStage3()
     UE_LOG(LogTemp, Warning, TEXT("End Stage3"));
     CooperationGameState->TurnOffTimer();
     CooperationGameState->TurnOffStage3Widget();
+    CooperationGameState->bIsStage3Started = false;
     EndGame();
 }
 
@@ -598,7 +601,6 @@ void ACooperationGameMode::HandlePlayerKilled(AActor* DeadPlayer, AActor* Killer
     UE_LOG(LogTemp, Warning, TEXT("HandlePlayerKilled Event Begin"));
     UE_LOG(LogTemp, Warning, TEXT("ActivePlayers Size: %d"), ActivePlayers.Num());
     UE_LOG(LogTemp, Warning, TEXT("AlivePlayers Size: %d"), AlivePlayers.Num());
-    CurrentPlayerCount--;
     if (CurrentPlayerCount > 1)
     {
         if (!IsValid(DeadPlayer))
@@ -630,7 +632,8 @@ void ACooperationGameMode::HandlePlayerKilled(AActor* DeadPlayer, AActor* Killer
 
     }
     
-    
+    CurrentPlayerCount--;
+
 
 
     //ActivePlayers.Remove(DeadPlayer); // 알아서 내부에서 찾고 제거함 너무 위험.
@@ -639,6 +642,8 @@ void ACooperationGameMode::HandlePlayerKilled(AActor* DeadPlayer, AActor* Killer
     if (CurrentPlayerCount <= 0)
     {
         //게임을 실패한거로 종료.
+        //매치 종료
+        // End Level ->   결과창 띄우기 실패 매개변수로 띄워서 처리
     }
 }
 
@@ -846,8 +851,7 @@ void ACooperationGameMode::SpawnPlayers()
                 ActivePlayers.Add(SpawnedCharacter);
                 CurrentPlayerCount++;
 
-
-
+                SpawnedCharacter->SetHpMode(true);
 
                 UE_LOG(LogTemp, Warning, TEXT("Spawned Pawn: %s"), *GetNameSafe(SpawnedCharacter));
             }
@@ -1003,14 +1007,18 @@ void ACooperationGameMode::HandleBuffSelection(AActor* SourceActor, int32 BuffIn
 }
 
 
-void ACooperationGameMode::ApplyBuffToPlayer(APlayerController* Controller, int32 BuffIndex, FBuffInfo buff)
+void ACooperationGameMode::ApplyBuffToPlayer(APlayerController* Controller, int32 BuffIndex, EBuffType buff)
 {
     // 예시: 모든 플레이어에 버프 부여
-    
+    Cast<ABaseWitch>(ActivePlayers[0])->ResponseSelectedBuff(buff);
+    Cast<ABaseWitch>(ActivePlayers[1])->ResponseSelectedBuff(buff);
+
     CooperationGameState->SelectedBuff.Add(buff);
 
     CooperationGameState->bIsPlayerBuffSelect++;
 }
+
+
 
 
 void ACooperationGameMode::ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation)
@@ -1034,3 +1042,6 @@ void ACooperationGameMode::OnDeathMonster(AActor* Monster, const FVector& DeathL
 {
     CooperationGameState->OnDeathMonster(Monster, DeathLocation);
 }
+
+
+
