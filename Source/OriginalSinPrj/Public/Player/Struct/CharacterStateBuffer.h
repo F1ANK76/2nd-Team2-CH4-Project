@@ -20,7 +20,7 @@ public:
     int32 PlayerLevel = 0;
 
     UPROPERTY()
-    int32 LifePoint = 0;
+    int32 LifePoint = 1;
 
     UPROPERTY()
     float CurrentHP = 100;

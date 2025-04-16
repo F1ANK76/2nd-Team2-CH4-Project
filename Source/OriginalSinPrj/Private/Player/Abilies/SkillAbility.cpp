@@ -19,7 +19,7 @@ ASkillAbility::ASkillAbility() : Super()
 void ASkillAbility::ExcuteSkillAttack(FAbilityDataBuffer& Buffer)
 {
 	Super::ExcuteSkillAttack(Buffer);
-
+	//UE_LOG(LogTemp, Warning, TEXT("Excute Skill Attack"));
 	GetWorld()->GetTimerManager().ClearTimer(SpawnTimer);
 	CurrentSpawnCount = 0;
 	AddedLocation = OriginAdded;
@@ -80,11 +80,13 @@ bool ASkillAbility::CheckExcuteable(FAbilityDataBuffer& Buffer)
 {
 	if (Buffer.CurrentMana < ConsumeMana)
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("Current Mana : %f, ConsumeMana : %f"), Buffer.CurrentMana, ConsumeMana);
 		return false;
 	}
 
 	if (Buffer.MovementComp->IsFalling())
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("Character is falling"));
 		return false;
 	}
 
