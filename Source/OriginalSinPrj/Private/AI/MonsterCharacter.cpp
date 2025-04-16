@@ -20,11 +20,11 @@ AMonsterCharacter::AMonsterCharacter()
     bIsDead = false;
     ExpValue = 50;
 
-    KnockbackComp = CreateDefaultSubobject<UKnockbackComponent>(TEXT("KnockbackComp"));
+    /*KnockbackComp = CreateDefaultSubobject<UKnockbackComponent>(TEXT("KnockbackComp"));
     if (KnockbackComp)
     {
         KnockbackComp->KnockbackGauge = 70.0f;
-    }
+    }*/
 
     AIControllerClass = AEnemyAIController::StaticClass();
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;

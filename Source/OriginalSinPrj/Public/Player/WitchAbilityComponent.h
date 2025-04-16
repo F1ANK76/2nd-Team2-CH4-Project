@@ -35,7 +35,8 @@ public:
 	void PauseBufferTimer();
 	void AddCurrentMana(float Value);
 	void SetMaxMana(float Value);
-
+	UFUNCTION(BlueprintCallable)
+	void CallRoll(const FVector2D& DirectionVector);
 protected:
 	virtual void BeginPlay() override;
 
@@ -50,7 +51,7 @@ protected:
 	void CallNormalAttackAtJump();
 	void CallSpecialAttackAtMove();
 	void CallSpecialAttackAtJump();
-	void CallRoll(const FVector2D& DirectionVector);
+	//void CallRoll(const FVector2D& DirectionVector);
 
 public:
 	// Move
@@ -119,6 +120,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
 	TSubclassOf<ABaseWitchAbility> Skill5AbilityClass = nullptr;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Ability")
+	FAbilityDataBuffer AbilityBuffer;
+
 private:
 	UPROPERTY()
 	TObjectPtr<ABaseWitch> ParentWitch = nullptr;
@@ -126,8 +130,8 @@ private:
 	UPROPERTY()
 	TObjectPtr<UCharacterMovementComponent> ParentMovementComp = nullptr;
 
-	UPROPERTY()
-	FAbilityDataBuffer AbilityBuffer;
+	/*UPROPERTY()
+	FAbilityDataBuffer AbilityBuffer;*/
 
 	FTimerHandle BufferTimer;
 

@@ -40,34 +40,34 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void SetMeshResponseToChanel(ECollisionChannel Chanel, ECollisionResponse Response);
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(BlueprintCallable, Server, Unreliable)
 	void RequestMoveToAbility(float Value);
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(BlueprintCallable, Server, Unreliable)
 	void RequestUpDownToAbility(float Value);
 
 	UFUNCTION(Server, Unreliable)
 	void RequestJumpToAbility();
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(BlueprintCallable, Server, Unreliable)
 	void RequestExcuteGuardToAbility();
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(BlueprintCallable, Server, Unreliable)
 	void RequestContinueGuardToAbility();
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(BlueprintCallable, Server, Unreliable)
 	void RequestUndoGuardToAbility();
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(BlueprintCallable, Server, Unreliable)
 	void RequestTauntToAbility();
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(BlueprintCallable, Server, Unreliable)
 	void RequestNormalAttackToAbility();
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(BlueprintCallable, Server, Unreliable)
 	void RequestSpecialAttackToAbility();
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(BlueprintCallable, Server, Unreliable)
 	void RequestSkillAttackToAbility(int32 Value);
 
 	UFUNCTION(Server, Unreliable)

@@ -49,7 +49,7 @@ public:
 	UPROPERTY()
 	float MaxMana = 5;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category = "Stats")
 	float CurrentMana = 5;
 
 	UPROPERTY()
