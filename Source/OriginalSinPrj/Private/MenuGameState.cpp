@@ -1,6 +1,7 @@
 #include "MenuGameState.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "OriginalSinPrj/GameInstance/AudioSubsystem.h"
 
 /*------------------------����------------------------*/
 void AMenuGameState::TravelLevel(const FName& LevelName)
@@ -122,3 +123,82 @@ void AMenuGameState::Multicast_ExitSessionPlayer_Implementation(const FString& P
 {
 	PlayerList.Remove(PlayerName);
 }
+
+void AMenuGameState::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (HasAuthority())
+	{
+		InitCharacterSounds();
+		InitBossSounds();
+		InitMonsterSounds();
+	}
+}
+
+void AMenuGameState::InitCharacterSounds_Implementation()
+{
+	if (!IsValid(GetGameInstance()))
+	{
+		return;
+	}
+
+	UAudioSubsystem* AudioHandle = GetGameInstance()->GetSubsystem<UAudioSubsystem>();
+
+	if (!IsValid(AudioHandle))
+	{
+		return;
+	}
+
+	CharacterSounds = AudioHandle->GetCharacterSoundArray();
+}
+
+void AMenuGameState::InitBossSounds_Implementation()
+{
+	if (!IsValid(GetGameInstance()))
+	{
+		return;
+	}
+
+	UAudioSubsystem* AudioHandle = GetGameInstance()->GetSubsystem<UAudioSubsystem>();
+
+	if (!IsValid(AudioHandle))
+	{
+		return;
+	}
+
+	BossSounds = AudioHandle->GetBossSoundArray();
+}
+
+void AMenuGameState::InitMonsterSounds_Implementation()
+{
+	if (!IsValid(GetGameInstance()))
+	{
+		return;
+	}
+
+	UAudioSubsystem* AudioHandle = GetGameInstance()->GetSubsystem<UAudioSubsystem>();
+
+	if (!IsValid(AudioHandle))
+	{
+		return;
+	}
+
+	MonsterSounds = AudioHandle->GetMonsterSoundArray();
+}
+
+void AMenuGameState::PlayCharacterSound_Implementation(UAudioComponent* AudioComp, ECharacterSoundType SoundType)
+{
+
+}
+
+void AMenuGameState::PlayBossSound_Implementation(UAudioComponent* AudioComp, EBossSoundType SoundType)
+{
+
+}
+
+void AMenuGameState::PlayMonsterSound_Implementation(UAudioComponent* AudioComp, EMonsterSoundType SoundType)
+{
+
+}
+

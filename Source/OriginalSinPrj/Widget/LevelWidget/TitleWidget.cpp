@@ -22,5 +22,6 @@ void UTitleWidget::OnSelectedSingleMode()
     checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
     UIHandle->SetVisibilityWidget(false);
     OnClickedOpenWidget(EAddWidgetType::CharacterSelectWidget);
-    UE_LOG(LogTemp, Warning, TEXT("Show Widget CharacterSelectWidget"));
+
+    PlayUIEffectSound(EUISfxSoundType::Click);
 }

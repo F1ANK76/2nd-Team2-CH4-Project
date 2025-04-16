@@ -19,6 +19,7 @@ class ORIGINALSINPRJ_API UBaseWidget : public UUserWidget
 
 protected:
     virtual void NativeConstruct() override;
+	void PlayUIEffectSound(EUISfxSoundType SoundType);
 	
 public:
 	virtual void InitWidget(UUISubsystem* uiHandle);
@@ -29,7 +30,7 @@ public:
 	virtual void PlayUICloseAnimation();
 	virtual void PlayUIOpenAnimation(UWidgetAnimation* UIOpenAnimation);
 	virtual void PlayUICloseAnimation(UWidgetAnimation* UIcloseAnimation);
-	
+
 	virtual void PlayAddAnim();
 	virtual void PlayRemoveAnim();
 	//virtual void PlayRemoveAnim(bool bIsNext, ESceneType SceneType = ESceneType::Title);

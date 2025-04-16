@@ -2,6 +2,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Animation/WidgetAnimation.h"
 #include "../GameInstance/UISubsystem.h"
+#include "OriginalSinPrj/GameInstance/AudioSubsystem.h"
 
 void UBaseWidget::NativeConstruct()
 {
@@ -20,6 +21,23 @@ void UBaseWidget::NativeConstruct()
 	BindToAnimationStarted(CloseAnimation, StartRemoveDelegate);
 	BindToAnimationFinished(CloseAnimation, EndRemoveDelegate);
 	*/
+}
+
+void UBaseWidget::PlayUIEffectSound(EUISfxSoundType SoundType)
+{
+	if (!IsValid(GetGameInstance()))
+	{
+		return;
+	}
+
+	UAudioSubsystem* AudioSubsystem = GetGameInstance()->GetSubsystem<UAudioSubsystem>();
+
+	if (!IsValid(AudioSubsystem))
+	{
+		return;
+	}
+
+	AudioSubsystem->PlayUISound(SoundType);
 }
 
 
