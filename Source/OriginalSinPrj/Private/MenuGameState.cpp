@@ -2,7 +2,6 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "OriginalSinPrj/GameInstance/AudioSubsystem.h"
-
 #include "OriginalSinPrj/GameInstance/Struct/CharacterAudioDataStruct.h"
 #include "OriginalSinPrj/GameInstance/Struct/BossAudioDataStruct.h"
 #include "OriginalSinPrj/GameInstance/Struct/MonsterAudioDataStruct.h"
@@ -133,12 +132,9 @@ void AMenuGameState::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (HasAuthority())
-	{
-		InitCharacterSounds();
-		InitBossSounds();
-		InitMonsterSounds();
-	}
+	InitCharacterSounds();
+	InitBossSounds();
+	InitMonsterSounds();
 }
 
 void AMenuGameState::InitCharacterSounds_Implementation()
@@ -220,19 +216,16 @@ void AMenuGameState::PlaySound(UAudioComponent* AudioComp, USoundBase* SoundSour
 {
 	if (!IsValid(AudioComp))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Audio Comp is invalid"));
 		return;
 	}
 
 	if (!IsValid(SoundSource))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Sound Source is invalid"));
 		return;
 	}
 
 	if (!CheckValidOfAudioHandle())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Audio Handle is invalid"));
 		return;
 	}
 
