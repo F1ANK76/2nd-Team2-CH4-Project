@@ -18,6 +18,9 @@ void AFarmingGameState::BeginPlay()
 {
     Super::BeginPlay();
     UE_LOG(LogTemp, Warning, TEXT("GameState BeginPlay"));
+
+    AGameModeBase* GameModeBase = UGameplayStatics::GetGameMode(this);
+    FarmingGameMode = Cast<AFarmingGameMode>(GameModeBase);
 }
 
 void AFarmingGameState::Tick(float DeltaSeconds)
@@ -68,6 +71,9 @@ void AFarmingGameState::EndFarmingMode()
 {
     bIsFarmingStarted = false;
     UE_LOG(LogTemp, Warning, TEXT("Farming Mode Ended"));
+
+    //alert to Gamemode
+    FarmingGameMode->EndGame();
 }
 
 
@@ -84,7 +90,7 @@ void AFarmingGameState::AddExperienceToPlayer(APlayerController* Player, int32 A
         {
             PlayerData->CurrentEXP += Amount;
             CheckLevelUp(Player);
-            UpdatePlayerUIInfo(); // UI 갱신
+            UpdatePlayerInfo(); // UI 갱신
         }
     }
 }
@@ -125,6 +131,8 @@ void AFarmingGameState::UpdatePlayerInfo()
     /*
     
     */
+
+    //ui 업데이트
 }
 
 void AFarmingGameState::InitPlayerUIInfo()
@@ -153,6 +161,8 @@ void AFarmingGameState::UpdatePlayerUIInfo()
         }
     }
 }
+
+
 
 void AFarmingGameState::SetPlayerPawn(ABaseWitch* InPawn)
 {

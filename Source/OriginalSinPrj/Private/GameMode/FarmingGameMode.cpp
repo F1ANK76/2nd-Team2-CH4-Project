@@ -12,9 +12,8 @@
 
 AFarmingGameMode::AFarmingGameMode()
 {
-    bUseSeamlessTravel = true; // Seamless Travel 활성화
+    bUseSeamlessTravel = true; // Seamless Travel Activate
     PlayerControllerClass = AWitchController::StaticClass();
-
 }
 
 
@@ -34,55 +33,117 @@ void AFarmingGameMode::BeginPlay()
 
     if (NetMode == NM_Standalone)
     {
-        InitPlayerUI();
         FTimerHandle TimerHandle;
         GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
             {
-                StartGame();
+                StartSingleGame();
             }), 5.0f, false);
     }
     else
     {
-        InitPlayerUI();
         FTimerHandle TimerHandle;
         GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
             {
-                StartGame();
+                StartMultiGame();
             }), 5.0f, false);
     }
 }
 
 
-
-
-void AFarmingGameMode::StartGame()
+void AFarmingGameMode::StartSingleGame()
 {
+    //Prepare For Singleplay farming mode
+    //Open UI for Single Farming 
 
-    //준비, 시작 UI를 띄우고...
-    
-    //시작 신호가 오면...
-    
     if (FarmingGameState)
     {
         FarmingGameState->StartFarmingMode();
     }
+    //Spawn Monster
+    SpawnInitialMonsters();
+
+    //Turn on timer 
+    if (FarmingGameState)
+    {
+        //
+    }
+
+    //Turn on Player Input
+}
+
+
+void AFarmingGameMode::StartMultiGame()
+{
+    //Prepare For multiplay farming mode
+    //Open UI for multi Farming 
+    
+
+    //시작 신호가 오면...
+
+    if (FarmingGameState)
+    {
+        FarmingGameState->StartFarmingMode();
+    }
+
     //몬스터 소환하면서,
     SpawnInitialMonsters();
 
-    //타이머 작동 시키고...
+    //Turn on Timer
     if (FarmingGameState)
     {
 
     }
-
-    //플레이어가 이동 가능하게 만들기...
+    //Turn on Player Input
 }
 
+
+//alerted by GameState
 void AFarmingGameMode::EndGame()
 {
-    //플레이어가 입력을 못하게 막고...
-    //타이머가 다 되어서 시간이 종료되었다는 알림을 띄우고...
-    //다음 라운드로 넘어갈 준비하기...
+
+    if (NetMode == NM_Standalone)
+    {
+        EndSingleGame();
+    }
+    else
+    {
+        EndMultiGame();
+    }
+}
+
+void AFarmingGameMode::EndSingleGame()
+{
+    //SingleMode Farming Ended..
+    // Move to next...
+}
+
+void AFarmingGameMode::EndMultiGame()
+{
+    //MultiMode Farming Ended..
+    // Move to next...
+}
+
+//이전 게임모드에서 맵 설정 받아오는 함수.
+//이전 게임모드에서 캐릭터를 받아오는 함수.
+
+
+void AFarmingGameMode::MoveLevel(const FName& LevelName)
+{
+    UWorld* World = GetWorld();
+    if (IsValid(World)) 
+    {
+        if (NetMode == NM_Standalone)
+        {
+            //선택한 맵으로 이동할 수 있도록 수정.
+            //World->ServerTravel(TEXT("/Game/Maps/SingleLevel?listen"), true);
+        }
+        else
+        {
+            //선택한 맵으로 이동할 수 있도록 수정.
+            //World->ServerTravel(TEXT("/Game/Maps/MatchLevel?listen"), true);
+        }
+    }
+    
 }
 
 
@@ -102,7 +163,7 @@ void AFarmingGameMode::SpawnInitialMonsters()
         AActor* SpawnedMonster = World->SpawnActor<AActor>(MonsterBlueprintClass, SpawnLocation, SpawnRotation, SpawnParams);
         if (SpawnedMonster)
         {
-            ActiveMonsters.Add(SpawnLocation, SpawnedMonster);
+            ActiveMonsters.Add(SpawnedMonster);
             CurrentMonsterCount++;
         }
     }
@@ -111,60 +172,33 @@ void AFarmingGameMode::SpawnInitialMonsters()
 void AFarmingGameMode::SpawnMissingMonsters()
 {
     UE_LOG(LogTemp, Warning, TEXT("Monster Spawned"));
+    
     UWorld* World = GetWorld();
-    if (!World || !MonsterBlueprintClass) return;
+    if (!World || !MonsterBlueprintClass || MonsterSpawnLocations.Num() == 0) return;
 
     for (const FVector& SpawnLocation : MonsterSpawnLocations)
     {
-        AActor** FoundMonsterPtr = ActiveMonsters.Find(SpawnLocation);
-        bool bNeedToSpawn = false;
+        FRotator SpawnRotation = FRotator::ZeroRotator;
 
-        if (FoundMonsterPtr == nullptr)
-        {
-            bNeedToSpawn = true;
-        }
-        else
-        {
-            AActor* FoundMonster = *FoundMonsterPtr;
-            if (!IsValid(FoundMonster))
-            {
-                bNeedToSpawn = true;
-            }
-        }
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-        if (bNeedToSpawn)
+        AActor* SpawnedMonster = World->SpawnActor<AActor>(MonsterBlueprintClass, SpawnLocation, SpawnRotation, SpawnParams);
+        if (SpawnedMonster)
         {
-            FRotator SpawnRotation = FRotator::ZeroRotator;
-            FActorSpawnParameters SpawnParams;
-            SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-            AActor* SpawnedMonster = World->SpawnActor<AActor>(MonsterBlueprintClass, SpawnLocation, SpawnRotation, SpawnParams);
-            if (SpawnedMonster)
-            {
-                ActiveMonsters.Add(SpawnLocation, SpawnedMonster);
-                CurrentMonsterCount++;
-            }
+            ActiveMonsters.Add(SpawnedMonster);
+            CurrentMonsterCount++;
         }
     }
+
 }
 
 
 //몬스터가 죽을 때 누구한테 죽었는지 정보를 넘기며 게임모드에 알려주면 호출되는 함수.
-void AFarmingGameMode::HandleMonsterKilled(AController* Killer)
+void AFarmingGameMode::HandleMonsterKilled(AActor* DeadMonster, AController* Killer)
 {
     CurrentMonsterCount--;
-
-    // 죽은 몬스터를 ActiveMonsters 목록에서 제거
-    for (auto It = ActiveMonsters.CreateIterator(); It; ++It)
-    {
-        AActor* Monster = It.Value();
-        
-        if (!IsValid(Monster))
-        {
-            It.RemoveCurrent();
-            break;
-        }
-    }
+    ActiveMonsters.Remove(DeadMonster);
 
     // 몬스터 2마리 이하일 때 리스폰
     if (CurrentMonsterCount <= 2)
@@ -182,34 +216,16 @@ void AFarmingGameMode::HandleMonsterKilled(AController* Killer)
     }
 }
 
-void AFarmingGameMode::HandleFarmingModeEnded()
-{
-    // 라운드 전환 처리 (맵 이동, 다음 단계 준비 등)
-}
 
-//플레이어가 서버에 로그인하면 실행되는 함수.
-void AFarmingGameMode::PostLogin(APlayerController* NewPlayer)
-{
-    Super::PostLogin(NewPlayer);
-    UE_LOG(LogTemp, Warning, TEXT("PostLogin Called"));
-    if (DefaultCharacterClass)
-    {
-        SpawnPlayerByCharacterType(DefaultCharacterClass, NewPlayer); // 여기!
-    }
-
-    if (AFarmingGameState* GS = GetGameState<AFarmingGameState>())
-    {
-        //GS->ShowUI(NewPlayer);
-    }
-}
 
 
 void AFarmingGameMode::PostSeamlessTravel()
 {
     UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Called"));
-    Super::PostSeamlessTravel();  // 기본 SeamlessTravel 처리
+    Super::PostSeamlessTravel();  // Super SeamlessTravel
 
-    NetMode = GetNetMode(); // 멀티 싱글 로직 분기
+    NetMode = GetNetMode(); // Get Single? Multi?
+
     if (NetMode == NM_Standalone)
     {
         // 싱글플레이용 초기화
@@ -294,6 +310,7 @@ void AFarmingGameMode::HandleClientPossession(APlayerController* PC, int index)
 }
 
 
+
 void AFarmingGameMode::SpawnPlayerByCharacterType(UClass* SpawnClass, APlayerController* PlayerController)
 {
     checkf(IsValid(SpawnClass), TEXT("Target Class is invalid"));
@@ -326,6 +343,7 @@ void AFarmingGameMode::SpawnPlayerByCharacterType(UClass* SpawnClass, APlayerCon
     UE_LOG(LogTemp, Warning, TEXT("Spawned Pawn: %s"), *GetNameSafe(PlayerCharacter));
     UE_LOG(LogTemp, Warning, TEXT("PlayerController after possess: %s"), *GetNameSafe(PlayerController->GetPawn()));
 }
+
 
 void AFarmingGameMode::SpawnPlayers()
 {
@@ -384,4 +402,27 @@ void AFarmingGameMode::InitPlayerUI()
     //GameState에 명령 내리기....
     //AFarmingState::InitPlayerUIInfo();
     
+}
+
+
+
+
+
+
+
+
+//Testcode...
+void AFarmingGameMode::PostLogin(APlayerController* NewPlayer)
+{
+    Super::PostLogin(NewPlayer);
+    UE_LOG(LogTemp, Warning, TEXT("PostLogin Called"));
+    if (DefaultCharacterClass)
+    {
+        SpawnPlayerByCharacterType(DefaultCharacterClass, NewPlayer); // 여기!
+    }
+
+    if (AFarmingGameState* GS = GetGameState<AFarmingGameState>())
+    {
+        //GS->ShowUI(NewPlayer);
+    }
 }
