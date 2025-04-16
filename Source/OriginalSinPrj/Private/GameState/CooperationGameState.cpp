@@ -103,8 +103,26 @@ void ACooperationGameState::TurnOnStage1Widget()
 {
     if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
     {
+        if (IsValid(MyGI))
+        {
+            UE_LOG(LogTemp, Warning, TEXT("GameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is Ready"));
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("InValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValid"));
+        }
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
+            if (IsValid(UISubsystem->CurrentActiveWidget))
+            {
+                UE_LOG(LogTemp, Warning, TEXT("IValidlilasidladilasiladd"));
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("INVALID"));
+            }
+            UE_LOG(LogTemp, Warning, TEXT("I::::::::::::%d "), UISubsystem->GetCurrentLevelType());
+            
             // 여기서 UISubsystem 사용 가능!
             Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->ActiveStage1Widget();
         }
@@ -293,14 +311,15 @@ void ACooperationGameState::InitPlayerInfo()
         FCharacterStateBuffer Player2State;
 
         PlayerInfos.Add(CooperationGameGameMode->ActivePlayers[0], FPlayerData{
-        "Player1", nullptr, 
-        100.0f, 100.0f, 
-        0, 0, 
-        0, 0.0f, 
-        0, 
-        0, 
+        "Player1", nullptr,
+        100.0f, 100.0f,
+        0, 0,
+        0, 0.0f,
+        0,
+        0,
         0, 100, 1 });
         Player1StateData = PlayerInfos[CooperationGameGameMode->ActivePlayers[0]];
+
         PlayerInfos.Add(CooperationGameGameMode->ActivePlayers[1], FPlayerData{
         "Player2", nullptr,
         100.0f, 100.0f,
@@ -310,9 +329,11 @@ void ACooperationGameState::InitPlayerInfo()
         0,
         0, 100, 1 });
         Player2StateData = PlayerInfos[CooperationGameGameMode->ActivePlayers[1]];
-    }
-    InitPlayerUIInfo();
+        InitPlayerUIInfo();
 
+        Cast<ABaseWitch>(CooperationGameGameMode->ActivePlayers[0])->ResetCharacterState();
+        Cast<ABaseWitch>(CooperationGameGameMode->ActivePlayers[1])->ResetCharacterState();
+    }
 }
 
 void ACooperationGameState::UpdatePlayerInfo(const FCharacterStateBuffer& State)

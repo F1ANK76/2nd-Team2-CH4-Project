@@ -48,8 +48,8 @@ void ACooperationGameMode::BeginPlay()
     SpawnCamera();
 
     //Open Player UI;
+    //InitPlayerUI();
     InitPlayerUI();
-
     SpawnKillZone();
     //Game Start Condition -> Start with a timer temporarily
     FTimerHandle TimerHandle;
@@ -124,6 +124,10 @@ void ACooperationGameMode::StartGame()
     //Set Stage index -> 1
     StageIndex = 1;
     CooperationGameState->CurrentStageIndex = StageIndex;
+    //CooperationUI Turn on Stage1 UI
+    //->ActiveStage1Widget();
+
+    CooperationGameState->TurnOnStage1Widget();
     //Move Stage -> Prepare Stage 1 
     MoveNextStage();
 }
@@ -189,11 +193,6 @@ void ACooperationGameMode::ReadyStage1()
     //Set to player position for stage 1
     SetPlayerLocation();
 
-
-
-    //CooperationUI Turn on Stage1 UI
-    //->ActiveStage1Widget();
-    CooperationGameState->TurnOnStage1Widget();
 
     //Game Start UI Open
     //When Game Start UI ...
@@ -753,7 +752,6 @@ void ACooperationGameMode::FallDie(AActor* Character)
     
 }
 
-
 void ACooperationGameMode::PostSeamlessTravel()
 {
     UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Called"));
@@ -766,7 +764,7 @@ void ACooperationGameMode::PostSeamlessTravel()
 
     for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
     {
-        APlayerController* PC = Cast<APlayerController>(*It);
+        AWitchController* PC = Cast<AWitchController>(*It);
         if (PC)
         {
             UE_LOG(LogTemp, Warning, TEXT("Controller Detected: %s"), *GetNameSafe(PC));
@@ -775,8 +773,12 @@ void ACooperationGameMode::PostSeamlessTravel()
             GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this, PC, index]()
                 {
                     HandleClientPossession(PC, index);
-                }), 1.0f, false);
+                }), 0.5f, false);
             index++;
+        }
+        if (IsValid(PC))
+        {
+            PC->ResponseShowLevelWidget();
         }
     }
 
@@ -921,7 +923,10 @@ void ACooperationGameMode::InitPlayerUI()
     UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance());
     if (MyGI)
     {
-        MyGI->ResponseShowWidget();
+        if (IsValid(MyGI))
+        {
+            MyGI->ResponseShowWidget();
+        }
     }
 }
 
