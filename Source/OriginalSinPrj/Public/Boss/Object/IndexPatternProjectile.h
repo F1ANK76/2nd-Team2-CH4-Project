@@ -18,12 +18,14 @@ class ORIGINALSINPRJ_API AIndexPatternProjectile : public AActor, public IBossPo
 public:
 	AIndexPatternProjectile();
 
-	void SetDirection(const FVector& InDirection);
+	void SetDirectionAndVelocity(const FVector& InDirection);
+	void SetIndex(int32 InIndex);
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnPooledObjectSpawn_Implementation() override;
 	virtual void OnPooledObjectReset_Implementation() override;
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UPROPERTY(VisibleAnywhere, Category = "IndexPatternProjectile | Components")
 	USceneComponent* SceneRoot;
@@ -45,12 +47,24 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "IndexPatternProjectile | Property")
 	float Speed;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IndexPatternProjectile | Material")
+	UMaterialInterface* Material1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IndexPatternProjectile | Material")
+	UMaterialInterface* Material2;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_IsFirstIndex)
+	bool bIsFirstIndex = false;
 
 	FTimerHandle LifeTimeTimerHandle;
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetActive(bool bIsActive);
 
+	UFUNCTION()
+	void OnRep_IsFirstIndex();
+	
 	UFUNCTION()
 	void OnOverlapBegin(
 		UPrimitiveComponent* OverlappedComponent,
@@ -63,4 +77,6 @@ protected:
 private:
 	FVector Direction;
 	bool bIsActivate;
+
+	void ApplyMaterialFromIndex(bool bFirst);
 };

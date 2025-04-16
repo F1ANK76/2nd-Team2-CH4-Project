@@ -36,6 +36,9 @@ protected:
 		FVector NormalImpulse,
 		const FHitResult& Hit);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSetActive(bool bIsActive);
+
 	void StartDisappearTimer();
 	void DisappearPlatform();
 
