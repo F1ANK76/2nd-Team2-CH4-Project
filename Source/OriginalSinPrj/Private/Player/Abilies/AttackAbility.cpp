@@ -187,12 +187,12 @@ void AAttackAbility::UpdateProjectileData(const FAbilityDataBuffer& Buffer)
 {
 	ProjectileData.ParentWitch = Buffer.ParentWitch;
 	ProjectileData.AttackDamage = DefaultDamage + Buffer.AddedDamage;
-	ProjectileData.AttackDelay = AttackDelayTime;
-	ProjectileData.MoveDelay = MoveDelayTime;
-	ProjectileData.VisibleDelay = VisibleDelayTime;
-	ProjectileData.DeactiveDelay = DeactiveDelayTime;
+	ProjectileData.AttackDelay = AttackDelayTime * (1 - (Buffer.AttackSpeed - 1));
+	ProjectileData.MoveDelay = MoveDelayTime * (1 - (Buffer.AttackSpeed - 1));
+	ProjectileData.VisibleDelay = VisibleDelayTime * (1 - (Buffer.AttackSpeed - 1));
+	ProjectileData.DeactiveDelay = DeactiveDelayTime * (1 - (Buffer.AttackSpeed - 1));
 	ProjectileData.MoveDirection = MoveDirection;
-	ProjectileData.MoveSpeed = MoveSpeed;
+	ProjectileData.MoveSpeed = MoveSpeed * Buffer.AttackSpeed;
 }
 
 void AAttackAbility::CalculateProjectilePos(ABaseWitch* Parent)

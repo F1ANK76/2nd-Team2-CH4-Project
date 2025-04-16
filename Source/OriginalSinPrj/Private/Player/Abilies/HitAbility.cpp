@@ -43,8 +43,8 @@ bool AHitAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 
 	CalculateKnockTargetPos(Buffer);
 
-	Parent->AddKnockGauge(Buffer.AddedGuage);
-	
+	Parent->ApplyDamage(Buffer.AddedGuage, Buffer.DamageCauser);
+
 	ResponseOnLaunched(KnockDistance);
 	SetActorTickEnabled(true);
 	Parent->SetMeshResponseToChanel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);

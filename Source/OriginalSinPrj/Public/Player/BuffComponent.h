@@ -39,13 +39,13 @@ public:
 	float AddedManaValue = 0.1f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buff")
-	float AddedKnockGaugeValue = 0.5f;
+	float AddedKnockGaugeValue = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buff")
-	float AddedAttackRangeValue = 1.2f;
+	float AddedAttackRangeValue = 1.5f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buff")
-	float AddedAttackSpeedValue = 0.1f;
+	float AddedAttackSpeedValue = 1.2f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buff")
 	float AddedGuardPointValue = 1.0f;

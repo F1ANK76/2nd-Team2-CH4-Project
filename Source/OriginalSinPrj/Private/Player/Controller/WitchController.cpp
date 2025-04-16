@@ -158,7 +158,7 @@ void AWitchController::Server_SelectBuff_Implementation(int32 BuffIndex, FBuffIn
 	{
 		if (ACooperationGameMode* MyGM = Cast<ACooperationGameMode>(GM))
 		{
-			MyGM->ApplyBuffToPlayer(this, BuffIndex, buff); // or GetPawn(), or PlayerState µî
+			MyGM->ApplyBuffToPlayer(this, BuffIndex, buff); // or GetPawn(), or PlayerState ï¿½ï¿½
 		}
 	}
 }

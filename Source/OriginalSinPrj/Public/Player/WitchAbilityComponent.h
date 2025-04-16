@@ -25,9 +25,9 @@ public:
 	UWitchAbilityComponent();
 
 	void CallMove(const FVector2D& Value);
-	void CallNormalAttack();
-	void CallSpecialAttack();
-	void CallSkillAttack(int32 SkillNum);
+	void CallNormalAttack(float AttackSpeed);
+	void CallSpecialAttack(float AttackSpeed);
+	void CallSkillAttack(int32 SkillNum, float AttackSpeed);
 	void CallJump();
 	void CallHit(AActor* DamageCauser, float DamageValue);
 	void CallBeginGuard();
@@ -37,8 +37,6 @@ public:
 
 	void ResponseEndAnim();
 	void PauseBufferTimer();
-	void AddCurrentMana(float Value);
-	void SetMaxMana(float Value);
 	void ResetAbility();
 
 protected:

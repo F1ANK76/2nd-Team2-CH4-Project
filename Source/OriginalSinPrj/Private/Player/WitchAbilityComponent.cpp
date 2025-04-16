@@ -36,8 +36,10 @@ void UWitchAbilityComponent::CallMove(const FVector2D& Value)
 	}
 }
 
-void UWitchAbilityComponent::CallNormalAttack()
+void UWitchAbilityComponent::CallNormalAttack(float AttackSpeed)
 {
+	AbilityBuffer.AttackSpeed = AttackSpeed;
+
 	if (!AbilityBuffer.LastAbilities.IsEmpty())
 	{
 		if (AbilityBuffer.LastAbilities[0] == JumpAbility)
@@ -62,8 +64,10 @@ void UWitchAbilityComponent::CallNormalAttack()
 	ExcuteCurrentAbility();
 }
 
-void UWitchAbilityComponent::CallSpecialAttack()
+void UWitchAbilityComponent::CallSpecialAttack(float AttackSpeed)
 {
+	AbilityBuffer.AttackSpeed = AttackSpeed;
+
 	if (!AbilityBuffer.LastAbilities.IsEmpty())
 	{
 		if (AbilityBuffer.LastAbilities[0] == JumpAbility)
@@ -88,8 +92,10 @@ void UWitchAbilityComponent::CallSpecialAttack()
 	ExcuteCurrentAbility();
 }
 
-void UWitchAbilityComponent::CallSkillAttack(int32 SkillNum)
+void UWitchAbilityComponent::CallSkillAttack(int32 SkillNum, float AttackSpeed)
 {
+	AbilityBuffer.AttackSpeed = AttackSpeed;
+	//UE_LOG(LogTemp, Warning, TEXT("Request Active Skill Num is %d"), SkillNum);
 	switch (SkillNum)
 	{
 	case 0:
@@ -254,11 +260,6 @@ void UWitchAbilityComponent::PauseBufferTimer()
 	}
 }
 
-void UWitchAbilityComponent::AddCurrentMana(float Value)
-{
-	AbilityBuffer.CurrentMana = FMath::Clamp(AbilityBuffer.CurrentMana + Value, 0, AbilityBuffer.MaxMana);
-}
-
 void UWitchAbilityComponent::ResetAbility()
 {
 	if (IsValid(AbilityBuffer.CurrentAbility))
@@ -336,6 +337,12 @@ ABaseWitchAbility* UWitchAbilityComponent::SpawnAbility(UClass* TargetClass)
 
 void UWitchAbilityComponent::ExcuteCurrentAbility()
 {
+	if (AbilityBuffer.ParentWitch->GetWitchState() == EWitchStateType::Die)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Character is Die State"));
+		return;
+	}
+
 	if (!IsValid(AbilityBuffer.CurrentAbility))
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("Current Ability is invalid"));
