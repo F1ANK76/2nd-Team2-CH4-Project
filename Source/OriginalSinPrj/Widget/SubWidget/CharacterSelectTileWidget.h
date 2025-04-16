@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Delegates/DelegateCombinations.h"
 #include "../BaseWidget.h"
+#include "Player/WitchTypes.h"
 #include "CharacterSelectTileWidget.generated.h"
 
 
@@ -20,6 +21,8 @@ class ORIGINALSINPRJ_API UCharacterSelectTileWidget : public UBaseWidget
 	//�̺�Ʈ ������
 public:
 	virtual void InitWidget(UUISubsystem* uiSubsystem) override;
+	void SetCharacterType(ECharacterType Type);
+	void SetCharacterImage(UTexture2D* CharacterImg);
 
 private:
 	UFUNCTION()
@@ -41,6 +44,9 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> CharacterSelectButton;
+
+	UPROPERTY()
+	ECharacterType CharacterType = ECharacterType::Hand;
 
 	//��ư �ޱ�
 	//�̹��� UI

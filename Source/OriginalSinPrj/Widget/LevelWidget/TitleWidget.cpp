@@ -12,7 +12,7 @@ void UTitleWidget::InitWidget(UUISubsystem* uiSubsystem)
 
     SinglePlayButton->OnClicked.AddDynamic(this, &ThisClass::OnSelectedSingleMode);
     TrainingButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveTrainingMode);
-    MultiPlayButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveMultiMode);
+    MultiPlayButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveMultiLobbyMode);
     OptionButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedOptionButton);
     QuitButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedQuitGame);
 }
@@ -22,5 +22,6 @@ void UTitleWidget::OnSelectedSingleMode()
     checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
     UIHandle->SetVisibilityWidget(false);
     OnClickedOpenWidget(EAddWidgetType::CharacterSelectWidget);
-    UE_LOG(LogTemp, Warning, TEXT("Show Widget CharacterSelectWidget"));
+
+    PlayUIEffectSound(EUISfxSoundType::Click);
 }

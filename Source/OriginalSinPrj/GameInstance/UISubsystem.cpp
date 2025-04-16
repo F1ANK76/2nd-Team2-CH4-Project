@@ -62,6 +62,15 @@ void UUISubsystem::ShowLevelWidget(ELevelType LevelType)
         isMouseMode = true;
         break;
 
+    case ELevelType::MultiLobbyLevel:
+        if (!IsValid(MultiLobbyLevelWidget))
+        {
+            MultiLobbyLevelWidget = CreateWidgetByClass(UISettings->MultiLobbyWidgetClass);
+        }
+        CurrentActiveWidget = MultiLobbyLevelWidget;
+        isMouseMode = true;
+        break;
+
     case ELevelType::MultiLevel:
         if (!IsValid(MultiLevelWidget))
         {
@@ -312,6 +321,12 @@ void UUISubsystem::CreateWidgets()
     {
         LobbyLevelWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->LobbyWidgetClass);
         LobbyLevelWidget->InitWidget(this);
+    }
+
+    if (UISettings->MultiLobbyWidgetClass)
+    {
+        MultiLobbyLevelWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->MultiLobbyWidgetClass);
+        MultiLobbyLevelWidget->InitWidget(this);
     }
 
     if (UISettings->MultiWidgetClass)

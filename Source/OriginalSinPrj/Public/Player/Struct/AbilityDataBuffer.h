@@ -47,6 +47,9 @@ public:
 	float AddedDamage = 0.0f;
 
 	UPROPERTY()
+	float AttackSpeed = 1.0f;
+
+	UPROPERTY()
 	float MaxMana = 5;
 
 	UPROPERTY()

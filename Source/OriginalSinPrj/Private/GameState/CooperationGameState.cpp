@@ -8,15 +8,15 @@
 #include "Player/Controller/WitchController.h"
 #include "../GameInstance/DataSubsystem.h"
 #include "OriginalSinPrj/GameInstance/UISubsystem.h"
+#include "OriginalSinPrj/GameInstance/EnumSet.h"
 
 
 ACooperationGameState::ACooperationGameState()
 {
     PrimaryActorTick.bCanEverTick = true;
-    SetActorTickEnabled(false); // 일단 꺼두기
 
     bIsStage3Started = false;
-    Timer = 0.0f;
+    SpendedStage3Timer = 0.0f;
     bReplicates = true;
 
     CameraLocation = FVector(-400.f, 200.f, 0.f);
@@ -38,17 +38,34 @@ void ACooperationGameState::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
 
+    if (HasAuthority() && bIsStage1Started)
+    {
+        bIsStage1Reached = true;
+        SpendedStage1Timer += DeltaSeconds;
+    }
+    if (HasAuthority() && bIsStage2Started)
+    {
+        bIsStage2Reached = true;
+        SpendedStage2Timer += DeltaSeconds;
+    }
+    if (HasAuthority() && bIsStage3Started)
+    {
+        bIsStage3Reached = true;
+        SpendedStage3Timer += DeltaSeconds;
+        UpdateTimer();
+    }
     if (IsValid(CooperationGameGameMode))
     {
         switch (CooperationGameGameMode->StageIndex)
         {
         case 1:
-
             SetStage1CameraTransform();
+
             break;
 
         case 2:
             SetStage2CameraTransform();
+
             break;
 
         case 3:
@@ -62,11 +79,7 @@ void ACooperationGameState::Tick(float DeltaSeconds)
     }
     
 
-    if (HasAuthority() && bIsStage3Started)
-    {
-        Timer += DeltaSeconds;
-        UpdateTimer();
-    }
+
 }
 
 
@@ -90,8 +103,26 @@ void ACooperationGameState::TurnOnStage1Widget()
 {
     if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
     {
+        if (IsValid(MyGI))
+        {
+            UE_LOG(LogTemp, Warning, TEXT("GameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is Ready"));
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("InValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValid"));
+        }
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
+            if (IsValid(UISubsystem->CurrentActiveWidget))
+            {
+                UE_LOG(LogTemp, Warning, TEXT("IValidlilasidladilasiladd"));
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("INVALID"));
+            }
+            UE_LOG(LogTemp, Warning, TEXT("I::::::::::::%d "), UISubsystem->GetCurrentLevelType());
+            
             // 여기서 UISubsystem 사용 가능!
             Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->ActiveStage1Widget();
         }
@@ -140,6 +171,15 @@ void ACooperationGameState::CreateBuffSelectUI()
         {
             UE_LOG(LogTemp, Warning, TEXT("Show Buff Widget"));
             UISubsystem->ShowWidget(EAddWidgetType::BuffSelectWidget);
+            UE_LOG(LogTemp, Warning, TEXT("Buff Widget assign?"));
+            if (UISubsystem->BuffSelectWidget->IsInViewport())
+            {
+                TArray<EBuffType> BuffList = BuffUIInit();
+                Cast<UBuffSelectWidget>(UISubsystem->BuffSelectWidget)->InitializeBuffs(BuffList);
+                UE_LOG(LogTemp, Warning, TEXT("Buff Widget Init"));
+            }
+
+
             UISubsystem->SetMouseMode(true);
             bIsPlayerBuffSelect = 0;
         }
@@ -166,6 +206,43 @@ void ACooperationGameState::CloseBuffSelectUI()
         }
     }
 }
+
+
+TArray<EBuffType> ACooperationGameState::BuffUIInit()
+{
+    //버프 종류는 여기서 결정.
+//버프 종류가 기록되어있는 목록을 받아서, 겹치지 않게 세개를 받아 선택지에 올리기
+
+    TArray<EBuffType> BuffArray =
+    {
+        EBuffType::ManaUp,
+        EBuffType::AttackUp,
+        EBuffType::CircleUp ,
+        EBuffType::LifePointUp,
+        EBuffType::DefenseUp,
+        EBuffType::AttackSpeedUp,
+        EBuffType::AvoidanceUp,
+        EBuffType::AttackRangeUp,
+        EBuffType::EnemyCircleDown
+    };
+
+    TArray<EBuffType> RequestBuffList;
+    if (BuffArray.Num() > 0)
+    {
+        int RandomIndex = FMath::RandRange(0, BuffArray.Num() - 1);
+    }
+
+    for (int i = 0; i < 3; i++)
+    {
+        int32 Index = FMath::RandRange(0, BuffArray.Num() - 1);
+        RequestBuffList.Add(BuffArray[Index]);
+        BuffArray.RemoveAt(Index);
+    }
+
+
+    return RequestBuffList;
+}
+
 
 
 void ACooperationGameState::OnRep_TurnOnStageUI()
@@ -199,42 +276,130 @@ void ACooperationGameState::TurnOnResultWidget()
         {
             UE_LOG(LogTemp, Warning, TEXT("Show Result Widget"));
             UISubsystem->ShowWidget(EAddWidgetType::ResultWidget);
+
+            if (UISubsystem->ResultWidget->IsInViewport())
+            {
+                Cast<UResultWidget>(UISubsystem->ResultWidget)->InitResultWidgetData(
+                    Player1ReceivedDamage,
+                    Player2ReceivedDamage,
+                    Player1DeathCount,
+                    Player2DeathCount,
+                    Player1ApplyAttackCount,
+                    Player2ApplyAttackCount,
+                    SpendedStage1Timer,
+                    SpendedStage2Timer,
+                    SpendedStage3Timer,
+                    bIsStage1Reached,
+                    bIsStage2Reached,
+                    bIsStage3Reached);
+            }
+
+            UISubsystem->SetMouseMode(true);
             // 여기서 UISubsystem 사용 가능!
             //Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->ActiveStage2Widget();
         }
     }
 }
 
-
 void ACooperationGameState::InitPlayerInfo()
 {
     if (HasAuthority())  // 서버에서만 실행되는 코드
     {
         PlayerInfos.Empty(); // 기존 정보 삭제
-
         //어디선가 받아와야해...
-
-
+        FCharacterStateBuffer Player1State;
+        FCharacterStateBuffer Player2State;
 
         PlayerInfos.Add(CooperationGameGameMode->ActivePlayers[0], FPlayerData{
-        "test1", nullptr, 40.0, 100.0f,1.0f, 100.0f, 40.0f,100.0f, 10, 2,10, 100 });
+        "Player1", nullptr,
+        100.0f, 100.0f,
+        0, 0,
+        0, 0.0f,
+        0,
+        0,
+        0, 100, 1 });
+        Player1StateData = PlayerInfos[CooperationGameGameMode->ActivePlayers[0]];
+
         PlayerInfos.Add(CooperationGameGameMode->ActivePlayers[1], FPlayerData{
-        "test2", nullptr, 50.0, 100.0f,0.0f, 100.0f, 50.0f,100.0f, 10, 2,10, 100 });
-        // 각 플레이어 정보 초기화
-        /*
-        플레이어의 정보를 받아오고 맵에 저장하기.
-        */
+        "Player2", nullptr,
+        100.0f, 100.0f,
+        0, 0,
+        0, 0.0f,
+        0,
+        0,
+        0, 100, 1 });
+        Player2StateData = PlayerInfos[CooperationGameGameMode->ActivePlayers[1]];
+        InitPlayerUIInfo();
 
-        PlayerDatas.Add(PlayerInfos[CooperationGameGameMode->ActivePlayers[0]]);
-        PlayerDatas.Add(PlayerInfos[CooperationGameGameMode->ActivePlayers[1]]);
+        Cast<ABaseWitch>(CooperationGameGameMode->ActivePlayers[0])->ResetCharacterState();
+        Cast<ABaseWitch>(CooperationGameGameMode->ActivePlayers[1])->ResetCharacterState();
     }
-    InitPlayerUIInfo();
-
 }
-void ACooperationGameState::UpdatePlayerInfo()
-{
 
+void ACooperationGameState::UpdatePlayerInfo(const FCharacterStateBuffer& State)
+{  
+
+    UE_LOG(LogTemp, Warning, TEXT("Update Info"));
+    
+    if (State.OwnWitch == CooperationGameGameMode->ActivePlayers[0])
+    {
+        if (PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentHP != State.CurrentHP)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Player1 HP Updated %f"), (PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentHP - State.CurrentHP));
+            Player1ReceivedDamage += (PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentHP - State.CurrentHP);
+
+            PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentHP = State.CurrentHP;
+            
+        }
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentEXP = State.CurrentEXP;
+        
+        if (PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentMana != State.CurrentMana)
+        {
+            Player1ApplyAttackCount++;
+            PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentMana = State.CurrentMana;
+        }
+        
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].MaxHP = State.MaxHP;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].MaxEXP = State.MaxEXP;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].MaxMana = State.MaxMana;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].PlayerLevel = State.PlayerLevel;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].LifePoint = State.LifePoint;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].AirbornePercent = State.AirbornePercent;
+        Player1StateData = PlayerInfos[CooperationGameGameMode->ActivePlayers[0]];
+        CooperationGameGameMode->RequestUpdateUI(0);
+        
+    }
+    
+    
+    
+    if (State.OwnWitch == CooperationGameGameMode->ActivePlayers[1])
+    {
+        if (PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].CurrentHP != State.CurrentHP)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Player1 HP Updated %f"), (PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].CurrentHP - State.CurrentHP));
+            Player2ReceivedDamage += (PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].CurrentHP - State.CurrentHP);
+            PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].CurrentHP = State.CurrentHP;
+        }
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].CurrentEXP = State.CurrentEXP;
+        
+        if (PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].CurrentMana != State.CurrentMana)
+        {
+            Player2ApplyAttackCount++;
+            PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].CurrentMana = State.CurrentMana;
+        }
+
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].MaxHP = State.MaxHP;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].MaxEXP = State.MaxEXP;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].MaxMana = State.MaxMana;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].PlayerLevel = State.PlayerLevel;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].LifePoint = State.LifePoint;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].AirbornePercent = State.AirbornePercent;
+        Player2StateData = PlayerInfos[CooperationGameGameMode->ActivePlayers[1]];
+        CooperationGameGameMode->RequestUpdateUI(1);
+    }
 }
+
+
 void ACooperationGameState::InitPlayerUIInfo()
 {
     //위젯 접근해서 갱신
@@ -243,7 +408,7 @@ void ACooperationGameState::InitPlayerUIInfo()
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
             // 여기서 UISubsystem 사용 가능!
-            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->InitPlayerUI(&PlayerDatas[0], &PlayerDatas[1]);
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->InitPlayerUI(&Player1StateData, &Player2StateData);
         }
     }
 }
@@ -256,7 +421,7 @@ void ACooperationGameState::UpdatePlayerUIInfo()
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
             // 여기서 UISubsystem 사용 가능!
-            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->UpdatePlayerUI(&PlayerDatas[0], &PlayerDatas[1]);
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->UpdatePlayerUI(&Player1StateData, &Player2StateData);
         }
     }
 }
@@ -315,6 +480,16 @@ void ACooperationGameState::ApplyBuffStat()
 
     bIsPlayerBuffSelect = 0;
 }
+
+
+
+
+
+
+
+
+
+
 
 void ACooperationGameState::AddExperienceToPlayer(AActor* Player, int32 Amount)
 {
@@ -375,7 +550,7 @@ void ACooperationGameState::SetStage1CameraTransform()
     float maxZ = -99999.f;
 
 
-    for (AActor* Player : CooperationGameGameMode->ActivePlayers)
+    for (AActor* Player : CooperationGameGameMode->AlivePlayers)
     {
         FVector PlayerLocation = Player->GetActorLocation();
 
@@ -400,9 +575,9 @@ void ACooperationGameState::SetStage1CameraTransform()
     }
 
     FVector MeanPlayerLocation = FVector::ZeroVector;
-    if (CooperationGameGameMode->ActivePlayers.Num() > 0)
+    if (CooperationGameGameMode->AlivePlayers.Num() > 0)
     {
-        MeanPlayerLocation = SumPlayerLocation / CooperationGameGameMode->ActivePlayers.Num();
+        MeanPlayerLocation = SumPlayerLocation / CooperationGameGameMode->AlivePlayers.Num();
     }
 
     if (HasAuthority()) // 서버인지 확인
@@ -428,7 +603,7 @@ void ACooperationGameState::SetStage2CameraTransform()
     float maxY = -99999.f;
     float maxZ = -99999.f;
 
-    for (AActor* Player : CooperationGameGameMode->ActivePlayers)
+    for (AActor* Player : CooperationGameGameMode->AlivePlayers)
     {
         FVector PlayerLocation = Player->GetActorLocation();
 
@@ -482,9 +657,9 @@ void ACooperationGameState::SetStage2CameraTransform()
 
     FVector MeanActorLocation = FVector::ZeroVector;
 
-    int32 NumOfActors = CooperationGameGameMode->ActivePlayers.Num() + CooperationGameGameMode->ActiveEnemies.Num();
+    int32 NumOfActors = CooperationGameGameMode->AlivePlayers.Num() + CooperationGameGameMode->ActiveEnemies.Num();
 
-    if (CooperationGameGameMode->ActivePlayers.Num() + CooperationGameGameMode->ActiveEnemies.Num() > 0)
+    if (CooperationGameGameMode->AlivePlayers.Num() + CooperationGameGameMode->ActiveEnemies.Num() > 0)
     {
         MeanActorLocation = (SumPlayerLocation + SumEnemyLocation) / NumOfActors;
     }
@@ -526,18 +701,22 @@ void ACooperationGameState::SetStage3CameraTransform()
 
 ////////////////////////////멀티 처리
 
-void ACooperationGameState::OnRep_UpdatePlayerDataUI()
+void ACooperationGameState::OnRep_UpdatePlayer1DataUI()
 {
-    if (bIsPlayerDataUpdated)   //already Initiated
-    {
-        UpdatePlayerUIInfo();
-    }
-    else   // Initiate
-    {    
-        bIsPlayerDataUpdated = true;
-        InitPlayerInfo();
-    }
+    UpdatePlayerUIInfo();
 }
+
+void ACooperationGameState::OnRep_UpdatePlayer2DataUI()
+{
+    UpdatePlayerUIInfo();
+}
+
+
+void ACooperationGameState::OnRep_UpdatePlayerInitData()
+{
+    InitPlayerUIInfo();
+}
+
 
 void ACooperationGameState::UpdateTimer()
 {
@@ -546,14 +725,14 @@ void ACooperationGameState::UpdateTimer()
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
             // 여기서 UISubsystem 사용 가능!
-            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->UpdateBossTimer(Timer);
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->UpdateBossTimer(SpendedStage3Timer);
         }
     }
 }
 
 void ACooperationGameState::OnRep_UpdateTimer()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Timer: %f"), Timer);
+    UE_LOG(LogTemp, Warning, TEXT("Timer: %f"), SpendedStage3Timer);
     UpdateTimer();
 }
 
@@ -566,12 +745,34 @@ void ACooperationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME(ACooperationGameState, CameraLocation);
     DOREPLIFETIME(ACooperationGameState, CameraRotation);
     DOREPLIFETIME(ACooperationGameState, CameraDistance);
-    DOREPLIFETIME(ACooperationGameState, PlayerDatas);
-    DOREPLIFETIME(ACooperationGameState, Timer); 
+    DOREPLIFETIME(ACooperationGameState, SpendedStage3Timer);
     DOREPLIFETIME(ACooperationGameState, bIsPlayerCanMove); 
     DOREPLIFETIME(ACooperationGameState, CurrentStageIndex);
     DOREPLIFETIME(ACooperationGameState, bIsPlayerBuffSelect);
     DOREPLIFETIME(ACooperationGameState, SelectBuffPlayer);
+    DOREPLIFETIME(ACooperationGameState, Player1DataChanged);
+    DOREPLIFETIME(ACooperationGameState, Player2DataChanged);
+    DOREPLIFETIME(ACooperationGameState, Player1StateData);
+    DOREPLIFETIME(ACooperationGameState, Player2StateData);
+    DOREPLIFETIME(ACooperationGameState, PlayerDataChanged);
+
+
+    DOREPLIFETIME(ACooperationGameState, Player1ReceivedDamage);
+    DOREPLIFETIME(ACooperationGameState, Player2ReceivedDamage);
+    DOREPLIFETIME(ACooperationGameState, Player1DeathCount);
+    DOREPLIFETIME(ACooperationGameState, Player2DeathCount);
+    DOREPLIFETIME(ACooperationGameState, Player1ApplyAttackCount);
+    DOREPLIFETIME(ACooperationGameState, Player2ApplyAttackCount);
+    DOREPLIFETIME(ACooperationGameState, SpendedStage1Timer);
+    DOREPLIFETIME(ACooperationGameState, SpendedStage2Timer);
+    DOREPLIFETIME(ACooperationGameState, SpendedStage2Timer);
+    DOREPLIFETIME(ACooperationGameState, bIsStage1Reached);
+    DOREPLIFETIME(ACooperationGameState, bIsStage2Reached);
+    DOREPLIFETIME(ACooperationGameState, bIsStage3Reached);
+    DOREPLIFETIME(ACooperationGameState, bIsStage3Reached);
+    DOREPLIFETIME(ACooperationGameState, bIsStage1Started);
+    DOREPLIFETIME(ACooperationGameState, bIsStage2Started);
+    DOREPLIFETIME(ACooperationGameState, bIsStage3Started);
 
 }
 
@@ -664,7 +865,15 @@ void ACooperationGameState::TakeDamage(AActor* Victim, float Damage, const FVect
 
 void ACooperationGameState::OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation) 
 {
-    Multicast_OnDeathPlayer(Player, DeathLocation);
+    ABaseWitch* DeadPlayer = Cast<ABaseWitch>(Player);
+    if (DeadPlayer == CooperationGameGameMode->ActivePlayers[0])
+    {
+        Player1DeathCount++;
+    }
+    else if (DeadPlayer == CooperationGameGameMode->ActivePlayers[1])
+    {
+        Player2DeathCount++;
+    }
 }
 
 void ACooperationGameState::OnDeathMonster(AActor* Monster, const FVector& DeathLocation) 
@@ -748,7 +957,3 @@ void ACooperationGameState::Multicast_OnDeathMonster_Implementation(AActor* Mons
 
     }
 }
-
-
-//델리게이트로 브로드 캐스트
-//게임모드에서 Adddynamic으로 받아서 쓰기./

@@ -6,12 +6,14 @@
 #include "GameFramework/GameState.h"
 #include "../Widget/LevelWidget/CooperationWidget.h"
 #include "../Widget/AddedWidget/BuffSelectWidget.h"
+#include "../Widget/AddedWidget/ResultWidget.h"
 #include "../Widget/AddedWidget/PlayerStateWidget.h"
 #include "../Player/BaseWitch.h"
 #include "OriginalSinPrj/Interface/CameraStateInterface.h"
 #include "OriginalSinPrj/Interface/BattleEvent.h"
 #include "OriginalSinPrj/Interface/MatchManage.h"
 #include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
+#include "OriginalSinPrj/Public/Player/Struct/CharacterStateBuffer.h"
 #include "CooperationGameState.generated.h"
 
 struct FBuffType;
@@ -27,8 +29,12 @@ public:
     UOriginalSinPrjGameInstance* GameInstance = nullptr;
     ACooperationGameMode* CooperationGameGameMode;
     
-    TArray<FBuffInfo> Temp;
-    
+
+    UPROPERTY(EditDefaultsOnly, Category = "UI")
+    TObjectPtr<UBaseWidget> BuffSelectWidget;
+
+    TArray<EBuffType> BuffUIInit();
+
 protected:
     ACooperationGameState();
     virtual void BeginPlay() override;
@@ -69,7 +75,7 @@ public:
     void RegisterInitialController(APlayerController* PC);
 
     void InitPlayerInfo();
-    void UpdatePlayerInfo();
+    void UpdatePlayerInfo(const FCharacterStateBuffer& State);
     void InitPlayerUIInfo();
     void UpdatePlayerUIInfo();
 
@@ -85,16 +91,22 @@ public:
     void TurnOnStage3Widget();
     void TurnOffStage3Widget();
 
-    UPROPERTY(Replicated)
-    bool bIsStage3Started;
 
-    UPROPERTY(ReplicatedUsing = OnRep_UpdateTimer)
-    float Timer;
+    UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayerInitData)
+    int PlayerDataChanged = 0;
 
     UFUNCTION()
-    void OnRep_UpdateTimer();
+    void OnRep_UpdatePlayerInitData();
 
-    void UpdateTimer();
+
+
+    UPROPERTY(Replicated)
+    FPlayerData Player1StateData;
+
+    UPROPERTY(Replicated)
+    FPlayerData Player2StateData;
+
+
 
 
     void TurnOnResultWidget();
@@ -129,20 +141,26 @@ public:
     UPROPERTY(BlueprintReadOnly)
     TMap<AActor*, FPlayerData> PlayerInfos;
 
-    UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayerDataUI)
-    TArray<FPlayerData> PlayerDatas;
+    UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayer1DataUI)
+    int Player1DataChanged = 0;
 
     UFUNCTION()
-    void OnRep_UpdatePlayerDataUI();
+    void OnRep_UpdatePlayer1DataUI();
 
-    bool bIsPlayerDataUpdated = false;   //Check UI Data has been Updated... Flag
+    UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayer2DataUI)
+    int Player2DataChanged = 0;
+
+    UFUNCTION()
+    void OnRep_UpdatePlayer2DataUI();
+
+
     ///////////////////
     //플레이어 컨트롤러 저장해놓기
     UPROPERTY()
     TArray<TWeakObjectPtr<APlayerController>> PlayerControllerSet;
     
     UPROPERTY()
-    TArray<FBuffInfo> SelectedBuff;
+    TArray<EBuffType> SelectedBuff;
 
     FBuffType* Player1Stage1SelectedBuff;
     FBuffType* Player2Stage1SelectedBuff;
@@ -166,6 +184,64 @@ public:
     void UpdateBossDataUI();
 
 
+   
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    UPROPERTY(Replicated)
+    float Player1ReceivedDamage = 0;
+
+    UPROPERTY(Replicated)
+    float Player2ReceivedDamage = 0;
+
+    UPROPERTY(Replicated)
+    int32 Player1DeathCount = 0;
+
+    UPROPERTY(Replicated)
+    int32 Player2DeathCount = 0;
+
+
+    UPROPERTY(Replicated)
+    int32 Player1ApplyAttackCount = 0;
+
+    UPROPERTY(Replicated)
+    int32 Player2ApplyAttackCount = 0;
+
+    UPROPERTY(Replicated)
+    float SpendedStage1Timer = 0;
+
+    UPROPERTY(Replicated)
+    float SpendedStage2Timer = 0;
+    //Timer
+
+    UPROPERTY(Replicated)
+    bool bIsStage1Reached = false;
+
+    UPROPERTY(Replicated)
+    bool bIsStage2Reached = false;
+
+    UPROPERTY(Replicated)
+    bool bIsStage3Reached = false;
+
+    UPROPERTY(Replicated)
+    bool bIsStage1Started = false;
+
+    UPROPERTY(Replicated)
+    bool bIsStage2Started = false;
+
+    UPROPERTY(Replicated)
+    bool bIsStage3Started = false;
+
+ 
+
+
+    UPROPERTY(ReplicatedUsing = OnRep_UpdateTimer)
+    float SpendedStage3Timer;
+
+    UFUNCTION()
+    void OnRep_UpdateTimer();
+
+    void UpdateTimer();
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 private:
     UPROPERTY()

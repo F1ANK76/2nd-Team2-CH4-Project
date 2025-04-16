@@ -7,6 +7,7 @@
 #include "CharacterSelectWidget.generated.h"
 
 class UButton;
+class UCharacterSelectTileWidget;
 
 UCLASS()
 class ORIGINALSINPRJ_API UCharacterSelectWidget : public UBaseWidget
@@ -24,10 +25,14 @@ private:
 	void OnClickedClose();
 
 	void InitDelegate();
+	void InitCharacterTiles();
 
 private:
 	UPROPERTY(Meta = (BindWidget))
 	TObjectPtr<UButton> UICloseButton = nullptr;
+
+	UPROPERTY()
+	TArray<UCharacterSelectTileWidget*> Tiles;
 
 	//UI Open animation
 	//UI close Animation

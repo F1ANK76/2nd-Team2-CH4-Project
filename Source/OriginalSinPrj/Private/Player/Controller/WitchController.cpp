@@ -152,13 +152,13 @@ void AWitchController::ShowLevelWidget(UWorld* LoadedWorld)
 }
 
 
-void AWitchController::Server_SelectBuff_Implementation(int32 BuffIndex, FBuffInfo buff)
+void AWitchController::Server_SelectBuff_Implementation(int32 BuffIndex, EBuffType buff)
 {
 	if (AGameModeBase* GM = GetWorld()->GetAuthGameMode())
 	{
 		if (ACooperationGameMode* MyGM = Cast<ACooperationGameMode>(GM))
 		{
-			MyGM->ApplyBuffToPlayer(this, BuffIndex, buff); // or GetPawn(), or PlayerState µî
+			MyGM->ApplyBuffToPlayer(this, BuffIndex, buff); // or GetPawn(), or PlayerState ï¿½ï¿½
 		}
 	}
 }

@@ -26,9 +26,7 @@ enum class EWitchStateType : uint8
 	Roll,
 	Taunt,
 	Attack,
-	NormalAttack,
-	SpecialAttack,
-	SkillAttack
+	Die
 };
 
 UENUM(BlueprintType)
