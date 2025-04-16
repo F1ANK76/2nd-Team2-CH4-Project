@@ -549,6 +549,7 @@ void ABaseWitch::BeginPlay()
 	StopEffect();
 	StopMelleAttack();
 
+	CharacterBuffer.OwnWitch = this;
 	LeftHandDamager->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
 	RightHandDamager->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
 
