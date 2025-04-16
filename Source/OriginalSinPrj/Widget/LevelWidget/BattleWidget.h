@@ -57,6 +57,16 @@ public:
 	void DeactiveFarmingModeWidget();
 	UFUNCTION()
 	void DeactiveTimeLimitModeWidget();
+	
+	UFUNCTION()
+	void ActivePlayerWidget();
+
+	UFUNCTION()
+	void ActiveEnemyWidget();
+
+	UFUNCTION()
+	void DeactiveEnemyWidget();
+
 
 	FPlayerData* Player1Data;
 	FPlayerData* Player2Data;

@@ -27,7 +27,9 @@ public:
     //Control Game Function
 public:
 
-
+    void RequestTurnOnPlayerUI();
+    void RequestTurnOnEnemyUI();
+    
 
     void MoveLevel(const FName& LevelName);
 
