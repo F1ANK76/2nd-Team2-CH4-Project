@@ -22,11 +22,11 @@ protected:
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
 
 public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadwrite)
 	EWitchStateType CharacterState = EWitchStateType::Idle;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	ECharacterType CharacterType = ECharacterType::None;
+	ECharacterType CharacterType = ECharacterType::Hand;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float Speed = 0.0f;

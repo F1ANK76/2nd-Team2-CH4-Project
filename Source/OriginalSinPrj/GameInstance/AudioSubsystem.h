@@ -38,17 +38,24 @@ public:
 	UDataTable* LevelSoundTable;
 
 	UPROPERTY()
+	UDataTable* UISfxSoundTable;
+
+	UPROPERTY()
 	UDataTable* MonsterSoundTable;
+
+	UPROPERTY()
+	UDataTable* CharacterSoundTable;
+
+	UPROPERTY()
+	UDataTable* BossSoundTable;
 
 	UPROPERTY()
 	TObjectPtr<UAudioComponent> BgmComp;
 
-	//UWorld* World;
-
 	const UAudioDataSettings* AudioDataSettings;
 };
 
-// PlaySFX(ESfxSoundType::Monster, static_cast<uint8>(EMonsterSoundType::Attack), FVector(10.f, 0.f, 0.f)); �̷������� ���
+// Use EX : PlaySFX(ESfxSoundType::Monster, static_cast<uint8>(EMonsterSoundType::Attack), FVector(10.f, 0.f, 0.f));
 template<typename EnumType, typename StructType>
 inline void UAudioSubsystem::PlaySFXByType(UObject* WorldContext, UDataTable* Table, uint8 DetailSoundType, FVector Location)
 {
@@ -67,17 +74,28 @@ inline void UAudioSubsystem::PlaySFXByType(UObject* WorldContext, UDataTable* Ta
 			{
 				if (Location.IsZero())
 				{
-					// UI ���� ���� ���
+					// UI
 					UGameplayStatics::PlaySound2D(WorldContext, Sound, MasterVolume);
 					UE_LOG(LogTemp, Warning, TEXT("Play 2D Sound"));
 				}
 				else
 				{
-					// ��ġ ��� ����
 					UGameplayStatics::PlaySoundAtLocation(WorldContext, Sound, Location, MasterVolume);
 					UE_LOG(LogTemp, Warning, TEXT("Play 3D Sound"));
 				}
 			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Sound or WorldContext is NULL"));
+			}
 		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("FoundRow is NULL"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SFX Table or EnumPtr is NULL"));
 	}
 }

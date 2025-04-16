@@ -4,32 +4,43 @@
 #include "AudioDataSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Struct/LevelAudioDataStruct.h"
+#include "Struct/UISfxAudioDataStruct.h"
 #include "Struct/MonsterAudioDataStruct.h"
+#include "Struct/CharacterAudioDataStruct.h"
+#include "Struct/BossAudioDataStruct.h"
 #include "AudioDevice.h"
 
 void UAudioSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-	//World = GetGameInstance()->GetWorld();
-
 	AudioDataSettings = GetDefault<UAudioDataSettings>();
 
-    //LoadDataTables();
+    LoadDataTables();
 }
 
 void UAudioSubsystem::LoadDataTables()
 {
     if (AudioDataSettings)
     {
-        if (!AudioDataSettings->LevelSounds.IsNull())
+        if (!AudioDataSettings->UISfxSounds.IsNull())
         {
-            LevelSoundTable = AudioDataSettings->LevelSounds.LoadSynchronous();
+            UISfxSoundTable = AudioDataSettings->UISfxSounds.LoadSynchronous();
         }
 
         if (!AudioDataSettings->MonsterSounds.IsNull())
         {
             MonsterSoundTable = AudioDataSettings->MonsterSounds.LoadSynchronous();
+        }
+
+        if (!AudioDataSettings->CharacterSounds.IsNull())
+        {
+            CharacterSoundTable = AudioDataSettings->CharacterSounds.LoadSynchronous();
+        }
+
+        if (!AudioDataSettings->BossSounds.IsNull())
+        {
+            BossSoundTable = AudioDataSettings->BossSounds.LoadSynchronous();
         }
     }
 }
@@ -61,6 +72,9 @@ void UAudioSubsystem::PlayBGMByLevelType(ELevelType LevelType)
     switch (LevelType)
     {
     case ELevelType::IntroLevel:
+        SoundType = ELevelSoundType::IntroSound;
+        break;
+
     case ELevelType::TitleLevel:
         SoundType = ELevelSoundType::TitleSound;
         break;
@@ -120,7 +134,7 @@ void UAudioSubsystem::PlayBGM(ELevelSoundType SoundType)
                         if (BgmComp && BgmComp->IsPlaying())
                         {
                             BgmComp->Stop();
-                            UE_LOG(LogTemp, Warning, TEXT("Stop Sound"));
+                            UE_LOG(LogTemp, Warning, TEXT("Stop BGM Sound"));
                         }
 
                         BgmComp = UGameplayStatics::CreateSound2D(GetWorld(), Sound, MasterVolume);
@@ -128,7 +142,7 @@ void UAudioSubsystem::PlayBGM(ELevelSoundType SoundType)
                         if (BgmComp)
                         {
                             BgmComp->Play();
-                            UE_LOG(LogTemp, Warning, TEXT("Play Sound"));
+                            UE_LOG(LogTemp, Warning, TEXT("Play BGM Sound"));
                         }
                     }
                 }
@@ -139,11 +153,22 @@ void UAudioSubsystem::PlayBGM(ELevelSoundType SoundType)
 
 void UAudioSubsystem::PlaySFX(ESfxSoundType SoundType, uint8 DetailSoundType, FVector Location)
 {
-    // ��ġ�� ���� �Ҹ� ��� �ʿ�, UI ���常 ó�� ����
     switch (SoundType)
     {
+        case ESfxSoundType::UI:
+            PlaySFXByType<EUISfxSoundType, FUISfxAudioDataStruct>(GetWorld(), UISfxSoundTable, DetailSoundType, FVector(0.f, 0.f, 0.f));
+            break;
+
         case ESfxSoundType::Monster:
             PlaySFXByType<EMonsterSoundType, FMonsterAudioDataStruct>(GetWorld(), MonsterSoundTable, DetailSoundType, Location);
+            break;
+
+        case ESfxSoundType::Character:
+            PlaySFXByType<ECharacterSoundType, FCharacterAudioDataStruct>(GetWorld(), CharacterSoundTable, DetailSoundType, Location);
+            break;
+
+        case ESfxSoundType::Boss:
+            PlaySFXByType<EBossSoundType, FBossAudioDataStruct>(GetWorld(), BossSoundTable, DetailSoundType, Location);
             break;
 
         default:
@@ -152,14 +177,12 @@ void UAudioSubsystem::PlaySFX(ESfxSoundType SoundType, uint8 DetailSoundType, FV
     }
 }
 
-// Only BGM
 void UAudioSubsystem::SetAndApplyMasterVolume(float NewVolume)
 {
     MasterVolume = FMath::Clamp(NewVolume, 0.0f, 1.0f);
 
     if (BgmComp)
     {
-        // ���� ���� 0���� �ϸ� BGM ������ ���缭 �Ͻ������� �ӽ� ��ġ
         if (MasterVolume != 0)
         {
             BgmComp->SetVolumeMultiplier(MasterVolume);

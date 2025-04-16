@@ -22,65 +22,101 @@ struct FBuffInfo
     UTexture2D* BuffIcon;
 };
 
-
+class UTextBlock;
+class UImage;
+class ABuffSelectManager;
+class UButton;
+class UDataTable;
+class UCanvasPanel;
 
 UCLASS()
 class ORIGINALSINPRJ_API UBuffSelectWidget : public UBaseWidget
 {
 	GENERATED_BODY()
-	
-	// ï¿½ï¿½ï¿½ï¿½ UI ï¿½Ø½ï¿½Æ® + ï¿½Ì¹ï¿½ï¿½ï¿½
-	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ°
+
 
 public:
     virtual void InitWidget(UUISubsystem* uiSubsystem) override;
+    //virtual void NativeConstruct() override;
 
-    // ï¿½ÜºÎ¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 3ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ //ï¿½Ú·ï¿½ï¿½ï¿½ ï¿½Ù²ï¿½ï¿½ï¿½Òµï¿½
-    void InitializeBuffs(const TArray<FBuffInfo>& InBuffs);
+    void InitializeBuffs();
+    TArray<FBuffInfo> BuffTable;
+
+    UPROPERTY()	
+    UDataTable* MyCBuffTable; //CSVÆÄÀÏ°ú ¿¬µ¿ÇÏ¿© µ¥ÀÌÅÍ ºÒ·¯µéÀÌ±â.
+
+    bool bIsHovered1 = false;
+    bool bIsHovered2 = false;
+    bool bIsHovered3 = false;
+
 
 protected:
-    UFUNCTION()
+    UFUNCTION(BlueprintCallable)
     void OnBuff1Clicked();
-    UFUNCTION()
+    UFUNCTION(BlueprintCallable)
     void OnBuff2Clicked();
-    UFUNCTION()
+    UFUNCTION(BlueprintCallable)
     void OnBuff3Clicked();
 
+    UFUNCTION(BlueprintCallable)
+    void OnHoveredButton1();
+    UFUNCTION(BlueprintCallable)
+    void OnUnHoveredButton1();
+    UFUNCTION(BlueprintCallable)
+    void OnHoveredButton2();
+    UFUNCTION(BlueprintCallable)
+    void OnUnHoveredButton2();
+    UFUNCTION(BlueprintCallable)
+    void OnHoveredButton3();
+    UFUNCTION(BlueprintCallable)
+    void OnUnHoveredButton3();
+
+
+
     UFUNCTION()
-    void DeactivateOhterWidgets(int32 SelectedButtonIndex);
+    void DeactivateOhterWidgets(int32 SelectedButtonIndex, FBuffInfo buff);
+
+
 
 protected:
-    // ï¿½ï¿½ Ä«ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (BindWidgetï¿½ï¿½ï¿½ï¿½ BP ï¿½ï¿½ï¿½ï¿½)
     UPROPERTY(meta = (BindWidget))
-    class UTextBlock* BuffName1;
+    TObjectPtr<UTextBlock> BuffName1;
     UPROPERTY(meta = (BindWidget))
-    class UTextBlock* BuffDesc1;
+    TObjectPtr<UImage> BuffImage1;
     UPROPERTY(meta = (BindWidget))
-    class UImage* BuffImage1;
-    UPROPERTY(meta = (BindWidget))
-    class UButton* BuffButton1;
+    TObjectPtr<UButton> BuffButton1;
 
-    // 2ï¿½ï¿½ Ä«ï¿½ï¿½
     UPROPERTY(meta = (BindWidget))
-    class UTextBlock* BuffName2;
+    TObjectPtr<UTextBlock> BuffName2;
     UPROPERTY(meta = (BindWidget))
-    class UTextBlock* BuffDesc2;
+    TObjectPtr<UImage> BuffImage2;
     UPROPERTY(meta = (BindWidget))
-    class UImage* BuffImage2;
-    UPROPERTY(meta = (BindWidget))
-    class UButton* BuffButton2;
+    TObjectPtr<UButton> BuffButton2;
 
-    // 3ï¿½ï¿½ Ä«ï¿½ï¿½
     UPROPERTY(meta = (BindWidget))
-    class UTextBlock* BuffName3;
+    TObjectPtr<UTextBlock> BuffName3;
     UPROPERTY(meta = (BindWidget))
-    class UTextBlock* BuffDesc3;
+    TObjectPtr<UImage> BuffImage3;
     UPROPERTY(meta = (BindWidget))
-    class UImage* BuffImage3;
-    UPROPERTY(meta = (BindWidget))
-    class UButton* BuffButton3;
+    TObjectPtr<UButton> BuffButton3;
 
-private:
-    TArray<FBuffInfo> Buffs;
+
+    UPROPERTY(Meta = (BindWidget))
+    TObjectPtr<UCanvasPanel> Buff1InfoBox;
+
+    UPROPERTY(Meta = (BindWidget))
+    TObjectPtr<UTextBlock> Buff1InfoText;
+
+    UPROPERTY(Meta = (BindWidget))
+    TObjectPtr<UCanvasPanel> Buff2InfoBox;
+
+    UPROPERTY(Meta = (BindWidget))
+    TObjectPtr<UTextBlock> Buff2InfoText;
+
+    UPROPERTY(Meta = (BindWidget))
+    TObjectPtr<UCanvasPanel> Buff3InfoBox;
+
+    UPROPERTY(Meta = (BindWidget))
+    TObjectPtr<UTextBlock> Buff3InfoText;
 
 };

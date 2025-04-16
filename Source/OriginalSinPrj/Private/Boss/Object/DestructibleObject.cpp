@@ -5,6 +5,7 @@
 
 #include "Boss/BossController.h"
 #include "Components/SphereComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 
 ADestructibleObject::ADestructibleObject()
@@ -45,6 +46,8 @@ void ADestructibleObject::OnPooledObjectSpawn_Implementation()
 {
 	if (!HasAuthority()) return;
 	
+	BossController = Cast<ABossController>(UGameplayStatics::GetActorOfClass(GetWorld(), ABossController::StaticClass()));
+	BossController->SetOnePlusDestructibleObjectCount();
 	bIsActivate = true;
 	MulticastSetActive(bIsActivate);
 }

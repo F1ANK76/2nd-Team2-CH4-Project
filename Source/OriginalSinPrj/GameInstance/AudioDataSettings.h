@@ -19,5 +19,14 @@ public:
 	TSoftObjectPtr<UDataTable> LevelSounds;
 
 	UPROPERTY(EditAnywhere, Config, Category = "Sounds")
+	TSoftObjectPtr<UDataTable> UISfxSounds;
+
+	UPROPERTY(EditAnywhere, Config, Category = "Sounds")
 	TSoftObjectPtr<UDataTable> MonsterSounds;
+
+	UPROPERTY(EditAnywhere, Config, Category = "Sounds")
+	TSoftObjectPtr<UDataTable> CharacterSounds;
+
+	UPROPERTY(EditAnywhere, Config, Category = "Sounds")
+	TSoftObjectPtr<UDataTable> BossSounds;
 };
