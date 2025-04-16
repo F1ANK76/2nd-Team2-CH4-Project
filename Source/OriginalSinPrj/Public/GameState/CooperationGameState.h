@@ -6,6 +6,7 @@
 #include "GameFramework/GameState.h"
 #include "../Widget/LevelWidget/CooperationWidget.h"
 #include "../Widget/AddedWidget/BuffSelectWidget.h"
+#include "../Widget/AddedWidget/ResultWidget.h"
 #include "../Widget/AddedWidget/PlayerStateWidget.h"
 #include "../Player/BaseWitch.h"
 #include "OriginalSinPrj/Interface/CameraStateInterface.h"
@@ -28,6 +29,12 @@ public:
     UOriginalSinPrjGameInstance* GameInstance = nullptr;
     ACooperationGameMode* CooperationGameGameMode;
     
+
+    UPROPERTY(EditDefaultsOnly, Category = "UI")
+    TObjectPtr<UBaseWidget> BuffSelectWidget;
+
+    TArray<EBuffType> BuffUIInit();
+
 protected:
     ACooperationGameState();
     virtual void BeginPlay() override;
@@ -100,16 +107,6 @@ public:
     FPlayerData Player2StateData;
 
 
-    UPROPERTY(Replicated)
-    bool bIsStage3Started;
-
-    UPROPERTY(ReplicatedUsing = OnRep_UpdateTimer)
-    float Timer;
-
-    UFUNCTION()
-    void OnRep_UpdateTimer();
-
-    void UpdateTimer();
 
 
     void TurnOnResultWidget();
@@ -163,7 +160,7 @@ public:
     TArray<TWeakObjectPtr<APlayerController>> PlayerControllerSet;
     
     UPROPERTY()
-    TArray<FBuffInfo> SelectedBuff;
+    TArray<EBuffType> SelectedBuff;
 
     FBuffType* Player1Stage1SelectedBuff;
     FBuffType* Player2Stage1SelectedBuff;
@@ -187,6 +184,64 @@ public:
     void UpdateBossDataUI();
 
 
+   
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    UPROPERTY(Replicated)
+    float Player1ReceivedDamage = 0;
+
+    UPROPERTY(Replicated)
+    float Player2ReceivedDamage = 0;
+
+    UPROPERTY(Replicated)
+    int32 Player1DeathCount = 0;
+
+    UPROPERTY(Replicated)
+    int32 Player2DeathCount = 0;
+
+
+    UPROPERTY(Replicated)
+    int32 Player1ApplyAttackCount = 0;
+
+    UPROPERTY(Replicated)
+    int32 Player2ApplyAttackCount = 0;
+
+    UPROPERTY(Replicated)
+    float SpendedStage1Timer = 0;
+
+    UPROPERTY(Replicated)
+    float SpendedStage2Timer = 0;
+    //Timer
+
+    UPROPERTY(Replicated)
+    bool bIsStage1Reached = false;
+
+    UPROPERTY(Replicated)
+    bool bIsStage2Reached = false;
+
+    UPROPERTY(Replicated)
+    bool bIsStage3Reached = false;
+
+    UPROPERTY(Replicated)
+    bool bIsStage1Started = false;
+
+    UPROPERTY(Replicated)
+    bool bIsStage2Started = false;
+
+    UPROPERTY(Replicated)
+    bool bIsStage3Started = false;
+
+ 
+
+
+    UPROPERTY(ReplicatedUsing = OnRep_UpdateTimer)
+    float SpendedStage3Timer;
+
+    UFUNCTION()
+    void OnRep_UpdateTimer();
+
+    void UpdateTimer();
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 private:
     UPROPERTY()

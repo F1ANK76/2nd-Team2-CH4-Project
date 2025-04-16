@@ -26,7 +26,7 @@ public:
 	void ResponseShowLevelWidget();
 
 	UFUNCTION(Server, Reliable)
-	void Server_SelectBuff(int32 BuffIndex, FBuffInfo buff);
+	void Server_SelectBuff(int32 BuffIndex, EBuffType buff);
 protected:
 	UFUNCTION(Server, Reliable)
 	void RequestOnReadied();

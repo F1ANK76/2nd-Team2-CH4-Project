@@ -38,69 +38,68 @@ void UBuffSelectWidget::InitWidget(UUISubsystem* uiSubsystem)
     Buff1InfoBox->SetVisibility(ESlateVisibility::Collapsed);
     Buff2InfoBox->SetVisibility(ESlateVisibility::Collapsed);
     Buff3InfoBox->SetVisibility(ESlateVisibility::Collapsed);
-
-    InitializeBuffs();
 }
 
-void UBuffSelectWidget::InitializeBuffs()
+void UBuffSelectWidget::InitializeBuffs(TArray<EBuffType> BuffList)
 {
-    BuffTable.Add(FBuffInfo{ FText::FromString(TEXT("Initial Buff1 Name")),FText::FromString(TEXT("Initial Buff1 Script")),NULL });
-    BuffTable.Add(FBuffInfo{ FText::FromString(TEXT("Initial Buff2 Name")),FText::FromString(TEXT("Initial Buff2 Script")),NULL });
-    BuffTable.Add(FBuffInfo{ FText::FromString(TEXT("Initial Buff3 Name")),FText::FromString(TEXT("Initial Buff3 Script")),NULL });
+    ReceivedBuffType.Add(BuffList[0]);
+    ReceivedBuffType.Add(BuffList[1]);
+    ReceivedBuffType.Add(BuffList[2]);
+
+    BuffButton1->SetVisibility(ESlateVisibility::Visible);
+    BuffButton2->SetVisibility(ESlateVisibility::Visible);
+    BuffButton3->SetVisibility(ESlateVisibility::Visible);
 
 
-//버프 종류는 여기서 결정.
-//버프 종류가 기록되어있는 목록을 받아서, 겹치지 않게 세개를 받아 선택지에 올리기
 /*
-TArray<FBuffType> Buff = {}; //  { 1번, 2번, ... , n번 };
-TArray<FBuffType> SelectedBuff;
-if (BuffTable.Num() > 0)
-{
-    int RandomIndex = FMath::RandRange(0, BuffTable.Num() - 1);
-}
+    BuffName1->SetText(FText::FromString(BuffTitle1));
 
-for (int i = 0; i < 3; i++)
-{
-    int32 Index = FMath::RandRange(0, Buff.Num() - 1);
-    SelectedBuff.Add(Buff[Index]);
-    Buff.RemoveAt(Index);
-}
-*/
-//PlayerController?->UISubsystem->OpenWidget(EWidgetType::BuffSelectWidget);
-//PlayerController?->BuffSelectWidget->InitializeBuffs(SelectedBuff);
+    FString BuffTitle2 = TEXT("공격력 증가");
+    BuffName2->SetText(FText::FromString(BuffTitle2));
+
+    FString BuffTitle3 = TEXT("방어력 증가");
+    BuffName3->SetText(FText::FromString(BuffTitle3));
+    */
+
 
 
 }
 
 void UBuffSelectWidget::OnBuff1Clicked()
 {
-    DeactivateOhterWidgets(1, BuffTable[0]);
+
+    DeactivateOhterWidgets(1, ReceivedBuffType[0]);
     //play animation
     //UE_LOG(LogTemp, Log, TEXT("Buff 1 Selected: %s"), *Buffs[0].BuffName.ToString());
 }
 
 void UBuffSelectWidget::OnBuff2Clicked()
 {
-    DeactivateOhterWidgets(2, BuffTable[1]);
-    //play animation
+    DeactivateOhterWidgets(2, ReceivedBuffType[1]);
+    //play animations
     //UE_LOG(LogTemp, Log, TEXT("Buff 2 ���õ�: %s"), *Buffs[1].BuffName.ToString());
 }
 
 void UBuffSelectWidget::OnBuff3Clicked()
 {
-    DeactivateOhterWidgets(3, BuffTable[2]);
+    DeactivateOhterWidgets(3, ReceivedBuffType[2]);
     //play animation
     //UE_LOG(LogTemp, Log, TEXT("Buff 3 ���õ�: %s"), *Buffs[2].BuffName.ToString());
 
 }
 
-void UBuffSelectWidget::DeactivateOhterWidgets(int32 SelectedButtonIndex, FBuffInfo buff)
+void UBuffSelectWidget::DeactivateOhterWidgets(int32 SelectedButtonIndex, EBuffType SelectedBuff)
 {
+
+    BuffButton1->SetVisibility(ESlateVisibility::Collapsed);
+    BuffButton2->SetVisibility(ESlateVisibility::Collapsed);
+    BuffButton3->SetVisibility(ESlateVisibility::Collapsed);
+
     if (APlayerController* PC = GetOwningPlayer())
     {
         if (AWitchController* MyPC = Cast<AWitchController>(PC))
         {
-            MyPC->Server_SelectBuff(SelectedButtonIndex, buff);
+            MyPC->Server_SelectBuff(SelectedButtonIndex, SelectedBuff);
         }
     }
 }
