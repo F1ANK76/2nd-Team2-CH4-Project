@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
+#include "Player/WitchTypes.h"
 #include "CharacterDataStruct.generated.h"
 
 class ABaseWitch;
@@ -13,11 +14,17 @@ struct ORIGINALSINPRJ_API FCharacterDataStruct : public FTableRowBase
 
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FText CharacterName;
+    FText CharacterName = FText::GetEmpty();
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TSoftObjectPtr<UTexture2D> PortraitImage;
+    ECharacterType CharacterType = ECharacterType::Hand;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TSubclassOf<ABaseWitch> WitchClass;
+    TSoftObjectPtr<UTexture2D> PortraitImage = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<ABaseWitch> WitchClass = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<ABaseWitch> AIWitchClass = nullptr;
 };

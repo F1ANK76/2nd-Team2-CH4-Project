@@ -75,7 +75,10 @@ void AMoveAbility::ExcuteMove(FAbilityDataBuffer& Buffer)
 		ResponseRotated(Buffer.ParentWitch, true);
 	}
 
-	Buffer.ParentWitch->SetWitchState(EWitchStateType::Move);
+	if (Buffer.ParentWitch->GetWitchState() != EWitchStateType::Move)
+	{
+		Buffer.ParentWitch->SetWitchState(EWitchStateType::Move);
+	}
 }
 
 void AMoveAbility::ExcuteComand(FAbilityDataBuffer& Buffer)
