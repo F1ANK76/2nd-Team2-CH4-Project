@@ -9,7 +9,7 @@
 #include "CharacterSelectTileWidget.generated.h"
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterTileClicked, int32, TileIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterTileClicked, ECharacterType, TileIndex);
 
 class UButton;
 
