@@ -113,7 +113,7 @@ void ACooperationGameMode::StartGame()
     AttachPlayerToCamera(SpawnedCharacters[1], SpawnedBaseCamera[0]);
     
     CooperationGameState->InitPlayerInfo();
-
+    CooperationGameState->PlayerDataChanged++;
     //Functions to be processed before loading and starting the stage
     //Prepare the game, display the start UI...
 
@@ -444,6 +444,23 @@ void ACooperationGameMode::CheckUntilAllPlayerSelectBuff()
 
 }
 
+//클리어 트리거를 가지고 있는 오브젝트의 트리거가 눌리면
+void ACooperationGameMode::TriggerStage1Clear(UObject* Object)
+{
+    if (Object == Stage1ClearTriggerObject[0])
+    {
+        Stage1ClearTrigger1 = true;
+    }
+    else if (Object == Stage1ClearTriggerObject[1])
+    {
+        Stage1ClearTrigger2 = true;
+    }
+
+    if (Stage1ClearTrigger1 && Stage1ClearTrigger2)
+    {
+        EndStage1();
+    }
+}
 
 void ACooperationGameMode::SetPlayerUnReady()
 {
@@ -540,7 +557,7 @@ void ACooperationGameMode::SpawnBossMonsters()
     }
 }
 
-void ACooperationGameMode::HandlePlayerKilled(AActor* DeadPlayer, AController* Killer)
+void ACooperationGameMode::HandlePlayerKilled(AActor* DeadPlayer, AActor* Killer)
 {
     CurrentPlayerCount--;
 
@@ -554,8 +571,35 @@ void ACooperationGameMode::HandlePlayerKilled(AActor* DeadPlayer, AController* K
 }
 
 
+
+void ACooperationGameMode::PlayerDie(AActor* DeadPlayer, AActor* Killer)
+{    
+    ABaseWitch* Witch = Cast<ABaseWitch>(DeadPlayer);
+    
+    //test Code
+    if (IsValid(Witch))
+    {
+        if (CooperationGameState->PlayerInfos[Witch].LifePoint < 0)
+        {
+            HandlePlayerKilled(DeadPlayer, Killer);
+        }
+        else
+        {
+            Respawn(DeadPlayer);
+        }
+    }
+}
+
+
+void ACooperationGameMode::Respawn(AActor* DeadPlayer)
+{
+    DeadPlayer->SetActorLocation(RespawnLocation[0]);    
+    //DeadPlayer 상태 초기화?
+}
+
+
 //몬스터가 죽을 때 누구한테 죽었는지 정보를 넘기며 게임모드에 알려주면 호출되는 함수.
-void ACooperationGameMode::HandleMonsterKilled(AActor* DeadMonster, AController* Killer)
+void ACooperationGameMode::HandleMonsterKilled(AActor* DeadMonster, AActor* Killer)
 {
     CurrentMonsterCount--;
 
@@ -568,27 +612,10 @@ void ACooperationGameMode::HandleMonsterKilled(AActor* DeadMonster, AController*
 }
 
 
-//클리어 트리거를 가지고 있는 오브젝트의 트리거가 눌리면
-void ACooperationGameMode::TriggerStage1Clear(UObject* Object)
-{
-    if (Object == Stage1ClearTriggerObject[0])
-    {
-        Stage1ClearTrigger1 = true;
-    }
-    else if(Object == Stage1ClearTriggerObject[1])
-    {
-        Stage1ClearTrigger2 = true;
-    }
-
-    if (Stage1ClearTrigger1 && Stage1ClearTrigger2)
-    {
-        EndStage1();
-    }
-}
 
 
 //적 AI가 죽을 때 누구한테 죽었는지 정보를 넘기며 게임모드에 알려주면 호출되는 함수.
-void ACooperationGameMode::HandleEnemyKilled(AActor* DeadMonster, AController* Killer)
+void ACooperationGameMode::HandleEnemyKilled(AActor* DeadMonster, AActor* Killer)
 {
     //조건은 제대로 지정해야할듯
     CurrentEnemyCount--;
@@ -598,14 +625,24 @@ void ACooperationGameMode::HandleEnemyKilled(AActor* DeadMonster, AController* K
     if (CurrentEnemyCount <= 0)
     {
         EndStage2();
-    }
+    }   
 }
 
 //몬스터가 죽을 때 누구한테 죽었는지 정보를 넘기며 게임모드에 알려주면 호출되는 함수.
-void ACooperationGameMode::HandleBossMonsterKilled(AController* Killer)
+void ACooperationGameMode::HandleBossMonsterKilled(AActor* Killer)
 {
     EndStage3();
 }
+
+
+
+//낙사를 했을 때 어떻게 감지하는지. 이건 감지되고 처리하는 함수긴함.
+void ACooperationGameMode::FallDie(AActor* Character)
+{
+    //낙사를 했을 때 어떻게 감지하는지. 이건 감지되고 처리하는 함수긴함.
+    
+}
+
 
 void ACooperationGameMode::PostSeamlessTravel()
 {

@@ -222,6 +222,7 @@ void ACooperationGameState::InitPlayerInfo()
         0, 
         0, 
         0, 100 });
+        Player1StateData = PlayerInfos[CooperationGameGameMode->ActivePlayers[0]];
         PlayerInfos.Add(CooperationGameGameMode->ActivePlayers[1], FPlayerData{
         "Player2", nullptr,
         100.0f, 100.0f,
@@ -230,46 +231,50 @@ void ACooperationGameState::InitPlayerInfo()
         0,
         0,
         0, 100 });
+        Player2StateData = PlayerInfos[CooperationGameGameMode->ActivePlayers[1]];
     }
     InitPlayerUIInfo();
 
 }
+
 void ACooperationGameState::UpdatePlayerInfo(const FCharacterStateBuffer& State)
 {  
 
     UE_LOG(LogTemp, Warning, TEXT("Update Info"));
-    /*
-    if (State.OwnWitch == ActivePlayers[0])
+    
+    if (State.OwnWitch == CooperationGameGameMode->ActivePlayers[0])
     {
-
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentHP = State.CurrentHP;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentEXP = State.CurrentEXP;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentMana = State.CurrentMana;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].MaxHP = State.MaxHP;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].MaxEXP = State.MaxEXP;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].MaxMana = State.MaxMana;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].PlayerLevel = State.PlayerLevel;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].LifePoint = State.LifePoint;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].AirbornePercent = State.AirbornePercent;
+        Player1StateData = PlayerInfos[CooperationGameGameMode->ActivePlayers[0]];
+        CooperationGameGameMode->RequestUpdateUI(0);
     }
-    */
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentHP = State.CurrentHP;
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentEXP = State.CurrentEXP;
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentMana = State.CurrentMana;
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].MaxHP = State.MaxHP;
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].MaxEXP = State.MaxEXP;
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].MaxMana = State.MaxMana;
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].PlayerLevel = State.PlayerLevel;
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].LifePoint = State.LifePoint;
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].AirbornePercent = State.AirbornePercent;
-    /*
-    if (State.OwnWitch == ActivePlayers[1])
+    
+    
+    
+    if (State.OwnWitch == CooperationGameGameMode->ActivePlayers[1])
     {
-
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].CurrentHP = State.CurrentHP;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].CurrentEXP = State.CurrentEXP;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].CurrentMana = State.CurrentMana;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].MaxHP = State.MaxHP;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].MaxEXP = State.MaxEXP;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].MaxMana = State.MaxMana;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].PlayerLevel = State.PlayerLevel;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].LifePoint = State.LifePoint;
+        PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].AirbornePercent = State.AirbornePercent;
+        Player2StateData = PlayerInfos[CooperationGameGameMode->ActivePlayers[1]];
+        CooperationGameGameMode->RequestUpdateUI(1);
     }
-    */
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].CurrentHP = State.CurrentHP;
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].CurrentEXP = State.CurrentEXP;
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].CurrentMana = State.CurrentMana;
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].MaxHP = State.MaxHP;
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].MaxEXP = State.MaxEXP;
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].MaxMana = State.MaxMana;
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].PlayerLevel = State.PlayerLevel;
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].LifePoint = State.LifePoint;
-    PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].AirbornePercent = State.AirbornePercent;
-
-    UpdatePlayerUIInfo();
+    
+    
 }
 
 
@@ -281,7 +286,7 @@ void ACooperationGameState::InitPlayerUIInfo()
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
             // 여기서 UISubsystem 사용 가능!
-            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->InitPlayerUI(&PlayerInfos[CooperationGameGameMode->ActivePlayers[0]], &PlayerInfos[CooperationGameGameMode->ActivePlayers[1]]);
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->InitPlayerUI(&Player1StateData, &Player2StateData);
         }
     }
 }
@@ -294,7 +299,7 @@ void ACooperationGameState::UpdatePlayerUIInfo()
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
             // 여기서 UISubsystem 사용 가능!
-            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->InitPlayerUI(&PlayerInfos[CooperationGameGameMode->ActivePlayers[0]], &PlayerInfos[CooperationGameGameMode->ActivePlayers[1]]);
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->UpdatePlayerUI(&Player1StateData, &Player2StateData);
         }
     }
 }
@@ -575,6 +580,12 @@ void ACooperationGameState::OnRep_UpdatePlayer2DataUI()
 }
 
 
+void ACooperationGameState::OnRep_UpdatePlayerInitData()
+{
+    InitPlayerUIInfo();
+}
+
+
 void ACooperationGameState::UpdateTimer()
 {
     if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
@@ -609,6 +620,9 @@ void ACooperationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME(ACooperationGameState, SelectBuffPlayer);
     DOREPLIFETIME(ACooperationGameState, Player1DataChanged);
     DOREPLIFETIME(ACooperationGameState, Player2DataChanged);
+    DOREPLIFETIME(ACooperationGameState, Player1StateData);
+    DOREPLIFETIME(ACooperationGameState, Player2StateData);
+    DOREPLIFETIME(ACooperationGameState, PlayerDataChanged);
 
 }
 

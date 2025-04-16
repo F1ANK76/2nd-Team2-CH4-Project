@@ -28,8 +28,6 @@ public:
     UOriginalSinPrjGameInstance* GameInstance = nullptr;
     ACooperationGameMode* CooperationGameGameMode;
     
-    TArray<FBuffInfo> Temp;
-    
 protected:
     ACooperationGameState();
     virtual void BeginPlay() override;
@@ -85,6 +83,22 @@ public:
     void TurnOnStage2Widget();
     void TurnOnStage3Widget();
     void TurnOffStage3Widget();
+
+
+    UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayerInitData)
+    int PlayerDataChanged = 0;
+
+    UFUNCTION()
+    void OnRep_UpdatePlayerInitData();
+
+
+
+    UPROPERTY(Replicated)
+    FPlayerData Player1StateData;
+
+    UPROPERTY(Replicated)
+    FPlayerData Player2StateData;
+
 
     UPROPERTY(Replicated)
     bool bIsStage3Started;
