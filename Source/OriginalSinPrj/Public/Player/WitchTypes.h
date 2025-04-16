@@ -9,10 +9,10 @@
 UENUM(BlueprintType)
 enum class ECharacterType : uint8
 {
-	None = 0,
-	Witch1,
-	Witch2,
-	Witch3
+	Hand = 0,
+	Wand,
+	Staff,
+	Book
 };
 
 UENUM(BlueprintType)
