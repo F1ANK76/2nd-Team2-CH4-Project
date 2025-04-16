@@ -30,7 +30,9 @@ void UCooperationWidget::NativeConstruct()
     FLinearColor(0.f, 0.f, 0.f, 0.37f)
     };
 
+    /*
     DeactivateAllWidgets();
+    */
 }
 
 
@@ -89,10 +91,11 @@ void UCooperationWidget::ActiveStage3Widget()
 
 void UCooperationWidget::DeactivateAllWidgets()
 {
+    
     // Player �ܰ� UI
     Player1StateUI->SetVisibility(ESlateVisibility::Collapsed);
     Player2StateUI->SetVisibility(ESlateVisibility::Collapsed);
-
+    
     // Enemy �ܰ� UI
     Enemy1StateUI->SetVisibility(ESlateVisibility::Collapsed);
     Enemy2StateUI->SetVisibility(ESlateVisibility::Collapsed);
