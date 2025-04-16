@@ -11,7 +11,8 @@ const FName ULevelSubsystem::FarmingLevelName = "FarmingLevel";
 const FName ULevelSubsystem::SingleLevelName = "SingleLevel";
 const FName ULevelSubsystem::MatchLevelName = "MatchLevel";
 const FName ULevelSubsystem::LobbyLevelName = "LobbyLevel";
-const FName ULevelSubsystem::MultiLevelName = "MultiLevel";
+const FName ULevelSubsystem::MultiLobbyLevelName = "MultiLobbyLevel";
+const FName ULevelSubsystem::MultiLevelName = "MultiLevel";	// 테스트 용으로 이름 잠시 변경
 const FName ULevelSubsystem::CooperationLevelName = "CooperationLevel";
 
 const ELevelType ULevelSubsystem::GetCurrentLevel() const
@@ -98,6 +99,10 @@ void ULevelSubsystem::ConvertTypeToName(ELevelType Type)
 	case ELevelType::LobbyLevel:
 		TargetName = LobbyLevelName.ToString();
 		break;
+		
+	case ELevelType::MultiLobbyLevel:
+		TargetName = MultiLobbyLevelName.ToString();
+		break;
 
 	case ELevelType::MultiLevel:
 		TargetName = MultiLevelName.ToString();
@@ -136,6 +141,10 @@ void ULevelSubsystem::CompareMapName()
 	else if (MapName.Contains(MatchLevelName.ToString()))
 	{
 		CurrentLevel = ELevelType::MatchLevel;
+	}
+	else if (MapName.Contains(MultiLobbyLevelName.ToString()))
+	{
+		CurrentLevel = ELevelType::MultiLobbyLevel;
 	}
 	else if (MapName.Contains(LobbyLevelName.ToString()))
 	{

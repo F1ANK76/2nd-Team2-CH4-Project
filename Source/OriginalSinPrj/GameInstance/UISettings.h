@@ -27,6 +27,9 @@ public:
 	TSubclassOf<UBaseWidget> LobbyWidgetClass;
 
 	UPROPERTY(EditAnywhere, Config, Category = "Widgets")
+	TSubclassOf<UBaseWidget> MultiLobbyWidgetClass;
+
+	UPROPERTY(EditAnywhere, Config, Category = "Widgets")
 	TSubclassOf<UBaseWidget> MultiWidgetClass;
 
 	UPROPERTY(EditAnywhere, Config, Category = "Widgets")

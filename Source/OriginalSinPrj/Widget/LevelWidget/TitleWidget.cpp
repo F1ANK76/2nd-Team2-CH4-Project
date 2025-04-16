@@ -12,7 +12,7 @@ void UTitleWidget::InitWidget(UUISubsystem* uiSubsystem)
 
     SinglePlayButton->OnClicked.AddDynamic(this, &ThisClass::OnSelectedSingleMode);
     TrainingButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveTrainingMode);
-    MultiPlayButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveMultiMode);
+    MultiPlayButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveMultiLobbyMode);
     OptionButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedOptionButton);
     QuitButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedQuitGame);
 }

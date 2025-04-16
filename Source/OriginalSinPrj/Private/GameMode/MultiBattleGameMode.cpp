@@ -94,7 +94,6 @@ void AMultiBattleGameMode::RespawnPlayer(APlayerController* PlayerController)
 	}
 }
 
-
 void AMultiBattleGameMode::ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation)
 {
 	/*

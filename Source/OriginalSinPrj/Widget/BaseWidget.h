@@ -61,6 +61,9 @@ public:
 
 	UFUNCTION()
 	virtual void OnClickedMoveMultiMode();
+	
+	UFUNCTION()
+	virtual void OnClickedMoveMultiLobbyMode();
 
 	UFUNCTION()
 	virtual void OnClickedMoveTrainingMode();
