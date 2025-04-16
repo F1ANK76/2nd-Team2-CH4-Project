@@ -54,7 +54,7 @@ void ABaseProjectile::DeactiveProjectile()
 	{
 		return;
 	}
-	
+
 	GetWorld()->GetTimerManager().ClearTimer(DeactiveTimer);
 	GetWorld()->GetTimerManager().ClearTimer(VisibleDelayTimer);
 	GetWorld()->GetTimerManager().ClearTimer(AttackDelayTimer);
