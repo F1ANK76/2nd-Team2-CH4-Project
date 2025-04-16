@@ -10,10 +10,6 @@ class UBoxComponent;
 class ALevelObjectManager;
 class ABaseWitch;
 class AMonsterCharacter;
-
-DECLARE_MULTICAST_DELEGATE(FOverlapEvent);
-
-
 UCLASS()
 class ORIGINALSINPRJ_API AKillZone : public AActor
 {
@@ -43,17 +39,11 @@ protected:
 
 public:
 
-
-	UFUNCTION()
-	void TriggerOverlapPlatformEvent();
-
 	UFUNCTION(Server, Reliable)
 	void Server_TriggerOverlapWitchEvent(ABaseWitch* WitchActor);
 
 	UFUNCTION(Server, Reliable)
 	void Server_TriggerOverlapMonsterEvent(AMonsterCharacter* Monster);
-
-	FOverlapEvent OverlapEvent;
 
 	UPROPERTY(EditAnywhere, Replicated, Category = "Platform")
 	USceneComponent* Scene;

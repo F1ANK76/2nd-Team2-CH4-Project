@@ -49,7 +49,7 @@ void ACooperationGameMode::BeginPlay()
     //Open Player UI;
     InitPlayerUI();
 
-
+    SpawnKillZone();
     //Game Start Condition -> Start with a timer temporarily
     FTimerHandle TimerHandle;
     GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
@@ -562,11 +562,36 @@ void ACooperationGameMode::HandlePlayerKilled(AActor* DeadPlayer, AActor* Killer
     CurrentPlayerCount--;
 
     ActivePlayers.Remove(DeadPlayer); // 알아서 내부에서 찾고 제거함
-
+    DeadPlayer->Destroy();
     //test Code
     if (CurrentPlayerCount <= 0)
     {
         //게임을 실패한거로 종료.
+    }
+}
+
+
+void ACooperationGameMode::PlayerFallDie(AActor* DeadPlayer, AActor* Killer)
+{
+    ABaseWitch* Witch = Cast<ABaseWitch>(DeadPlayer);
+
+    CooperationGameState->PlayerInfos[Witch].LifePoint--;
+    //test Code
+    if (IsValid(Witch))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("PlayerWitch Die"));
+        if (CooperationGameState->PlayerInfos[Witch].LifePoint < 0)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("PlayerWitch kill"));
+            HandlePlayerKilled(DeadPlayer, Killer);
+            Witch->ResetCharacterState();
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("PlayerWitch respawn"));
+            Respawn(Witch);
+            Witch->ResetCharacterState();
+        }
     }
 }
 
@@ -576,15 +601,19 @@ void ACooperationGameMode::PlayerDie(AActor* DeadPlayer, AActor* Killer)
 {    
     ABaseWitch* Witch = Cast<ABaseWitch>(DeadPlayer);
     
+    CooperationGameState->PlayerInfos[Witch].LifePoint--;
     //test Code
     if (IsValid(Witch))
     {
+        UE_LOG(LogTemp, Warning, TEXT("PlayerWitch Die"));
         if (CooperationGameState->PlayerInfos[Witch].LifePoint < 0)
         {
+            UE_LOG(LogTemp, Warning, TEXT("PlayerWitch kill"));
             HandlePlayerKilled(DeadPlayer, Killer);
         }
         else
         {
+            UE_LOG(LogTemp, Warning, TEXT("PlayerWitch respawn"));
             Respawn(DeadPlayer);
         }
     }
@@ -756,6 +785,26 @@ void ACooperationGameMode::SpawnPlayers()
     }
 }
 
+void ACooperationGameMode::SpawnKillZone()
+{
+    if (!ActorKillZone) return;  // UPROPERTY로 설정한 클래스가 없으면 리턴
+
+    FVector SpawnLocation = FVector(0.f, 0.f, -500.f);  // 원하는 위치
+    FRotator SpawnRotation = FRotator::ZeroRotator;
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Owner = this;
+
+    AKillZone* SpawnedKillZone = GetWorld()->SpawnActor<AKillZone>(ActorKillZone, SpawnLocation, SpawnRotation, SpawnParams);
+
+    if (SpawnedKillZone)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("KillZone 스폰 성공!"));
+    }
+}
+
+
+
+
 void ACooperationGameMode::OnCharacterStateReceived(const FCharacterStateBuffer& State)
 {   
     if (CooperationGameState)
@@ -891,6 +940,7 @@ void ACooperationGameMode::TakeDamage(AActor* Victim, float Damage, const FVecto
 void ACooperationGameMode::OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation)
 {
     CooperationGameState->OnDeathPlayer(Player, DeathLocation);
+    PlayerDie(Player, nullptr);
 }
 
 void ACooperationGameMode::OnDeathMonster(AActor* Monster, const FVector& DeathLocation)

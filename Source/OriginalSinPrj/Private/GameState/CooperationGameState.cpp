@@ -716,6 +716,7 @@ void ACooperationGameState::TakeDamage(AActor* Victim, float Damage, const FVect
 void ACooperationGameState::OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation) 
 {
     Multicast_OnDeathPlayer(Player, DeathLocation);
+
 }
 
 void ACooperationGameState::OnDeathMonster(AActor* Monster, const FVector& DeathLocation) 

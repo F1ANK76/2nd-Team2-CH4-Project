@@ -8,6 +8,7 @@
 #include "../Widget/LevelWidget/CooperationWidget.h"
 #include "GameState/CooperationGameState.h"
 #include "BaseCamera.h"
+#include "KillZone.h"
 #include "CooperationGameMode.generated.h"
 
 
@@ -59,6 +60,11 @@ public:
 public:
     TObjectPtr<ACooperationGameState> CooperationGameState = nullptr;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "KillZone")
+    TSubclassOf<AKillZone> ActorKillZone;
+    
+    // killzone 생성 함수
+    void SpawnKillZone();
 
     UPROPERTY(BlueprintReadWrite)
     TArray<ABaseWitch*> SpawnedCharacters;
@@ -171,6 +177,7 @@ public:
     void ApplyBuffToBothPlayer();
 
     void PlayerDie(AActor* DeadPlayer, AActor* Killer);
+    void PlayerFallDie(AActor* DeadPlayer, AActor* Killer);
 
     void Respawn(AActor* DeadActor);
 
