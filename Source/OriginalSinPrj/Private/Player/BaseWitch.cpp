@@ -15,6 +15,7 @@
 #include "Engine/DamageEvents.h"
 #include "Player/Projectile/BaseProjectile.h"
 #include "Components/CapsuleComponent.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
 
 ABaseWitch::ABaseWitch()
 {
@@ -31,6 +32,7 @@ ABaseWitch::ABaseWitch()
 
 	AbilityComp = CreateDefaultSubobject<UWitchAbilityComponent>(TEXT("Ability Component"));
 	BuffComp = CreateDefaultSubobject<UBuffComponent>(TEXT("Buff Component"));
+	PerceptionStimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Perceptions Stimuli Source Component"));
 
 	LeftHandDamager = CreateDefaultSubobject<UBoxComponent>(TEXT("Left Hand Damager"));
 	RightHandDamager = CreateDefaultSubobject<UBoxComponent>(TEXT("Right Hand Damager"));
@@ -412,6 +414,11 @@ void ABaseWitch::ResetCharacterState()
 	CharacterBuffer.CurrentMana = 0;
 	
 	OnChangedState.Broadcast(CharacterBuffer);
+}
+
+const float ABaseWitch::GetCurrentMana() const
+{
+	return CharacterBuffer.CurrentMana;
 }
 
 const bool ABaseWitch::GetColorIndex() const

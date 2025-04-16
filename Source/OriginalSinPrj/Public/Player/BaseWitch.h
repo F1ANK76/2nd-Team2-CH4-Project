@@ -15,6 +15,7 @@ class UWitchAnimInstance;
 class UBoxComponent;
 class UNiagaraComponent;
 class UBuffComponent;
+class UAIPerceptionStimuliSourceComponent;
 struct FInputActionValue;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangedCharacterState, const FCharacterStateBuffer&, CharacterStateBuffer);
@@ -87,6 +88,9 @@ public:
 	UFUNCTION(Server, Reliable)
 	void RequestPauseTimer();
 
+
+	UFUNCTION(BlueprintCallable)
+	const float GetCurrentMana() const;
 
 	UFUNCTION()
 	const bool GetColorIndex() const;
@@ -189,6 +193,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UBuffComponent> BuffComp = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UAIPerceptionStimuliSourceComponent> PerceptionStimuliSource = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UCapsuleComponent> HitCollision = nullptr;
