@@ -23,12 +23,13 @@ bool AHitAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 {
 	Super::ExcuteAbility(Buffer);
 
+	Parent = Buffer.ParentWitch;
+
 	if (!CheckExcuteable(Buffer))
 	{
 		return false;
 	}
 
-	Parent = Buffer.ParentWitch;
 	PreMoveState = Parent->GetCharacterMovement()->GetMovementName();
 	StartPosZ = Parent->GetActorLocation().Z;
 
@@ -43,7 +44,6 @@ bool AHitAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 	CalculateKnockTargetPos(Buffer);
 
 	Parent->AddKnockGauge(Buffer.AddedGuage);
-	//Buffer.KnockGuage += Buffer.AddedGuage;
 	
 	ResponseOnLaunched(KnockDistance);
 	SetActorTickEnabled(true);
@@ -55,9 +55,8 @@ bool AHitAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 void AHitAbility::UndoAbility(FAbilityDataBuffer& Buffer)
 {
 	Super::UndoAbility(Buffer);
-	//UE_LOG(LogTemp, Warning, TEXT("Undo Hit"));
-	SetActorTickEnabled(false);
 
+	SetActorTickEnabled(false);
 	Parent->SetMeshResponseToChanel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
 
 	Buffer.bIsJumpable = true;
@@ -127,6 +126,7 @@ bool AHitAbility::CheckExcuteable(FAbilityDataBuffer& Buffer)
 	}
 
 	Buffer.LastAbilities[0]->UndoAbility(Buffer);
+	Parent->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 
 	return true;
 }

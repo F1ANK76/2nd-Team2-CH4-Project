@@ -38,6 +38,7 @@ public:
 	void ResponseEndAnim();
 	void PauseBufferTimer();
 	void AddCurrentMana(float Value);
+	void SetMaxMana(float Value);
 	void ResetAbility();
 
 protected:
@@ -123,6 +124,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
 	TSubclassOf<ABaseWitchAbility> Skill5AbilityClass = nullptr;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Ability")
+	FAbilityDataBuffer AbilityBuffer;
+
 private:
 	UPROPERTY()
 	TObjectPtr<ABaseWitch> ParentWitch = nullptr;
@@ -130,8 +134,8 @@ private:
 	UPROPERTY()
 	TObjectPtr<UCharacterMovementComponent> ParentMovementComp = nullptr;
 
-	UPROPERTY()
-	FAbilityDataBuffer AbilityBuffer;
+	/*UPROPERTY()
+	FAbilityDataBuffer AbilityBuffer;*/
 
 	FTimerHandle BufferTimer;
 

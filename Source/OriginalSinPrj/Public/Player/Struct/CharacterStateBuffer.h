@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "CharacterStateBuffer.generated.h"
 
+class ABaseWitch;
 
 USTRUCT()
 struct ORIGINALSINPRJ_API FCharacterStateBuffer
@@ -12,6 +13,9 @@ struct ORIGINALSINPRJ_API FCharacterStateBuffer
 	GENERATED_BODY()
 
 public:
+    UPROPERTY()
+    TObjectPtr<ABaseWitch> OwnWitch = nullptr;
+
     UPROPERTY()
     int32 PlayerLevel = 0;
 

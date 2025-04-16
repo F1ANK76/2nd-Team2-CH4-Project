@@ -223,14 +223,14 @@ void UWitchAbilityComponent::CallRoll(const FVector2D& DirectionVector)
 void UWitchAbilityComponent::ResponseEndAnim()
 {
 	bIsPlayingAnim = false;
-	//UE_LOG(LogTemp, Warning, TEXT("Response End Anim"));
+	//UE_LOG(LogTemp, Warning, TEXT("%s : Response End Anim"), *AbilityBuffer.ParentWitch->GetName());
 	if (IsValid(AbilityBuffer.CurrentAbility))
 	{
 		AbilityBuffer.CurrentAbility->UndoAbility(AbilityBuffer);
-		//UE_LOG(LogTemp, Warning, TEXT("Undo Ability %s"), *AbilityBuffer.CurrentAbility->GetName());
+		//UE_LOG(LogTemp, Warning, TEXT("%s : Undo Ability %s"), *AbilityBuffer.ParentWitch->GetName(), *AbilityBuffer.CurrentAbility->GetName());
 		if (AbilityBuffer.CurrentAbility == JumpAbility)
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("Undo Target Ability is Jump Ability"));
+			//UE_LOG(LogTemp, Warning, TEXT("%s : Undo Target Ability is Jump Ability"), *AbilityBuffer.ParentWitch->GetName());
 			GetWorld()->GetTimerManager().ClearTimer(BufferTimer);
 			ClearLastAbilities();
 		}
@@ -369,10 +369,12 @@ void UWitchAbilityComponent::ActiveTimer()
 {
 	if (!GetWorld()->GetTimerManager().TimerExists(BufferTimer))
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("%s : Timer is invalid. "), *AbilityBuffer.ParentWitch->GetName());
 		GetWorld()->GetTimerManager().SetTimer(BufferTimer, this, &ThisClass::ClearLastAbilities, BufferActiveTime, false);
 
 		if (bIsPlayingAnim)
 		{
+			//UE_LOG(LogTemp, Warning, TEXT("%s : Animation is Playing. Timer Pause. "), *AbilityBuffer.ParentWitch->GetName());
 			GetWorld()->GetTimerManager().PauseTimer(BufferTimer);
 		}
 
@@ -381,6 +383,7 @@ void UWitchAbilityComponent::ActiveTimer()
 
 	if (!GetWorld()->GetTimerManager().IsTimerPaused(BufferTimer))
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("%s : Timer is not paused. Set Timer. "), *AbilityBuffer.ParentWitch->GetName());
 		GetWorld()->GetTimerManager().SetTimer(BufferTimer, this, &ThisClass::ClearLastAbilities, BufferActiveTime, false);
 	}
 }
@@ -401,6 +404,7 @@ void UWitchAbilityComponent::RemoveOldAbilityFromArray()
 
 void UWitchAbilityComponent::ClearLastAbilities()
 {
+	//UE_LOG(LogTemp, Warning, TEXT("%s : Clear Last Ability Array"), *AbilityBuffer.ParentWitch->GetName());
 	AbilityBuffer.LastAbilities.Empty();
 	AbilityBuffer.CurrentAbility = nullptr;
 	AbilityBuffer.ComandDirection = EDirectionType::None;
