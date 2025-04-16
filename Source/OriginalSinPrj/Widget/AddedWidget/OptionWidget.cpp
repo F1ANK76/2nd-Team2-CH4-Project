@@ -14,6 +14,12 @@ void UOptionWidget::InitWidget(UUISubsystem* uiSubsystem)
 	CloseButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedCloseOption);
 	BGMVolumeSlider->OnValueChanged.AddDynamic(this, &ThisClass::OnClickedBGMVolume);
 	EffectVolumeSlider->OnValueChanged.AddDynamic(this, &ThisClass::OnClickedEffectVolume);
+
+	if (CheckValidOfAudioSubsystem())
+	{
+		BGMVolumeSlider->SetValue(AudioSubsystem->GetBgmVolume());
+		EffectVolumeSlider->SetValue(AudioSubsystem->GetEffectVolume());
+	}
 }
 
 void UOptionWidget::EndRemoveAnim()
@@ -37,17 +43,18 @@ void UOptionWidget::OnClickedBGMVolume(float Value)
 	//UIHandle->ClickedBGMVolume(Value);
 	//UIHandle->RequestPlayUISound(EUISoundType::Click);
 
-	if (UGameInstance* GameInstance = GetGameInstance())
+	if (CheckValidOfAudioSubsystem())
 	{
-		if (UAudioSubsystem* AudioSubsystem = GameInstance->GetSubsystem<UAudioSubsystem>())
-		{
-			AudioSubsystem->SetAndApplyMasterVolume(Value);
-		}
+		AudioSubsystem->SetBgmVolume(Value);
 	}
 }
 
 void UOptionWidget::OnClickedEffectVolume(float Value)
 {
+	if (CheckValidOfAudioSubsystem())
+	{
+		AudioSubsystem->SetEffectVolume(Value);
+	}
 	//UISubsystem�� �����ϴ��� üũ
 	//UISubsystem Ȥ�� UIHandler�� �Է¹��� Value�� ���� ���� ��û.
 
@@ -59,4 +66,26 @@ void UOptionWidget::OnClickedEffectVolume(float Value)
 void UOptionWidget::OpenKeySetting()
 {
 
+}
+
+bool UOptionWidget::CheckValidOfAudioSubsystem()
+{
+	if (IsValid(AudioSubsystem))
+	{
+		return true;
+	}
+
+	if (!IsValid(GetGameInstance()))
+	{
+		return false;
+	}
+
+	AudioSubsystem = GetGameInstance()->GetSubsystem<UAudioSubsystem>();
+
+	if (!IsValid(AudioSubsystem))
+	{
+		return false;
+	}
+
+	return true;
 }
