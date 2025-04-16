@@ -50,7 +50,7 @@ void UBuffComponent::ApplyBuff(EBuffType TargetType)
 		break;
 
 	default:
-		checkNoEntry();
+		UE_LOG(LogTemp, Warning, TEXT("Not Function"));
 	}
 }
 
