@@ -58,7 +58,9 @@ UENUM(BlueprintType)
 enum class EUISfxSoundType : uint8
 {
 	Click = 0,
-	OK
+	Open,
+	Close,
+	Horver
 };
 
 UENUM(BlueprintType)

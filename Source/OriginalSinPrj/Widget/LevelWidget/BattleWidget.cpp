@@ -32,9 +32,9 @@ void UBattleWidget::UpdatePlayerUI(FPlayerData* Player1, FPlayerData* Player2)
 
 void UBattleWidget::UpdateFarmingModeTimerUI(float time)
 {
-    float RoundedTime = FMath::RoundToFloat(time * 100) / 100.f; // �Ҽ��� ��° �ڸ����� �ݿø�
+    float RoundedTime = FMath::RoundToFloat(time * 100) / 100.f;
     int32 Seconds = FMath::FloorToInt(RoundedTime);
-    int32 Decimals = FMath::RoundToInt((RoundedTime - Seconds) * 100); // �Ҽ��� �Ʒ� ��° �ڸ�
+    int32 Decimals = FMath::RoundToInt((RoundedTime - Seconds) * 100);
 
     FString TimeString = FString::Printf(TEXT("%d:%02d"), Seconds, Decimals);
     FarmingModeTimer->SetText(FText::FromString(TimeString));

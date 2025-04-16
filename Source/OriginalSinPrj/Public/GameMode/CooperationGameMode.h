@@ -22,7 +22,7 @@ public: //for test
     UFUNCTION()
     void HandleBuffSelection(AActor* SourceActor, int32 BuffIndex);
 
-    void ApplyBuffToPlayer(APlayerController* Controller, int32 BuffIndex, FBuffInfo buff);
+    void ApplyBuffToPlayer(APlayerController* Controller, int32 BuffIndex, EBuffType buff);
     
     void RequestTurnOffBuffSelectUI();
     
@@ -71,6 +71,11 @@ public:
     
     // 생성된 캐릭터를 관리할 배열
     TArray<AActor*> ActivePlayers;
+    TArray<AActor*> AlivePlayers;
+
+    void ResetAlivePlayers();
+
+
 
     // return Current Activated Players
     TArray<AActor*> GetActivePlayers() const
@@ -219,6 +224,7 @@ public:
     TSubclassOf<APlayerController> PlayerControllerClass;
 
     void SetPlayerUnReady();
+    void SetPlayerUnReady(AActor* actor);
 
     void SetPlayerReady();
 
@@ -315,12 +321,16 @@ public:
     UFUNCTION()
     void TravelLevel();
 
+
+
+
 protected:
     //UFUNCTION(NetMulticast, Reliable)
     void InitPlayerUI();
 
     //멀티 전용
     virtual void PostSeamlessTravel() override;
+
 
 public:
     virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;

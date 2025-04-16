@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "../BaseWidget.h"
+#include "OriginalSinPrj/GameInstance/EnumSet.h"
 #include "BuffSelectWidget.generated.h"
 
 
@@ -39,8 +40,8 @@ public:
     virtual void InitWidget(UUISubsystem* uiSubsystem) override;
     //virtual void NativeConstruct() override;
 
-    void InitializeBuffs();
-    TArray<FBuffInfo> BuffTable;
+    void InitializeBuffs(TArray<EBuffType> BuffList);
+    TArray<EBuffType> ReceivedBuffType;
 
     UPROPERTY()	
     UDataTable* MyCBuffTable; //CSV파일과 연동하여 데이터 불러들이기.
@@ -74,7 +75,7 @@ protected:
 
 
     UFUNCTION()
-    void DeactivateOhterWidgets(int32 SelectedButtonIndex, FBuffInfo buff);
+    void DeactivateOhterWidgets(int32 SelectedButtonIndex, EBuffType buff);
 
 
 

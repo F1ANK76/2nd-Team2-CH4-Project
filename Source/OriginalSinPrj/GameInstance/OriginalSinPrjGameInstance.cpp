@@ -89,7 +89,7 @@ void UOriginalSinPrjGameInstance::ResponseShowWidget()
 
     checkf(IsValid(AudioSubsystem), TEXT("AudioSubsystem is invalid"));
 
-    AudioSubsystem->PlayBGMByLevelType(GetCurrentLevelType());
+    AudioSubsystem->PlayBGMSoundByLevel(GetCurrentLevelType());
 }
 
 const ELevelType UOriginalSinPrjGameInstance::GetCurrentLevelType()

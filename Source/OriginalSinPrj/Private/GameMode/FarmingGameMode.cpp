@@ -285,10 +285,6 @@ void AFarmingGameMode::PostSeamlessTravel()
             }
         }
     }
-
-
-
-   
     UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Done"));
 }
 
