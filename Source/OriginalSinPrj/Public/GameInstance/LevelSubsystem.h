@@ -36,6 +36,7 @@ private:
 	static const FName FarmingLevelName;
 	static const FName MatchLevelName;
 	static const FName LobbyLevelName;
+	static const FName MultiLobbyLevelName;
 	static const FName SingleLevelName;
 	static const FName MultiLevelName;
 	static const FName CooperationLevelName;

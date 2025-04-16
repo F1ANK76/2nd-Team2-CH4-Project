@@ -6,9 +6,14 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "EnumSet.h"
 #include "Kismet/GameplayStatics.h"
+#include "OriginalSinPrj/GameInstance/Struct/SoundDataArrayStruct.h"
 #include "AudioSubsystem.generated.h"
 
 class UAudioDataSettings;
+
+struct FCharacterAudioDataStruct;
+struct FBossAudioDataStruct;
+struct FMonsterAudioDataStruct;
 
 UCLASS()
 class ORIGINALSINPRJ_API UAudioSubsystem : public UGameInstanceSubsystem
@@ -19,9 +24,7 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 	void LoadDataTables();
-	void CheckLoadedLevelSound();
 
-	void PlayBGMByLevelType(ELevelType LevelType);
 	void PlayBGM(ELevelSoundType SoundType);
 	void PlaySFX(ESfxSoundType SoundType, uint8 DetailSoundType, FVector Location = FVector::ZeroVector);
 
@@ -31,8 +34,27 @@ public:
 	template<typename EnumType, typename StructType>
 	void PlaySFXByType(UObject* WorldContext, UDataTable* Table, uint8 DetailSoundType, FVector Location);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
-	float MasterVolume = 1.0f;
+	void PlayBGMSoundByLevel(ELevelType Type);
+	void PlayBGMSound(ELevelSoundType Type);
+	void PlayUISound(EUISfxSoundType Type);
+
+	TArray<FCharacterAudioDataStruct*>& GetCharacterSoundArray();
+	TArray<FBossAudioDataStruct*>& GetBossSoundArray();
+	TArray<FMonsterAudioDataStruct*>& GetMonsterSoundArray();
+
+private:
+	USoundBase* GetBgmSoundSource(ELevelSoundType SoundType);
+	USoundBase* GetUISoundSource(EUISfxSoundType SoundType);
+
+	bool CheckValidOfBgmAudio();
+	bool CheckValidOfUIAudio();
+	bool CheckValidOfCharacterAudio();
+	bool CheckValidOfBossAudio();
+	bool CheckValidOfMonsterAudio();
+
+private:
+	UPROPERTY()
+	FSoundDataArrayStruct SoundDataArraySet;
 
 	UPROPERTY()
 	UDataTable* LevelSoundTable;
@@ -52,7 +74,20 @@ public:
 	UPROPERTY()
 	TObjectPtr<UAudioComponent> BgmComp;
 
+	UPROPERTY()
+	TObjectPtr<UAudioComponent> UIAudioComp;
+
+	UPROPERTY()
 	const UAudioDataSettings* AudioDataSettings;
+
+	UPROPERTY()
+	float MasterVolume = 1.0f;
+
+	UPROPERTY()
+	float EffectVolume = 1.0f;
+
+	UPROPERTY()
+	float BgmVoume = 1.0f;
 };
 
 // Use EX : PlaySFX(ESfxSoundType::Monster, static_cast<uint8>(EMonsterSoundType::Attack), FVector(10.f, 0.f, 0.f));

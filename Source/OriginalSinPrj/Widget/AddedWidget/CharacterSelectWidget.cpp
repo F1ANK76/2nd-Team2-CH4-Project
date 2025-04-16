@@ -6,6 +6,9 @@
 #include "Blueprint/WidgetTree.h"
 #include "Components/Button.h"
 #include "../GameInstance/UISubsystem.h"
+#include "OriginalSinPrj/GameInstance/DataSubsystem.h"
+#include "OriginalSinPrj/GameInstance/Struct/CharacterTypeData.h"
+#include "OriginalSinPrj/GameInstance/Struct/CharacterDataStruct.h"
 
 
 //initWidget�� ������� �ʾ� ���� �ӽ� �Լ�...
@@ -14,6 +17,7 @@ void UCharacterSelectWidget::InitWidget(UUISubsystem* uiHandle)
     Super::InitWidget(uiHandle);
 
     InitDelegate();
+    InitCharacterTiles();
     UICloseButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedClose);
 }
 
@@ -71,8 +75,35 @@ void UCharacterSelectWidget::InitDelegate()
 
         if (IsValid(Tile))
         {
+            Tiles.Add(Tile);
             Tile->InitWidget(UIHandle);
             Tile->OnCharacterSelectTileClicked.AddDynamic(this, &UCharacterSelectWidget::OnTileClickedFromTile);
+
         }
+    }
+}
+
+void UCharacterSelectWidget::InitCharacterTiles()
+{
+    if (!IsValid(GetGameInstance()))
+    {
+        return;
+    }
+
+    UDataSubsystem* DataSubsystem = GetGameInstance()->GetSubsystem<UDataSubsystem>();
+
+    if (!IsValid(DataSubsystem))
+    {
+        return;
+    }
+
+    for (int32 i = 0; i < Tiles.Num(); i++)
+    {
+        ECharacterType TargetType = (ECharacterType)(i % DataSubsystem->GetCharacterTypeSize());
+
+        const FCharacterDataStruct* TargetData = DataSubsystem->GetCharacterDataByType(TargetType);
+
+        Tiles[i]->SetCharacterType(TargetType);
+        Tiles[i]->SetCharacterImage(TargetData->PortraitImage.LoadSynchronous());
     }
 }

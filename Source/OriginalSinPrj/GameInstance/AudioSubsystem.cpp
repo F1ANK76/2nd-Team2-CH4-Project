@@ -15,8 +15,6 @@ void UAudioSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 
 	AudioDataSettings = GetDefault<UAudioDataSettings>();
-
-    LoadDataTables();
 }
 
 void UAudioSubsystem::LoadDataTables()
@@ -43,72 +41,6 @@ void UAudioSubsystem::LoadDataTables()
             BossSoundTable = AudioDataSettings->BossSounds.LoadSynchronous();
         }
     }
-}
-
-void UAudioSubsystem::CheckLoadedLevelSound()
-{
-    if (!IsValid(AudioDataSettings))
-    {
-        return;
-    }
-
-    if (AudioDataSettings->LevelSounds.IsNull())
-    {
-        return;
-    }
-
-    if (!IsValid(LevelSoundTable))
-    {
-        LevelSoundTable = AudioDataSettings->LevelSounds.LoadSynchronous();
-    }
-}
-
-void UAudioSubsystem::PlayBGMByLevelType(ELevelType LevelType)
-{
-    CheckLoadedLevelSound();
-
-    ELevelSoundType SoundType = ELevelSoundType::TitleSound;
-
-    switch (LevelType)
-    {
-    case ELevelType::IntroLevel:
-        SoundType = ELevelSoundType::IntroSound;
-        break;
-
-    case ELevelType::TitleLevel:
-        SoundType = ELevelSoundType::TitleSound;
-        break;
-
-    case ELevelType::TrainingLevel:
-        SoundType = ELevelSoundType::TrainingSound;
-        break;
-
-    case ELevelType::FarmingLevel:
-        SoundType = ELevelSoundType::FarmingSound;
-        break;
-
-    case ELevelType::SingleLevel:
-        SoundType = ELevelSoundType::SingleSound;
-        break;
-
-    case ELevelType::MatchLevel:
-        SoundType = ELevelSoundType::MatchSound;
-        break;
-
-    case ELevelType::LobbyLevel:
-        SoundType = ELevelSoundType::LobbySound;
-        break;
-
-    case ELevelType::MultiLevel:
-        SoundType = ELevelSoundType::MultiSound;
-        break;
-
-    case ELevelType::CooperationLevel:
-        SoundType = ELevelSoundType::CooperationSound;
-        break;
-    }
-
-    PlayBGM(SoundType);
 }
 
 void UAudioSubsystem::PlayBGM(ELevelSoundType SoundType)
@@ -193,4 +125,270 @@ void UAudioSubsystem::SetAndApplyMasterVolume(float NewVolume)
             BgmComp->SetPaused(true);
         }
     }
+}
+
+void UAudioSubsystem::PlayBGMSoundByLevel(ELevelType Type)
+{
+    ELevelSoundType SoundType = ELevelSoundType::TitleSound;
+
+    switch (Type)
+    {
+    case ELevelType::IntroLevel:
+        SoundType = ELevelSoundType::IntroSound;
+        break;
+
+    case ELevelType::TitleLevel:
+        SoundType = ELevelSoundType::TitleSound;
+        break;
+
+    case ELevelType::TrainingLevel:
+        SoundType = ELevelSoundType::TrainingSound;
+        break;
+
+    case ELevelType::FarmingLevel:
+        SoundType = ELevelSoundType::FarmingSound;
+        break;
+
+    case ELevelType::SingleLevel:
+        SoundType = ELevelSoundType::SingleSound;
+        break;
+
+    case ELevelType::MatchLevel:
+        SoundType = ELevelSoundType::MatchSound;
+        break;
+
+    case ELevelType::LobbyLevel:
+        SoundType = ELevelSoundType::LobbySound;
+        break;
+
+    case ELevelType::MultiLevel:
+        SoundType = ELevelSoundType::MultiSound;
+        break;
+
+    case ELevelType::CooperationLevel:
+        SoundType = ELevelSoundType::CooperationSound;
+        break;
+    }
+
+    PlayBGMSound(SoundType);
+}
+
+void UAudioSubsystem::PlayBGMSound(ELevelSoundType Type)
+{
+    USoundBase* SoundSource = GetBgmSoundSource(Type);
+
+    if (!IsValid(SoundSource))
+    {
+        return;
+    }
+
+    if (!IsValid(BgmComp))
+    {
+        BgmComp = UGameplayStatics::CreateSound2D(GetGameInstance(), SoundSource, BgmVoume);
+        BgmComp->bAutoDestroy = false;
+    }
+
+    if (BgmComp->IsPlaying())
+    {
+        BgmComp->Stop();
+    }
+
+    BgmComp->SetSound(SoundSource);
+    BgmComp->Play();
+}
+
+void UAudioSubsystem::PlayUISound(EUISfxSoundType Type)
+{
+    USoundBase* SoundSource = GetUISoundSource(Type);
+
+    if (!IsValid(SoundSource))
+    {
+        return;
+    }
+
+    if (!IsValid(UIAudioComp))
+    {
+        UIAudioComp = UGameplayStatics::CreateSound2D(GetGameInstance(), SoundSource, EffectVolume);
+        UIAudioComp->bAutoDestroy = false;
+    }
+
+    if (UIAudioComp->IsPlaying())
+    {
+        UIAudioComp->Stop();
+    }
+
+    UIAudioComp->SetSound(SoundSource);
+    UIAudioComp->Play();
+}
+
+TArray<FCharacterAudioDataStruct*>& UAudioSubsystem::GetCharacterSoundArray()
+{
+    CheckValidOfCharacterAudio();
+    
+    return SoundDataArraySet.CharacterAudioArray;
+}
+
+TArray<FBossAudioDataStruct*>& UAudioSubsystem::GetBossSoundArray()
+{
+    CheckValidOfBossAudio();
+
+    return SoundDataArraySet.BossAudioArray;
+}
+
+TArray<FMonsterAudioDataStruct*>& UAudioSubsystem::GetMonsterSoundArray()
+{
+    CheckValidOfMonsterAudio();
+
+    return SoundDataArraySet.MonsterAudioArray;
+}
+
+USoundBase* UAudioSubsystem::GetBgmSoundSource(ELevelSoundType SoundType)
+{
+    if (!CheckValidOfBgmAudio())
+    {
+        return nullptr;
+    }
+
+    for (FLevelAudioDataStruct* BgmData : SoundDataArraySet.BgmAudioArray)
+    {
+        if (BgmData->LevelSoundType == SoundType)
+        {
+            return BgmData->Sound.LoadSynchronous();
+        }
+    }
+
+    return nullptr;
+}
+
+USoundBase* UAudioSubsystem::GetUISoundSource(EUISfxSoundType SoundType)
+{
+    if (!CheckValidOfUIAudio())
+    {
+        return nullptr;
+    }
+
+    for (FUISfxAudioDataStruct* UISoundData : SoundDataArraySet.UIAudioArray)
+    {
+        if (UISoundData->UISfxSoundType == SoundType)
+        {
+            return UISoundData->Sound.LoadSynchronous();
+        }
+    }
+
+    return nullptr;
+}
+
+bool UAudioSubsystem::CheckValidOfBgmAudio()
+{
+    if (SoundDataArraySet.BgmAudioArray.IsEmpty())
+    {
+        if (!IsValid(AudioDataSettings))
+        {
+            return false;
+        }
+
+        if (AudioDataSettings->LevelSounds.IsNull())
+        {
+            return false;
+        }
+
+        const FString DataContext(TEXT("Data ConText"));
+
+        LevelSoundTable = AudioDataSettings->LevelSounds.LoadSynchronous();
+        LevelSoundTable->GetAllRows(DataContext, SoundDataArraySet.BgmAudioArray);
+    }
+
+    return true;
+}
+
+bool UAudioSubsystem::CheckValidOfUIAudio()
+{
+    if (SoundDataArraySet.UIAudioArray.IsEmpty())
+    {
+        if (!IsValid(AudioDataSettings))
+        {
+            return false;
+        }
+
+        if (AudioDataSettings->UISfxSounds.IsNull())
+        {
+            return false;
+        }
+
+        const FString DataContext(TEXT("Data ConText"));
+
+        UISfxSoundTable = AudioDataSettings->UISfxSounds.LoadSynchronous();
+        UISfxSoundTable->GetAllRows(DataContext, SoundDataArraySet.UIAudioArray);
+    }
+
+    return true;
+}
+
+bool UAudioSubsystem::CheckValidOfCharacterAudio()
+{
+    if (SoundDataArraySet.CharacterAudioArray.IsEmpty())
+    {
+        if (!IsValid(AudioDataSettings))
+        {
+            return false;
+        }
+
+        if (AudioDataSettings->CharacterSounds.IsNull())
+        {
+            return false;
+        }
+
+        const FString DataContext(TEXT("Data ConText"));
+
+        CharacterSoundTable = AudioDataSettings->CharacterSounds.LoadSynchronous();
+        CharacterSoundTable->GetAllRows(DataContext, SoundDataArraySet.CharacterAudioArray);
+    }
+
+    return true;
+}
+
+bool UAudioSubsystem::CheckValidOfBossAudio()
+{
+    if (SoundDataArraySet.BossAudioArray.IsEmpty())
+    {
+        if (!IsValid(AudioDataSettings))
+        {
+            return false;
+        }
+
+        if (AudioDataSettings->BossSounds.IsNull())
+        {
+            return false;
+        }
+
+        const FString DataContext(TEXT("Data ConText"));
+
+        BossSoundTable = AudioDataSettings->BossSounds.LoadSynchronous();
+        BossSoundTable->GetAllRows(DataContext, SoundDataArraySet.BossAudioArray);
+    }
+
+    return true;
+}
+
+bool UAudioSubsystem::CheckValidOfMonsterAudio()
+{
+    if (SoundDataArraySet.MonsterAudioArray.IsEmpty())
+    {
+        if (!IsValid(AudioDataSettings))
+        {
+            return false;
+        }
+
+        if (AudioDataSettings->MonsterSounds.IsNull())
+        {
+            return false;
+        }
+
+        const FString DataContext(TEXT("Data ConText"));
+
+        MonsterSoundTable = AudioDataSettings->MonsterSounds.LoadSynchronous();
+        MonsterSoundTable->GetAllRows(DataContext, SoundDataArraySet.MonsterAudioArray);
+    }
+
+    return true;
 }
