@@ -19,7 +19,7 @@ void UPlayerStateWidget::InitPlayerState(const FPlayerData& Data)
     FString PercentString = FString::Printf(TEXT("%d%%"), Data.AirbornePercent);
     AirbornePercentText->SetText(FText::FromString(PercentString));
     PlayerLevel->SetText(FText::AsNumber(Data.PlayerLevel));
-
+    PlayerLifes->SetText(FText::AsNumber(Data.LifePoint));
 }
 
 
@@ -33,4 +33,6 @@ void UPlayerStateWidget::UpdateStatus(const FPlayerData& Data)
     FString PercentString = FString::Printf(TEXT("%d%%"), Data.AirbornePercent);
     AirbornePercentText->SetText(FText::FromString(PercentString));
     PlayerLevel->SetText(FText::AsNumber(Data.PlayerLevel));
+    PlayerLifes->SetText(FText::AsNumber(Data.LifePoint));
 }
+

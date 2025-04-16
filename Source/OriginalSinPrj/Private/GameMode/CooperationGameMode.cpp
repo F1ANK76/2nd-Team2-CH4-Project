@@ -106,6 +106,8 @@ int ACooperationGameMode::GetPlayerColorIndex(AController* PlayController)
 
 void ACooperationGameMode::StartGame()
 {
+    SpawnedCharacters[0]->OnChangedState.AddDynamic(this, &ACooperationGameMode::OnCharacterStateReceived);
+    SpawnedCharacters[1]->OnChangedState.AddDynamic(this, &ACooperationGameMode::OnCharacterStateReceived);
     //Camera Settings
     AttachPlayerToCamera(SpawnedCharacters[0], SpawnedBaseCamera[0]);
     AttachPlayerToCamera(SpawnedCharacters[1], SpawnedBaseCamera[0]);
@@ -701,6 +703,10 @@ void ACooperationGameMode::SpawnPlayers()
                 SpawnedCharacters.Add(SpawnedCharacter);
                 ActivePlayers.Add(SpawnedCharacter);
                 CurrentPlayerCount++;
+
+
+
+
                 UE_LOG(LogTemp, Warning, TEXT("Spawned Pawn: %s"), *GetNameSafe(SpawnedCharacter));
             }
         }
@@ -710,6 +716,14 @@ void ACooperationGameMode::SpawnPlayers()
     for (ABaseWitch* Character : SpawnedCharacters)
     {
         UE_LOG(LogTemp, Warning, TEXT("Managed Character: %s"), *GetNameSafe(Character));
+    }
+}
+
+void ACooperationGameMode::OnCharacterStateReceived(const FCharacterStateBuffer& State)
+{   
+    if (CooperationGameState)
+    {
+        CooperationGameState->UpdatePlayerInfo(State);
     }
 }
 

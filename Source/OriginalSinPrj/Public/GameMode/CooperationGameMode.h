@@ -24,6 +24,9 @@ public: //for test
     void ApplyBuffToPlayer(APlayerController* Controller, int32 BuffIndex, FBuffInfo buff);
     
     void RequestTurnOffBuffSelectUI();
+    
+    UFUNCTION()
+    void OnCharacterStateReceived(const FCharacterStateBuffer& State);
 
 public:
     ACooperationGameMode();
