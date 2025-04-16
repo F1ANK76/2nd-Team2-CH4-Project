@@ -17,6 +17,7 @@ class UBoxComponent;
 class UNiagaraComponent;
 class UBuffComponent;
 class UAIPerceptionStimuliSourceComponent;
+class UAudioComponent;
 struct FInputActionValue;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangedCharacterState, const FCharacterStateBuffer&, CharacterStateBuffer);
@@ -111,6 +112,7 @@ public:
 	const FVector GetHeadLocation() const;
 	const FVector GetFootLocation() const;
 	AActor* GetLastDamageCasuser() const;
+	UAudioComponent* GetAudioComponent() const;
 
 	void ResponseSelectedBuff(EBuffType TargetType);
 	void SetCharacterLifePoint(int32 LifeValue);
@@ -201,6 +203,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UBuffComponent> BuffComp = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UAudioComponent> AudioComp = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UAIPerceptionStimuliSourceComponent> PerceptionStimuliSource = nullptr;

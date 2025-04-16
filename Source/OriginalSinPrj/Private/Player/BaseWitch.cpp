@@ -17,6 +17,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "OriginalSinPrj/Interface/BattleEvent.h"
+#include "Components/AudioComponent.h"
 #include "GameFramework/GameModeBase.h"
 
 ABaseWitch::ABaseWitch()
@@ -34,6 +35,7 @@ ABaseWitch::ABaseWitch()
 
 	AbilityComp = CreateDefaultSubobject<UWitchAbilityComponent>(TEXT("Ability Component"));
 	BuffComp = CreateDefaultSubobject<UBuffComponent>(TEXT("Buff Component"));
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
 	PerceptionStimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Perceptions Stimuli Source Component"));
 
 	LeftHandDamager = CreateDefaultSubobject<UBoxComponent>(TEXT("Left Hand Damager"));
@@ -57,6 +59,8 @@ ABaseWitch::ABaseWitch()
 	RightHandItem->SetupAttachment(MainMesh, (FName)"RightHand");
 	HatItem->SetupAttachment(MainMesh, (FName)"Head");
 	FootItem->SetupAttachment(MainMesh, (FName)"Foot");
+
+	AudioComp->SetupAttachment(RootComponent);
 
 	LeftHandEffect->SetupAttachment(LeftHandItem);
 	RightHandEffect->SetupAttachment(RightHandItem);
@@ -365,6 +369,11 @@ const FVector ABaseWitch::GetFootLocation() const
 AActor* ABaseWitch::GetLastDamageCasuser() const
 {
 	return LastDamageCauser;
+}
+
+UAudioComponent* ABaseWitch::GetAudioComponent() const
+{
+	return AudioComp;
 }
 
 void ABaseWitch::SetPlayerLevel(int32 LevelValue)
