@@ -52,7 +52,7 @@ public:
 	UFUNCTION(Server, Unreliable)
 	void RequestEndMoveToAbility();
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(BlueprintCallable, Server, Unreliable)
 	void RequestUpDownToAbility(float Value);
 
 	UFUNCTION(Server, Unreliable)
@@ -87,7 +87,6 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void RequestPauseTimer();
-
 
 	UFUNCTION(BlueprintCallable)
 	const float GetCurrentMana() const;
