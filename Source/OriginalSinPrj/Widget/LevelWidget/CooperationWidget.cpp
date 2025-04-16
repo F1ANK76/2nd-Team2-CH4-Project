@@ -13,28 +13,6 @@
 void UCooperationWidget::InitWidget(UUISubsystem* uiSubsystem)
 {
     Super::InitWidget(uiSubsystem);
-
-    ////////////////////////////�ӽù�ư/////////////////////////////////
-    if (tempDamage)
-        tempDamage->OnClicked.AddDynamic(this, &UCooperationWidget::damage);
-    if (temp_boss_init)
-        temp_boss_init->OnClicked.AddDynamic(this, &UCooperationWidget::initHP);
-    if (temp_boss_die)
-        temp_boss_die->OnClicked.AddDynamic(this, &UCooperationWidget::dieHP);
-
-    if (StageButton1)
-        StageButton1->OnClicked.AddDynamic(this, &UCooperationWidget::ActiveStage1Widget);
-    if (StageButton2)
-        StageButton2->OnClicked.AddDynamic(this, &UCooperationWidget::ActiveStage2Widget);
-    if (StageButton3)
-        StageButton3->OnClicked.AddDynamic(this, &UCooperationWidget::ActiveStage3Widget);
-
-    if (StartTimerButton)
-        StartTimerButton->OnClicked.AddDynamic(this, &UCooperationWidget::StartStageTimer);
-
-    if (StopTimerButton)
-        StopTimerButton->OnClicked.AddDynamic(this, &UCooperationWidget::StopStageTimer);
-    ////////////////////////////�ӽù�ư/////////////////////////////////
 }
 
 void UCooperationWidget::NativeConstruct()
@@ -62,18 +40,15 @@ void UCooperationWidget::ActiveWidgetbyStage(int32 StageIndex)
     switch (StageIndex)
     {
     case 1:
-        // 1�ܰ� ���� Ȱ��ȭ
         ActiveStage1Widget();
         break;
 
     case 2:
-        // 2�ܰ� ���� Ȱ��ȭ
         ActiveStage1Widget();
         ActiveStage2Widget();
         break;
 
     case 3:
-        // 3�ܰ� ���� Ȱ��ȭ
         ActiveStage1Widget();
         ActiveStage3Widget();
         break;
@@ -87,7 +62,6 @@ void UCooperationWidget::ActiveWidgetbyStage(int32 StageIndex)
 void UCooperationWidget::ActiveStage1Widget()
 {
     DeactivateAllWidgets();
-    // 1�ܰ� ���� Ȱ��ȭ
     Player1StateUI->SetVisibility(ESlateVisibility::Visible);
     Player2StateUI->SetVisibility(ESlateVisibility::Visible);
 
@@ -137,16 +111,12 @@ void UCooperationWidget::DeactivateAllWidgets()
 
 
 
-
-//GameMode Ȥ�� Subsystem�ʿ��� �ʱ�ȭ ���ָ�, �ڵ����� UI�������� ���� �Ǵ� �Լ�.
-
 void UCooperationWidget::InitPlayerUI(FPlayerData* Player1, FPlayerData* Player2)
 {
     Player1StateUI->InitPlayerState(*Player1);
     Player2StateUI->InitPlayerState(*Player2);
 }
 
-//GameMode Ȥ�� Subsystem�ʿ��� ������Ʈ ���ָ�, UI�� ���� �ٲٴ� �Լ�.
 void UCooperationWidget::UpdatePlayerUI(FPlayerData* Player1, FPlayerData* Player2)
 {
     Player1StateUI->UpdateStatus(*Player1);
@@ -169,29 +139,29 @@ void UCooperationWidget::UpdateEnemyUI(FPlayerData* Enemy1, FPlayerData* Enemy2,
     Enemy4StateUI->UpdateStatus(*Enemy4);
 }
 
-void UCooperationWidget::InitBossUI(FBossUIData* BossData)
+void UCooperationWidget::InitBossUI(const FBossUIData& BossData)
 {
     BossHPBar->SetPercent(1.0f);
-    BossNameText->SetText(FText::FromString(BossData->BossName));
-    BossCurrentHPText->SetText(FText::AsNumber(BossData->MaxHP));
-    BossMaxHPText->SetText(FText::AsNumber(BossData->MaxHP));
+    BossNameText->SetText(FText::FromString(BossData.BossName));
+    BossCurrentHPText->SetText(FText::AsNumber(BossData.MaxHP));
+    BossMaxHPText->SetText(FText::AsNumber(BossData.MaxHP));
 
-    int32 RemainHPLineCount = BossRemaingHPMaxLine; // ����;
+    int32 RemainHPLineCount = BossRemaingHPMaxLine; 
     FString FormattedText = FString::Printf(TEXT("X%d"), RemainHPLineCount);
     RemainHPLine->SetText(FText::FromString(FormattedText));
 
 }
 
-void UCooperationWidget::UpdateBossUI(FBossUIData* BossData)
+void UCooperationWidget::UpdateBossUI(const FBossUIData& BossData)
 {
 
-    BossCurrentHPText->SetText(FText::AsNumber(BossData->CurrentHP));
-    BossMaxHPText->SetText(FText::AsNumber(BossData->MaxHP));
+    BossCurrentHPText->SetText(FText::AsNumber(BossData.CurrentHP));
+    BossMaxHPText->SetText(FText::AsNumber(BossData.MaxHP));
 
-    int32 RemainHPLineCount = BossData->CurrentHP / HPPerLine; // ����;    .
+    int32 RemainHPLineCount = BossData.CurrentHP / HPPerLine; 
     float Fraction = static_cast<float>(temp_boss_hp % HPPerLine) / HPPerLine;
     BossHPBar->SetPercent(Fraction);
-    if (BossData->CurrentHP > HPPerLine)
+    if (BossData.CurrentHP > HPPerLine)
     {
         FString FormattedText = FString::Printf(TEXT("X%d"), RemainHPLineCount);
         RemainHPLine->SetText(FText::FromString(FormattedText));
@@ -202,7 +172,6 @@ void UCooperationWidget::UpdateBossUI(FBossUIData* BossData)
     }
 
 
-    // ������ ü������ ���, Ư�� ���� ����
     if (RemainHPLineCount == 0)
     {
         BossHPBar->WidgetStyle.FillImage.TintColor = FSlateColor(ProgressBarColors[(RemainHPLineCount + 1) % (ProgressBarColors.Num() - 1)]);
@@ -216,108 +185,15 @@ void UCooperationWidget::UpdateBossUI(FBossUIData* BossData)
 
 }
 
-
-
-void UCooperationWidget::StartStageTimer()
+void UCooperationWidget::UpdateBossTimer(float time)
 {
-    ElapsedTime = 0.0f;
-
-    // 1�� �������� TickStageTimer ȣ��
-    GetWorld()->GetTimerManager().SetTimer(
-        StageTimerHandle,
-        this,
-        &UCooperationWidget::TickStageTimer,
-        1.0f,
-        true
-    );
-}
-
-
-void UCooperationWidget::TickStageTimer()
-{
-    ElapsedTime += 1.0f;
-
-    int32 Minutes = FMath::FloorToInt(ElapsedTime / 60);
-    int32 Seconds = FMath::FloorToInt(FMath::Fmod(ElapsedTime, 60));
+    int32 Minutes = FMath::FloorToInt(time / 60);
+    int32 Seconds = FMath::FloorToInt(FMath::Fmod(time, 60));
 
     FString TimeString = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
     if (BossModeTimer)
     {
         BossModeTimer->SetText(FText::FromString(TimeString));
     }
-}
 
-
-void UCooperationWidget::StopStageTimer()
-{
-    GetWorld()->GetTimerManager().ClearTimer(StageTimerHandle);
-}
-
-
-
-/////////////////////////////////test///////////////////////////////////
-//�ӽ��Լ� �׽�Ʈ��
-void UCooperationWidget::damage()
-{
-    temp_boss_hp = temp_boss_hp - 3;
-    if (temp_boss_hp < 0)
-    {
-        temp_boss_hp = 0;
-    }
-    tempUpdateBossUI();
-}
-
-
-
-void UCooperationWidget::initHP()
-{
-    BossCurrentHPText->SetText(FText::AsNumber(temp_boss_hp));
-    BossMaxHPText->SetText(FText::AsNumber(max_boss_hp));
-    FString FormattedText = FString::Printf(TEXT("X%d"), BossRemaingHPMaxLine);
-    RemainHPLine->SetText(FText::FromString(FormattedText));
-
-    BossHPBar->WidgetStyle.BackgroundImage.TintColor = FSlateColor(ProgressBarColors[BossRemaingHPMaxLine % (ProgressBarColors.Num() - 1)]);
-    BossHPBar->WidgetStyle.FillImage.TintColor = FSlateColor(ProgressBarColors[(BossRemaingHPMaxLine + 1) % (ProgressBarColors.Num() - 1)]);
-
-}
-
-void UCooperationWidget::dieHP()
-{
-    temp_boss_hp = 20;
-    tempUpdateBossUI();
-}
-
-
-void UCooperationWidget::tempUpdateBossUI()
-{
-    BossCurrentHPText->SetText(FText::AsNumber(temp_boss_hp));
-    BossMaxHPText->SetText(FText::AsNumber(max_boss_hp));
-
-
-    int32 RemainHPLineCount = temp_boss_hp / HPPerLine; // ����;
-    float Fraction = static_cast<float>(temp_boss_hp % HPPerLine) / HPPerLine;
-    BossHPBar->SetPercent(Fraction);
-
-    if (temp_boss_hp > HPPerLine)
-    {
-        FString FormattedText = FString::Printf(TEXT("X%d"), RemainHPLineCount);
-        RemainHPLine->SetText(FText::FromString(FormattedText));
-
-    }
-    else
-    {
-        RemainHPLine->SetText(FText::FromString(TEXT("")));
-    }
-
-    // ������ ü������ ���, Ư�� ���� ����
-    if (RemainHPLineCount == 0)
-    {
-        BossHPBar->WidgetStyle.FillImage.TintColor = FSlateColor(ProgressBarColors[(RemainHPLineCount + 1) % (ProgressBarColors.Num() - 1)]);
-        BossHPBar->WidgetStyle.BackgroundImage.TintColor = FSlateColor(ProgressBarColors.Last()); // �Ǵ� ����
-    }
-    else
-    {
-        BossHPBar->WidgetStyle.FillImage.TintColor = FSlateColor(ProgressBarColors[(RemainHPLineCount + 1) % (ProgressBarColors.Num() - 1)]);
-        BossHPBar->WidgetStyle.BackgroundImage.TintColor = FSlateColor(ProgressBarColors[RemainHPLineCount % (ProgressBarColors.Num() - 1)]);
-    }
 }

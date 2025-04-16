@@ -22,7 +22,6 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 	virtual void OnPooledObjectSpawn_Implementation() override;
 	virtual void OnPooledObjectReset_Implementation() override;
-	//virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Components")
 	UProjectileMovementComponent* ProjectileMovementComponent;
@@ -35,9 +34,13 @@ protected:
 	float RushSpeed;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
 	float AttackDuration;
-	// UPROPERTY(Replicated)
-	// FVector ReplicatedVelocity;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* CloneAttackMontage;
+
+	UFUNCTION()
+	void MulticastPlayCloneAttackMontage();
+	
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetActive(bool bIsActive);
 
@@ -46,6 +49,9 @@ protected:
 	void StartAttack();
 	void FinishAttack();
 	void SetFacingDirection();
+
+	//애니메이션
+	void PlayCloneAttackMontage();
 
 private:
 	FVector TargetLocation;

@@ -11,6 +11,7 @@
 class ABaseWitchAbility;
 class ABaseWitch;
 class UCharacterMovementComponent;
+struct FCharacterStateBuffer;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ORIGINALSINPRJ_API UWitchAbilityComponent : public UActorComponent
@@ -18,6 +19,9 @@ class ORIGINALSINPRJ_API UWitchAbilityComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
+	UFUNCTION()
+	void OnChangedCharacterState(const FCharacterStateBuffer& Buffer);
+
 	UWitchAbilityComponent();
 
 	void CallMove(const FVector2D& Value);
@@ -35,8 +39,8 @@ public:
 	void PauseBufferTimer();
 	void AddCurrentMana(float Value);
 	void SetMaxMana(float Value);
-	UFUNCTION(BlueprintCallable)
-	void CallRoll(const FVector2D& DirectionVector);
+	void ResetAbility();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -51,7 +55,7 @@ protected:
 	void CallNormalAttackAtJump();
 	void CallSpecialAttackAtMove();
 	void CallSpecialAttackAtJump();
-	//void CallRoll(const FVector2D& DirectionVector);
+	void CallRoll(const FVector2D& DirectionVector);
 
 public:
 	// Move

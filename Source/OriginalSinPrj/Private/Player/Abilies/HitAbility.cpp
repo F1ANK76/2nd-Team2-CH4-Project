@@ -42,7 +42,8 @@ bool AHitAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 
 	CalculateKnockTargetPos(Buffer);
 
-	Buffer.KnockGuage += Buffer.AddedGuage;
+	Parent->AddKnockGauge(Buffer.AddedGuage);
+	//Buffer.KnockGuage += Buffer.AddedGuage;
 	
 	ResponseOnLaunched(KnockDistance);
 	SetActorTickEnabled(true);

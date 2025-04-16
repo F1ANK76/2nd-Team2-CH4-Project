@@ -9,9 +9,10 @@
 void UBattleWidget::NativeConstruct()
 {
     Super::NativeConstruct();
-
-    DeactiveFarmingModeWidget();
-    DeactiveTimeLimitModeWidget();
+    Player1StateUI->SetVisibility(ESlateVisibility::Collapsed);
+    Player2StateUI->SetVisibility(ESlateVisibility::Collapsed);
+    TimeLimitModeTimer->SetVisibility(ESlateVisibility::Collapsed);
+    FarmingModeTimer->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void UBattleWidget::InitPlayerUI(FPlayerData Player1, FPlayerData Player2)
@@ -65,4 +66,21 @@ void UBattleWidget::DeactiveFarmingModeWidget()
 void UBattleWidget::DeactiveTimeLimitModeWidget()
 {
     TimeLimitModeTimer->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+
+void UBattleWidget::ActivePlayerWidget()
+{
+    Player1StateUI->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UBattleWidget::ActiveEnemyWidget()
+{
+    Player2StateUI->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UBattleWidget::DeactiveEnemyWidget()
+{
+    Player1StateUI->SetVisibility(ESlateVisibility::Visible);
+    Player2StateUI->SetVisibility(ESlateVisibility::Collapsed);
 }
