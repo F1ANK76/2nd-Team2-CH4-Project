@@ -776,34 +776,61 @@ void ACooperationGameMode::FallDie(AActor* Character)
 void ACooperationGameMode::PostSeamlessTravel()
 {
     UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Called"));
-    Super::PostSeamlessTravel();  // �⺻ SeamlessTravel ó��
-
-    //��Ƽ�÷��� ����
+    Super::PostSeamlessTravel();  // 기본 SeamlessTravel 처리
+    //멀티플레이 로직
     SpawnPlayers();
     int index = 0;
-    // Ŭ���̾�Ʈ�� ��Ʈ�ѷ��� ĳ���͸� ��Ī��Ŵ
+    // 클라이언트의 컨트롤러와 캐릭터를 매칭시킴
+    SeamlessTravel();
+    UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Done"));
 
+    FTimerHandle TimerHandle;
+    GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
+        {
+            StartGame();
+        }), 5.0f, false);
+}
+void ACooperationGameMode::SeamlessTravel()
+{
+    int sum = 0;
     for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
     {
         AWitchController* PC = Cast<AWitchController>(*It);
         if (PC)
         {
-            UE_LOG(LogTemp, Warning, TEXT("Controller Detected: %s"), *GetNameSafe(PC));
-            // �������� Ŭ���̾�Ʈ�� Pawn�� Ȯ���ϰ� Possess ó��
-            FTimerHandle TimerHandle;
-            GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this, PC, index]()
-                {
-                    HandleClientPossession(PC, index);
-                }), 3.0f, false);
-            index++;
-        }
-        if (IsValid(PC))
-        {
-            PC->ResponseShowLevelWidget();
+            sum++;
         }
     }
-
-    UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Done"));
+    if (sum < 2)
+    {
+        // 다음 틱에 실행
+        GetWorld()->GetTimerManager().SetTimerForNextTick(this, &ACooperationGameMode::SeamlessTravel);
+    }
+    else
+    {
+        int index = 0;
+        // 클라이언트의 컨트롤러와 캐릭터를 매칭시킴
+        for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+        {
+            AWitchController* PC = Cast<AWitchController>(*It);
+            if (PC)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("Controller Detected: %s"), *GetNameSafe(PC));
+                // 서버에서 클라이언트의 Pawn을 확인하고 Possess 처리
+                FTimerHandle TimerHandle;
+                GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this, PC, index]()
+                    {
+                        HandleClientPossession(PC, index);
+                    }), 1.0f, false);
+                index++;
+            }
+            if (IsValid(PC))
+            {
+                PC->ResponseShowLevelWidget();
+            }
+        }
+        UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Done"));
+    }
 }
 
 void ACooperationGameMode::HandleClientPossession(APlayerController* PC, int index)
@@ -812,20 +839,17 @@ void ACooperationGameMode::HandleClientPossession(APlayerController* PC, int ind
     if (PC && SpawnedCharacters.Num() > 0)
     {
         APawn* PawnToPossess = SpawnedCharacters[index];
-
         if (PawnToPossess && IsValid(PawnToPossess))
         {
-            // ���� ��Ʈ�ѷ��� ������ UnPossess ó��
+            // 기존 컨트롤러가 있으면 UnPossess 처리
             APlayerController* OldPC = PawnToPossess->GetController<APlayerController>();
             if (OldPC)
             {
-                OldPC->UnPossess();  // ���� ��Ʈ�ѷ����� Pawn�� ����
+                OldPC->UnPossess();  // 기존 컨트롤러에서 Pawn을 해제
             }
-            // ���ο� ��Ʈ�ѷ��� �ش� Pawn�� Possess�ϵ��� ó��
+            // 새로운 컨트롤러가 해당 Pawn을 Possess하도록 처리
             PC->Possess(PawnToPossess);
-            PC->ClientRestart(PawnToPossess); // Ŭ���ʿ� ����� ���� ����
-
-
+            PC->ClientRestart(PawnToPossess); // 클라쪽에 제대로 상태 적용
             UE_LOG(LogTemp, Warning, TEXT("Client Possessed Pawn: %s by %s"),
                 *GetNameSafe(PawnToPossess), *GetNameSafe(PC));
         }
@@ -839,8 +863,7 @@ void ACooperationGameMode::HandleClientPossession(APlayerController* PC, int ind
         UE_LOG(LogTemp, Warning, TEXT("PlayerController is invalid or no spawned characters."));
     }
     UE_LOG(LogTemp, Warning, TEXT("Client Possess ended %s"), *GetNameSafe(PC));
-    
-    //Game Stage���� �ʿ��� ����� ���� ���� ������Ʈ�� ��Ʈ�ѷ� ����صα�
+    //Game Stage에서 필요한 기능을 위해 게임 스테이트에 컨트롤러 등록해두기
     CooperationGameState->RegisterInitialController(PC);
 }
 
