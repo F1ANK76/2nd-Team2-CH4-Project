@@ -52,6 +52,8 @@ void ACooperationGameMode::BeginPlay()
     InitPlayerUI();
     SpawnKillZone();
     //Game Start Condition -> Start with a timer temporarily
+
+
     FTimerHandle TimerHandle;
     GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
         {
@@ -60,7 +62,6 @@ void ACooperationGameMode::BeginPlay()
 
 
 }
-
 
 
 void ACooperationGameMode::SetPlayerColorIndex()
@@ -135,27 +136,25 @@ void ACooperationGameMode::StartGame()
 
 void ACooperationGameMode::EndGame()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Game End "));
 
     //일단 플레이어 입력을 멈추기.
     SetPlayerUnReady();
+
+    CooperationGameState->TurnOffStage3Widget();
 
     SpawnedCharacters[0]->SetActorLocation(PlayerResultLocations[0]);
     SpawnedCharacters[1]->SetActorLocation(PlayerResultLocations[1]);
 
     RequestOpenResultUI();
-    /*
-    FTimerHandle TimerHandle;
-    GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
-        {
-            TravelLevel();
-        }), 5.0f, false);
+    if (bIsClear == true) // GameClear
+    {
 
+    }
+    else
+    {
 
-        */
-    //일단 임시로 여기
-    //TravelLevel();
-
+    }
+    UE_LOG(LogTemp, Warning, TEXT("Game End "));
 }
 
 void ACooperationGameMode::TravelLevel()
@@ -343,9 +342,20 @@ void ACooperationGameMode::EndStage3()
 {
     UE_LOG(LogTemp, Warning, TEXT("End Stage3"));
     CooperationGameState->TurnOffTimer();
-    CooperationGameState->TurnOffStage3Widget();
+
+    SetPlayerUnReady();
+    bIsClear = true;
     CooperationGameState->bIsStage3Started = false;
-    EndGame();
+
+
+
+    FTimerHandle EndGameTimerHandle;
+    GetWorldTimerManager().SetTimer(EndGameTimerHandle, FTimerDelegate::CreateLambda([this]()
+        {
+            EndGame();
+        }), 3.0f, false);
+
+
 }
 
 void ACooperationGameMode::SetPlayerLocation()
@@ -494,10 +504,20 @@ void ACooperationGameMode::SetPlayerUnReady()
         APlayerController* PC = It->Get();
         if (PC && PC->GetPawn())
         {
+            FString ControllerName = PC->GetName();
+            FString PawnName = PC->GetPawn()->GetName();
+
+            UE_LOG(LogTemp, Warning, TEXT("Disabling input for PlayerController: %s, Pawn: %s"), *ControllerName, *PawnName);
+
             PC->GetPawn()->DisableInput(PC);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("PlayerController or Pawn is null (PC: %s)"), PC ? *PC->GetName() : TEXT("nullptr"));
         }
     }
 }
+
 
 void ACooperationGameMode::SetPlayerUnReady(AActor* actor)
 {
@@ -630,19 +650,18 @@ void ACooperationGameMode::HandlePlayerKilled(AActor* DeadPlayer, AActor* Killer
     {
 
     }
-    
     CurrentPlayerCount--;
 
-
-
-    //ActivePlayers.Remove(DeadPlayer); // 알아서 내부에서 찾고 제거함 너무 위험.
-    //DeadPlayer->Destroy();   // 너무 위험
-    //test Code
     if (CurrentPlayerCount <= 0)
     {
-        //게임을 실패한거로 종료.
-        //매치 종료
-        // End Level ->   결과창 띄우기 실패 매개변수로 띄워서 처리
+        bIsClear = false;
+        SetPlayerUnReady();
+
+        FTimerHandle DefeatHandle;
+        GetWorldTimerManager().SetTimer(DefeatHandle, FTimerDelegate::CreateLambda([this]()
+        {
+            EndGame();
+        }), 5.0f, false);
     }
 }
 

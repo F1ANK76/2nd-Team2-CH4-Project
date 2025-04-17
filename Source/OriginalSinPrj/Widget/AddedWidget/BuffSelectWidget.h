@@ -29,6 +29,8 @@ class ABuffSelectManager;
 class UButton;
 class UDataTable;
 class UCanvasPanel;
+struct FBuffDataStruct;
+
 
 UCLASS()
 class ORIGINALSINPRJ_API UBuffSelectWidget : public UBaseWidget
@@ -45,6 +47,7 @@ public:
 
     UPROPERTY()	
     UDataTable* MyCBuffTable; //CSV파일과 연동하여 데이터 불러들이기.
+    TArray<FBuffDataStruct*> Data;
 
     bool bIsHovered1 = false;
     bool bIsHovered2 = false;
