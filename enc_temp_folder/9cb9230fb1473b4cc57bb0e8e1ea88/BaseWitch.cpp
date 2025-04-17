@@ -51,7 +51,7 @@ ABaseWitch::ABaseWitch()
 
 	checkf(IsValid(HitCollision), TEXT("Root Component is not Capsule Component"));
 
-	DressMesh->SetupAttachment(MainMesh, (FName)"Root");
+	DressMesh->SetupAttachment(MainMesh);
 	StockingsMesh->SetupAttachment(MainMesh);
 	ShoesMesh->SetupAttachment(MainMesh);
 
@@ -308,10 +308,14 @@ void ABaseWitch::ApplyAttack(AActor* Target, float ApplyValue)
 
 	float RealDamage = ApplyValue + BuffComp->GetBuffData().AddedKnockGauge;
 
-	Target->TakeDamage(RealDamage, FDamageEvent(), GetController(), this);
+	float Result = Target->TakeDamage(RealDamage, FDamageEvent(), GetController(), this);
 
 	IncreaseCurrentMana();
-	//CharacterBuffer.CurrentMana = 5;
+	CharacterBuffer.CurrentMana = 5;
+	if (Result > 0)
+	{
+		
+	}
 }
 
 void ABaseWitch::EndAnimNotify()
@@ -724,6 +728,7 @@ float ABaseWitch::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 		float RealDamage = FMath::Clamp(DamageAmount - DecreaseValue, 0, 100);
 
 		AbilityComp->CallHit(DamageCauser, RealDamage);
+		return 1.0f;
 	}
 
 	//RequestHitToAbility(DamageCauser);
