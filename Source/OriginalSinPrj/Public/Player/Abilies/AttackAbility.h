@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Player/Abilies/BaseWitchAbility.h"
 #include "Player/Struct/ProjectileDataBuffer.h"
+#include "OriginalSinPrj/GameInstance/EnumSet.h"
 #include "AttackAbility.generated.h"
 
 class ABaseProjectile;
@@ -39,6 +40,8 @@ protected:
 	void CheckProjectilePool();
 	void SpawnProjectileObj();
 
+	void CheckIsPlayWitchEffect(ABaseWitch* Parent, bool bIsStart);
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Attack")
 	EAttackType AttackType = EAttackType::Melle;
@@ -51,6 +54,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Melle")
 	EEffectVisibleType MelleType = EEffectVisibleType::Right;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Melle")
+	ECharacterSoundType AttackSound = ECharacterSoundType::HandEffect;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Projectile")
 	float MoveDelayTime = 0.0f;
