@@ -51,7 +51,7 @@ void ASpawnManager::SpawnMonster(AController* Controller, FVector SpawnLocation)
 		SpawnParams.Owner = Controller;
 
 		APawn* NewMonster = GetWorld()->SpawnActor<APawn>(
-			PlayerClass,
+			MonsterClass,
 			SpawnLocation,
 			FRotator::ZeroRotator,
 			SpawnParams
