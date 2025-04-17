@@ -7,6 +7,7 @@
 #include "Boss/Object/RangeAttackProjectile.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Boss/BossObjectPoolWorldSubsystem.h"
+#include "GameState/BaseGameState.h"
 
 EBTNodeResult::Type UBTTask_RangeAttack::ExecuteTask(UBehaviorTreeComponent& BTComponent, uint8* NodeMemory)
 {
@@ -24,6 +25,16 @@ EBTNodeResult::Type UBTTask_RangeAttack::ExecuteTask(UBehaviorTreeComponent& BTC
 void UBTTask_RangeAttack::FireProjectile()
 {
 	if (!IsValid(BossController)) return;
+
+	UAudioComponent* AudioComponent = BossCharacter->GetAudioComponent();
+	if (AudioComponent)
+	{
+		ABaseGameState* GameState = GetWorld()->GetGameState<ABaseGameState>();
+		if (IsValid(GameState))
+		{
+			GameState->PlayBossSound(AudioComponent, EBossSoundType::RangeAttack);
+		}
+	}
 	
 	FVector TargetLocation = BossController->GetTargetPlayerPawnLocation();
 	FVector SpawnLocation = BossCharacter->GetActorLocation();

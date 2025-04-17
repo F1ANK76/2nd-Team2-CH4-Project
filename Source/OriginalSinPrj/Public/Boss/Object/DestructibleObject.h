@@ -33,6 +33,8 @@ protected:
 	UStaticMeshComponent* MeshComponent;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	USphereComponent* SphereComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WeaponToSpawn | Components")
+	UAudioComponent* AudioComponent;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Property")
 	int32 CurrentHp;

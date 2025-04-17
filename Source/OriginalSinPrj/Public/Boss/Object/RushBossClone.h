@@ -27,6 +27,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Components")
 	USphereComponent* SphereComponent = nullptr;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WeaponToSpawn | Components")
+	UAudioComponent* AudioComponent;
+
 	UPROPERTY(VisibleAnywhere)
 	class USphereComponent* DamageArea;
 

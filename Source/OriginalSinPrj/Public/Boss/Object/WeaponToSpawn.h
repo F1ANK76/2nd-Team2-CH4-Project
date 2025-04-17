@@ -37,6 +37,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "WeaponToSpawn | Components")
 	UProjectileMovementComponent* ProjectileMovementComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WeaponToSpawn | Components")
+	UAudioComponent* AudioComponent;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "WeaponToSpawn | Property")
 	float Damage;
 

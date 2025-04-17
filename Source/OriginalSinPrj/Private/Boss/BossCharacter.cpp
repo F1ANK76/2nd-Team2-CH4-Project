@@ -4,6 +4,7 @@
 #include "Boss/BossCharacter.h"
 #include "Boss/BossController.h"
 #include "Net/UnrealNetwork.h"
+#include "Components/AudioComponent.h"
 
 // Sets default values
 ABossCharacter::ABossCharacter()
@@ -14,6 +15,9 @@ ABossCharacter::ABossCharacter()
 	CurrentHP = MaxHP;
 	bIsDead = false;
 	bIsInvincibility = false;
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>("AudioComponent");
+	AudioComponent->SetupAttachment(RootComponent);
 	
 	AIControllerClass = ABossController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;

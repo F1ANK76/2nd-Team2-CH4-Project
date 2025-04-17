@@ -98,7 +98,13 @@ UENUM(BlueprintType)
 enum class EBossSoundType : uint8
 {
 	Attack = 0,
-	Death
+	Death,
+	RangeAttack,
+	WeaponOnGround,
+	Rush,
+	IndexAttack,
+	ObjectDestroy,
+	SpawnWeapon,
 };
 
 UENUM(BlueprintType)

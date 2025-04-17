@@ -346,7 +346,7 @@ void ABossController::OnStartMontageEnded(UAnimMontage* Montage, bool bInterrupt
 
 	GetBlackboardComponent()->SetValueAsBool("bIsBattleStart", true);
 
-	//파괴가능 오브젝트 스폰 
+	//파괴가능 오브젝트 스폰  
 	GetWorld()->GetTimerManager().SetTimer(
 		ObjectSpawnTimerHandle,
 		this,

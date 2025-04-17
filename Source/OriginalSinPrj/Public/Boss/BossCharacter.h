@@ -92,11 +92,15 @@ public:
 	int32 GetMaxHP() const { return MaxHP; }
 	UBTTaskNode* GetCurrentTaskNode() const{ return CurrentTaskNode; }
 	bool GetIsInvincibility() const { return bIsInvincibility; }
+	UAudioComponent* GetAudioComponent() const { return AudioComponent; }
 	//Setter
 	void SetCurrentTaskNode(UBTTaskNode* NewTaskNode) { CurrentTaskNode = NewTaskNode; }
 	void SetIsInvincibility(bool NewBool) { bIsInvincibility = NewBool; }
 	
 protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
+	UAudioComponent* AudioComponent;
+	
 	UPROPERTY()
 	UBTTaskNode* CurrentTaskNode = nullptr;
 	
