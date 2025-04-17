@@ -7,6 +7,9 @@ ABossPlatform::ABossPlatform()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
+	bReplicates = true;
+	SetReplicateMovement(true);
+	
 	SceneRoot = CreateDefaultSubobject<USceneComponent>("SceneRoot");
 	SetRootComponent(SceneRoot);
 
@@ -15,10 +18,7 @@ ABossPlatform::ABossPlatform()
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	MeshComponent->SetCollisionProfileName("BlockAll");
 	MeshComponent->OnComponentHit.AddDynamic(this, &ABossPlatform::OnPlatformHit);
-
-	bReplicates = true;
-	SetReplicateMovement(true);
-
+	
 	Tags.Add("BossPlatform");
 	Tags.Add("PatternPlatform");
 }
@@ -38,6 +38,7 @@ void ABossPlatform::OnPooledObjectSpawn_Implementation()
 {
 	bIsActivate = true;
 	SetActorHiddenInGame(false);
+	MulticastSetActive(bIsActivate);
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 
@@ -47,6 +48,7 @@ void ABossPlatform::OnPooledObjectReset_Implementation()
 	bIsActivate = false;
 	SetActorHiddenInGame(true);
 	SetActorLocation(FVector::ZeroVector);
+	MulticastSetActive(bIsActivate);
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
@@ -61,6 +63,11 @@ void ABossPlatform::OnPlatformHit(UPrimitiveComponent* HitComponent, AActor* Oth
 		bHasBeenTriggered = true;
 		StartDisappearTimer();
 	}
+}
+
+void ABossPlatform::MulticastSetActive_Implementation(bool bIsActive)
+{
+	SetActorHiddenInGame(!bIsActive);
 }
 
 void ABossPlatform::StartDisappearTimer()

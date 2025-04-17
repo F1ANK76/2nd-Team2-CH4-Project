@@ -310,9 +310,11 @@ void ABaseWitch::ApplyAttack(AActor* Target, float ApplyValue)
 
 	float Result = Target->TakeDamage(RealDamage, FDamageEvent(), GetController(), this);
 
+	IncreaseCurrentMana();
+	CharacterBuffer.CurrentMana = 5;
 	if (Result > 0)
 	{
-		IncreaseCurrentMana();
+		
 	}
 }
 
@@ -364,6 +366,11 @@ const FVector ABaseWitch::GetHeadLocation() const
 const FVector ABaseWitch::GetFootLocation() const
 {
 	return FootItem->GetComponentLocation();
+}
+
+const ECharacterSoundType ABaseWitch::GetAttackSoundType() const
+{
+	return AttackSoundType;
 }
 
 AActor* ABaseWitch::GetLastDamageCasuser() const

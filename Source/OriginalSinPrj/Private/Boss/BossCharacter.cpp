@@ -13,6 +13,7 @@ ABossCharacter::ABossCharacter()
 	MaxHP = 1000;
 	CurrentHP = MaxHP;
 	bIsDead = false;
+	bIsInvincibility = false;
 	
 	AIControllerClass = ABossController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
@@ -26,9 +27,12 @@ float ABossCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& 
 {
 	if (!HasAuthority()) return 0.0f;
 	if (!IsValid(DamageCauser)) return 0.0f;
+	if (bIsInvincibility) return 0.0f;
 
+	float DamageApplied = FMath::Clamp(DamageAmount, 0.0f, CurrentHP);
 	CurrentHP -= DamageAmount;
-	if (CurrentHP < 0) CurrentHP = 0;
+
+	OnBossTakeDamage.Broadcast(CurrentHP);
 	
 	return 0.0f;
 }
@@ -118,6 +122,38 @@ void ABossCharacter::MulticastPlayInstantDeathAttackMontage_Implementation()
 	}
 }
 
+void ABossCharacter::MulticastPlayStartStunMontage_Implementation()
+{
+	if (IsValid(StartStunMontage))
+	{
+		PlayAnimMontage(StartStunMontage);
+	}
+}
+
+void ABossCharacter::MulticastPlayEndStunMontage_Implementation()
+{
+	if (IsValid(EndStunMontage))
+	{
+		PlayAnimMontage(EndStunMontage);
+	}
+}
+
+void ABossCharacter::MulticastPlayIndexAttackMontage_Implementation()
+{
+	if (IsValid(IndexAttackMontage))
+	{
+		PlayAnimMontage(IndexAttackMontage);
+	}
+}
+
+void ABossCharacter::MulticastPlayKillAllPlayerAttackMontage_Implementation()
+{
+	if (IsValid(KillAllPlayerAttackMontage))
+	{
+		PlayAnimMontage(KillAllPlayerAttackMontage);
+	}
+}
+
 void ABossCharacter::PlayStartBattleMontage()
 {
 	if (HasAuthority())
@@ -131,6 +167,22 @@ void ABossCharacter::PlayDeathMontage()
 	if (HasAuthority())
 	{
 		MulticastPlayDeathMontage();
+	}
+}
+
+void ABossCharacter::PlayStartStunMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayStartStunMontage();
+	}
+}
+
+void ABossCharacter::PlayEndStunMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayEndStunMontage();
 	}
 }
 
@@ -171,5 +223,21 @@ void ABossCharacter::PlayInstantDeathAttackMontage()
 	if (HasAuthority())
 	{
 		MulticastPlayInstantDeathAttackMontage();
+	}
+}
+
+void ABossCharacter::PlayIndexAttackMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayIndexAttackMontage();
+	}
+}
+
+void ABossCharacter::PlayKillAllPlayerAttackMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayKillAllPlayerAttackMontage();
 	}
 }
