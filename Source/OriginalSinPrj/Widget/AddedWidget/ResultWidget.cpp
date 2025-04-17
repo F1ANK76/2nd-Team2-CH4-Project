@@ -31,6 +31,7 @@ void UResultWidget::UpdateResult(bool bIsClear)
 
 void UResultWidget::OnClickedRetry()
 {
+    PlayUIEffectSound(EUISfxSoundType::Click);
 	//UISubsystem �Ǵ� UIHandler�� ���� ���� Ȯ��
 	// ���� �ٽ� �����ϰ� ���ּ��� ��û
 	

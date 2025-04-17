@@ -132,7 +132,7 @@ void UBuffSelectWidget::InitializeBuffs(TArray<EBuffType> BuffList)
 
 void UBuffSelectWidget::OnBuff1Clicked()
 {
-
+    PlayUIEffectSound(EUISfxSoundType::Click);
     DeactivateOhterWidgets(1, ReceivedBuffType[0]);
     //play animation
     //UE_LOG(LogTemp, Log, TEXT("Buff 1 Selected: %s"), *Buffs[0].BuffName.ToString());
@@ -140,6 +140,7 @@ void UBuffSelectWidget::OnBuff1Clicked()
 
 void UBuffSelectWidget::OnBuff2Clicked()
 {
+    PlayUIEffectSound(EUISfxSoundType::Click);
     DeactivateOhterWidgets(2, ReceivedBuffType[1]);
     //play animations
     //UE_LOG(LogTemp, Log, TEXT("Buff 2 ���õ�: %s"), *Buffs[1].BuffName.ToString());
@@ -147,6 +148,7 @@ void UBuffSelectWidget::OnBuff2Clicked()
 
 void UBuffSelectWidget::OnBuff3Clicked()
 {
+    PlayUIEffectSound(EUISfxSoundType::Click);
     DeactivateOhterWidgets(3, ReceivedBuffType[2]);
     //play animation
     //UE_LOG(LogTemp, Log, TEXT("Buff 3 ���õ�: %s"), *Buffs[2].BuffName.ToString());
@@ -171,6 +173,7 @@ void UBuffSelectWidget::DeactivateOhterWidgets(int32 SelectedButtonIndex, EBuffT
 
 void UBuffSelectWidget::OnHoveredButton1()
 {
+    PlayUIEffectSound(EUISfxSoundType::Horver);
     UE_LOG(LogTemp, Warning, TEXT("Button1Hover"));
 
     Buff1InfoBox->SetVisibility(ESlateVisibility::Visible);
@@ -178,6 +181,7 @@ void UBuffSelectWidget::OnHoveredButton1()
 
 void UBuffSelectWidget::OnUnHoveredButton1()
 {
+    PlayUIEffectSound(EUISfxSoundType::Horver);
     UE_LOG(LogTemp, Warning, TEXT("Button1UnHover"));
 
     Buff1InfoBox->SetVisibility(ESlateVisibility::Collapsed);
@@ -186,6 +190,7 @@ void UBuffSelectWidget::OnUnHoveredButton1()
 
 void UBuffSelectWidget::OnHoveredButton2()
 {
+    PlayUIEffectSound(EUISfxSoundType::Horver);
     UE_LOG(LogTemp, Warning, TEXT("Button2Hover"));
 
     Buff2InfoBox->SetVisibility(ESlateVisibility::Visible);
@@ -193,6 +198,7 @@ void UBuffSelectWidget::OnHoveredButton2()
 
 void UBuffSelectWidget::OnUnHoveredButton2()
 {
+    PlayUIEffectSound(EUISfxSoundType::Horver);
     UE_LOG(LogTemp, Warning, TEXT("Button2UnHover"));
 
     Buff2InfoBox->SetVisibility(ESlateVisibility::Collapsed);
@@ -202,6 +208,7 @@ void UBuffSelectWidget::OnUnHoveredButton2()
 
 void UBuffSelectWidget::OnHoveredButton3()
 {
+    PlayUIEffectSound(EUISfxSoundType::Horver);
     UE_LOG(LogTemp, Warning, TEXT("Button3Hover"));
 
     Buff3InfoBox->SetVisibility(ESlateVisibility::Visible);
@@ -209,6 +216,7 @@ void UBuffSelectWidget::OnHoveredButton3()
 
 void UBuffSelectWidget::OnUnHoveredButton3()
 {
+    PlayUIEffectSound(EUISfxSoundType::Horver);
     UE_LOG(LogTemp, Warning, TEXT("Button3UnHover"));
 
     Buff3InfoBox->SetVisibility(ESlateVisibility::Collapsed);

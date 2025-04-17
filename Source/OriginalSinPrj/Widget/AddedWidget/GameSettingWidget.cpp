@@ -28,10 +28,13 @@ void UGameSettingWidget::InitWidget(UUISubsystem* uiSubsystem)
     if (CheckBox3) CheckBox3->OnCheckStateChanged.AddDynamic(this, &UGameSettingWidget::OnCheckBox3Changed);
     if (CheckBox4) CheckBox4->OnCheckStateChanged.AddDynamic(this, &UGameSettingWidget::OnCheckBox4Changed);
     if (CheckBox5) CheckBox5->OnCheckStateChanged.AddDynamic(this, &UGameSettingWidget::OnCheckBox5Changed);
+
+    CloseButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedCloseButton);
 }
 
 void UGameSettingWidget::UncheckAllExcept(UCheckBox* CheckedBox)
 {
+    PlayUIEffectSound(EUISfxSoundType::Click);
     if (CheckBox1 && CheckBox1 != CheckedBox) CheckBox1->SetIsChecked(false);
     if (CheckBox2 && CheckBox2 != CheckedBox) CheckBox2->SetIsChecked(false);
     if (CheckBox3 && CheckBox3 != CheckedBox) CheckBox3->SetIsChecked(false);
@@ -84,10 +87,16 @@ void UGameSettingWidget::OnCheckBox5Changed(bool bIsChecked)
     }
 }
 
+void UGameSettingWidget::OnClickedCloseButton()
+{
+    PlayUIEffectSound(EUISfxSoundType::Close);
+    SetVisibility(ESlateVisibility::Collapsed);
+}
+
 
 void UGameSettingWidget::OnClickedIncreaseLifePoints()
 {
-    
+    PlayUIEffectSound(EUISfxSoundType::Click);
     if (LifePoint < 9)
     {
         LifePoint++;
@@ -99,6 +108,7 @@ void UGameSettingWidget::OnClickedIncreaseLifePoints()
 
 void UGameSettingWidget::OnClickedDecreaseLifePoints()
 {
+    PlayUIEffectSound(EUISfxSoundType::Click);
     if (LifePoint > 1)
     {
         LifePoint--;
@@ -122,6 +132,7 @@ void UGameSettingWidget::UpdateLifePoints()
 
 void UGameSettingWidget::OnLifePointCheckBoxChanged(bool bIsChecked)
 {
+    PlayUIEffectSound(EUISfxSoundType::Click);
     bIsLifePointModeChecked = bIsChecked;
     UE_LOG(LogTemp, Warning, TEXT("bIsLifePointModeChecked: %s"), bIsLifePointModeChecked ? TEXT("true") : TEXT("false"));
 
@@ -130,18 +141,21 @@ void UGameSettingWidget::OnLifePointCheckBoxChanged(bool bIsChecked)
 
 void UGameSettingWidget::OnFarmingCheckBoxChanged(bool bIsChecked)
 {
+    PlayUIEffectSound(EUISfxSoundType::Click);
     bIsFarmingModeChecked = bIsChecked;
     // TODO: ���Ӹ�峪 �ٸ� ���� �ý��� �����ڿ� ����
 }
 
 void UGameSettingWidget::OnBuffCheckBoxChanged(bool bIsChecked)
 {
+    PlayUIEffectSound(EUISfxSoundType::Click);
     bIsBuffModeChecked = bIsChecked;
     // TODO: ���Ӹ�峪 �ٸ� ���� �ý��� �����ڿ� ����
 }
 
 void UGameSettingWidget::OnTimeLimitCheckBoxChanged(bool bIsChecked)
 {
+    PlayUIEffectSound(EUISfxSoundType::Click);
     bIsTimeLimitModeChecked = bIsChecked;
     if (bIsChecked)
     {

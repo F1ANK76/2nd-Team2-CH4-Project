@@ -27,16 +27,23 @@ void UCharacterSelectWidget::InitWidget(UUISubsystem* uiHandle)
 
 void UCharacterSelectWidget::OnTileClickedFromTile(ECharacterType SelectedType)
 {
+    PlayUIEffectSound(EUISfxSoundType::Click);
     checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 
     ELevelType CurrentLevel = UIHandle->GetCurrentLevelType();
 
     if (CurrentLevel == ELevelType::TitleLevel)
     {
-        OnClickedCloseWidget(EAddWidgetType::CharacterSelectWidget);
-        OnClickedOpenWidget(EAddWidgetType::MapSelectWidget);
+        UIHandle->OnClickedMoveLevel(ELevelType::FarmingLevel, true);
+        /*OnClickedCloseWidget(EAddWidgetType::CharacterSelectWidget);
+        OnClickedOpenWidget(EAddWidgetType::MapSelectWidget);*/
     }
-    
+    else
+    {
+        SetVisibility(ESlateVisibility::Collapsed);
+        //OnClickedCloseWidget(EAddWidgetType::CharacterSelectWidget);
+    }
+
     if (CheckValidOfGameInstnace())
     {
         GameInstance->SetSelectedCharacterType(SelectedType);
@@ -49,6 +56,7 @@ void UCharacterSelectWidget::OnTileClickedFromTile(ECharacterType SelectedType)
 
 void UCharacterSelectWidget::OnClickedClose()
 {
+    PlayUIEffectSound(EUISfxSoundType::Close);
     checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 
     //OnClickedCloseWidget(EAddWidgetType::CharacterSelectWidget);
@@ -112,6 +120,7 @@ void UCharacterSelectWidget::InitCharacterTiles()
 
         Tiles[i]->SetCharacterType(TargetType);
         Tiles[i]->SetCharacterImage(TargetData->PortraitImage.LoadSynchronous());
+        Tiles[i]->SetCharacterName(TargetData->CharacterName);
     }
 }
 

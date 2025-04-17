@@ -191,12 +191,13 @@ void UBaseWidget::OnClickedMoveSingleMode()
 	//fade in
 
 	//UIHandle->ShowLevel(ELevelType::SingleLevel);
-
+	PlayUIEffectSound(EUISfxSoundType::Click);
 	UIHandle->OnClickedMoveLevel(ELevelType::SingleLevel, true);
 }
 
 void UBaseWidget::OnClickedMoveMultiMode()
 {
+	PlayUIEffectSound(EUISfxSoundType::Click);
 	UIHandle->OnClickedMoveLevel(ELevelType::MultiLevel, false); // change bool value to true, Level Type Value to Match
 }
 
@@ -207,7 +208,7 @@ void UBaseWidget::OnClickedMoveMultiLobbyMode()
 	//�� ��ȯ? Ȥ�� ���� ��ȯ? UIsubsystem Ȥ�� UIhandler�� ��û
 	//fade in
 	//UIHandle->ShowLevel(ELevelType::LobbyLevel);
-
+	PlayUIEffectSound(EUISfxSoundType::Click);
 	UIHandle->OnClickedMoveLevel(ELevelType::MultiLobbyLevel, true); // change bool value to true, Level Type Value to Match
 }
 
@@ -218,7 +219,7 @@ void UBaseWidget::OnClickedMoveTrainingMode()
 	//�� ��ȯ? Ȥ�� ���� ��ȯ? UIsubsystem Ȥ�� UIhandler�� ��û
 	//fade in
 	//UIHandle->ShowLevel(ELevelType::TrainingLevel);
-
+	PlayUIEffectSound(EUISfxSoundType::Click);
 	UIHandle->OnClickedMoveLevel(ELevelType::TrainingLevel, true);
 }
 
@@ -231,7 +232,7 @@ void UBaseWidget::OnClickedMoveTitle()
 	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 	//UIHandle->RequestPlayUISound(EUISoundType::Click);
 	//UIHandle->ClickedMoveToTitle();
-
+	PlayUIEffectSound(EUISfxSoundType::Click);
 	UE_LOG(LogTemp, Warning, TEXT("ShowLevel called - this: %p"), this);
 
 	//UIHandle->ShowLevel(ELevelType::TitleLevel);
@@ -245,7 +246,7 @@ void UBaseWidget::OnClickedQuitGame()
 	// UISubsystemȤ�� UIhandler�� Ŭ���ߴٰ� �˸��� ���� �ߵ� ������Ʈ.
 	// ���� ���� �Լ� ���� ��û
 
-
+	PlayUIEffectSound(EUISfxSoundType::Click);
 	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 	//UIHandle->RequestPlayUISound(EUISoundType::Click);
 	UIHandle->CloseGame();
@@ -255,12 +256,14 @@ void UBaseWidget::OnClickedQuitGame()
 
 void UBaseWidget::OnClickedOpenWidget(const EAddWidgetType WidgetType)
 {
+	PlayUIEffectSound(EUISfxSoundType::Open);
 	checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 	UIHandle->ShowWidget(WidgetType);
 }
 
 void UBaseWidget::OnClickedCloseWidget(const EAddWidgetType WidgetType)
 {
+	PlayUIEffectSound(EUISfxSoundType::Close);
 	checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 	UIHandle->CloseWidget(WidgetType);
 }
@@ -279,6 +282,7 @@ void UBaseWidget::OnClick_MoveLevel()
 
 void UBaseWidget::OnClickedOptionButton()
 {
+	PlayUIEffectSound(EUISfxSoundType::Open);
 	UIHandle->ShowWidget(EAddWidgetType::OptionWidget);
 
 }

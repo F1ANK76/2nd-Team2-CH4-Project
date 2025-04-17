@@ -71,7 +71,9 @@ void ABaseCamera::UpdateCameraLocationandRotation()
     {
         CamDist = CameraState->GetCameraDistance();
         CamRot = CameraState->GetCameraRotation();
-        CamLoc = CameraState->GetCameraLocation() + FVector(FMath::Min(-CamDist, -500.0f) / 2.0f, 0.0f, 0.0f);
+        CamLoc = CameraState->GetCameraLocation()
+            + FVector(FMath::Clamp(-CamDist, -1500.0f, -500.0f), 0.0f, 0.0f);
+
     }
 
     CameraComponent->SetWorldLocation(FMath::VInterpTo(CameraComponent->GetComponentLocation(), CamLoc, 0.01f, 5.0f));

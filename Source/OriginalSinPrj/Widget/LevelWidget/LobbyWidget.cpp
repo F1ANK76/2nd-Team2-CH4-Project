@@ -14,10 +14,10 @@ void ULobbyWidget::InitWidget(UUISubsystem* uiSubsystem)
 {
     Super::InitWidget(uiSubsystem);
 
-    if (MapSelectButton)
+    /*if (MapSelectButton)
     {
         MapSelectButton->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickMapSelect);
-    }
+    }*/
 
     if (CharacterSelectButton)
     {
@@ -44,7 +44,7 @@ void ULobbyWidget::InitWidget(UUISubsystem* uiSubsystem)
         GameStartButton->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickGameStart);
     }
 
-    MapSelectWidget->InitWidget(UIHandle);
+    //MapSelectWidget->InitWidget(UIHandle);
     CharacterSelectWidget->InitWidget(UIHandle);
     GameSettingWidget->InitWidget(UIHandle);
 }
@@ -54,7 +54,7 @@ void ULobbyWidget::NativeConstruct()
     Super::NativeConstruct();
 
     // �⺻���� �� ���ø� ���̰�
-    if (MapSelectWidget) MapSelectWidget->SetVisibility(ESlateVisibility::Collapsed);
+    //if (MapSelectWidget) MapSelectWidget->SetVisibility(ESlateVisibility::Collapsed);
     if (CharacterSelectWidget) CharacterSelectWidget->SetVisibility(ESlateVisibility::Collapsed);
     if (GameSettingWidget) GameSettingWidget->SetVisibility(ESlateVisibility::Collapsed);
 
@@ -65,7 +65,7 @@ void ULobbyWidget::NativeConstruct()
         if (OwningPC->HasAuthority())
         {
             GameStartButton->SetVisibility(ESlateVisibility::Visible);
-            MapSelectButton->SetVisibility(ESlateVisibility::Visible);
+            //MapSelectButton->SetVisibility(ESlateVisibility::Visible);
             ReadyButton->SetVisibility(ESlateVisibility::Visible);
             GameSettingButton->SetVisibility(ESlateVisibility::Visible);
             CharacterSelectButton->SetVisibility(ESlateVisibility::Visible);
@@ -73,7 +73,7 @@ void ULobbyWidget::NativeConstruct()
         else
         {
             GameStartButton->SetVisibility(ESlateVisibility::Collapsed);
-            MapSelectButton->SetVisibility(ESlateVisibility::Collapsed);
+            //MapSelectButton->SetVisibility(ESlateVisibility::Collapsed);
             ReadyButton->SetVisibility(ESlateVisibility::Visible);
             GameSettingButton->SetVisibility(ESlateVisibility::Collapsed);
             CharacterSelectButton->SetVisibility(ESlateVisibility::Visible);
@@ -83,29 +83,60 @@ void ULobbyWidget::NativeConstruct()
 
 void ULobbyWidget::OnClickMapSelect()
 {
-    if (MapSelectWidget) MapSelectWidget->SetVisibility(ESlateVisibility::Visible);
+    PlayUIEffectSound(EUISfxSoundType::Open);
+    //if (MapSelectWidget) MapSelectWidget->SetVisibility(ESlateVisibility::Visible);
     if (CharacterSelectWidget) CharacterSelectWidget->SetVisibility(ESlateVisibility::Collapsed);
     if (GameSettingWidget) GameSettingWidget->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void ULobbyWidget::OnClickCharacterSelect()
 {
-    if (MapSelectWidget) MapSelectWidget->SetVisibility(ESlateVisibility::Collapsed);
-    if (CharacterSelectWidget) CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
-    if (GameSettingWidget) GameSettingWidget->SetVisibility(ESlateVisibility::Collapsed);
+    //if (MapSelectWidget) MapSelectWidget->SetVisibility(ESlateVisibility::Collapsed);
+    if (IsValid(CharacterSelectWidget))
+    {
+        if (CharacterSelectWidget->GetVisibility() == ESlateVisibility::Visible)
+        {
+            PlayUIEffectSound(EUISfxSoundType::Close);
+            CharacterSelectWidget->SetVisibility(ESlateVisibility::Collapsed);
+        }
+        else
+        {
+            PlayUIEffectSound(EUISfxSoundType::Open);
+            CharacterSelectWidget->SetVisibility(ESlateVisibility::Visible);
+        }
+    }
+
+    if (IsValid(GameSettingWidget)) GameSettingWidget->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void ULobbyWidget::OnClickGameSetting()
 {
-    if (MapSelectWidget) MapSelectWidget->SetVisibility(ESlateVisibility::Collapsed);
-    if (CharacterSelectWidget) CharacterSelectWidget->SetVisibility(ESlateVisibility::Collapsed);
-    if (GameSettingWidget) GameSettingWidget->SetVisibility(ESlateVisibility::Visible);
+    PlayUIEffectSound(EUISfxSoundType::Click);
+    if (IsValid(GameSettingWidget))
+    {
+        if (GameSettingWidget->GetVisibility() == ESlateVisibility::Visible)
+        {
+            PlayUIEffectSound(EUISfxSoundType::Close);
+            GameSettingWidget->SetVisibility(ESlateVisibility::Collapsed);
+        }
+        else
+        {
+            PlayUIEffectSound(EUISfxSoundType::Open);
+            GameSettingWidget->SetVisibility(ESlateVisibility::Visible);
+        }
+    }
+
+    //if (IsValid(GameSettingWidget)) GameSettingWidget->SetVisibility(ESlateVisibility::Collapsed);
+
+    //if (MapSelectWidget) MapSelectWidget->SetVisibility(ESlateVisibility::Collapsed);
+    if (IsValid(CharacterSelectWidget)) CharacterSelectWidget->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 
 
 void ULobbyWidget::OnClickReady()
 {
+    PlayUIEffectSound(EUISfxSoundType::Click);
     if (!CheckValidOfPlayerController())
     {
         return;
@@ -127,6 +158,7 @@ void ULobbyWidget::OnClickReady()
 
 void ULobbyWidget::OnClickGameStart()
 {
+    PlayUIEffectSound(EUISfxSoundType::Click);
     if (!CheckValidOfPlayerController())
     {
         return;
