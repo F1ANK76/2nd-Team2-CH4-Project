@@ -12,7 +12,6 @@
 #include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
 
 
-
 //initWidget�� ������� �ʾ� ���� �ӽ� �Լ�...
 void UCharacterSelectWidget::InitWidget(UUISubsystem* uiHandle)
 {
@@ -111,7 +110,12 @@ void UCharacterSelectWidget::InitCharacterTiles()
         const FCharacterDataStruct* TargetData = DataSubsystem->GetCharacterDataByType(TargetType);
 
         Tiles[i]->SetCharacterType(TargetType);
-        Tiles[i]->SetCharacterImage(TargetData->PortraitImage.LoadSynchronous());
+
+        if (TargetData->PortraitImage)
+        {
+            Tiles[i]->SetCharacterImage(TargetData->PortraitImage.LoadSynchronous());
+
+        }
     }
 }
 

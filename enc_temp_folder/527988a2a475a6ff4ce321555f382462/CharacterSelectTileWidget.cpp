@@ -27,10 +27,7 @@ void UCharacterSelectTileWidget::SetCharacterType(ECharacterType Type)
 
 void UCharacterSelectTileWidget::SetCharacterImage(UTexture2D* CharacterImg)
 {
-	if (IsValid(CharacterImage))
-	{
-		CharacterImage->SetBrushFromTexture(CharacterImg);
-	}
+	CharacterImage->SetBrushFromTexture(CharacterImg);
 }
 
 void UCharacterSelectTileWidget::HandleButtonClicked()
