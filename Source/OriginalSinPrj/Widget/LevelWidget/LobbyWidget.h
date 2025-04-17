@@ -25,8 +25,8 @@ public:
 
 protected:
     // ��/ĳ����/�ɼ� UI ���� ����
-    UPROPERTY(meta = (BindWidget))
-    UMapSelectWidget* MapSelectWidget;
+    /*UPROPERTY(meta = (BindWidget))
+    UMapSelectWidget* MapSelectWidget;*/
 
     UPROPERTY(meta = (BindWidget))
     UCharacterSelectWidget* CharacterSelectWidget;
@@ -35,8 +35,8 @@ protected:
     UGameSettingWidget* GameSettingWidget;
 
     // �޴� ��ư
-    UPROPERTY(meta = (BindWidget))
-    UButton* MapSelectButton;
+    /*UPROPERTY(meta = (BindWidget))
+    UButton* MapSelectButton;*/
 
     UPROPERTY(meta = (BindWidget))
     UButton* CharacterSelectButton;

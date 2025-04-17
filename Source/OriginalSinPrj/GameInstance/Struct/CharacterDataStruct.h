@@ -14,7 +14,7 @@ struct ORIGINALSINPRJ_API FCharacterDataStruct : public FTableRowBase
 
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FText CharacterName = FText::GetEmpty();
+    FName CharacterName = "";
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     ECharacterType CharacterType = ECharacterType::Hand;
