@@ -47,6 +47,19 @@ void ABaseGameState::PlaySound(UAudioComponent* AudioComp, USoundBase* SoundSour
 	AudioComp->Play();
 }
 
+void ABaseGameState::StopEffectSound_Implementation(UAudioComponent* AudioComp)
+{
+	if (!IsValid(AudioComp))
+	{
+		return;
+	}
+
+	if (AudioComp->IsPlaying())
+	{
+		AudioComp->Stop();
+	}
+}
+
 void ABaseGameState::PlayCharacterSound_Implementation(UAudioComponent* AudioComp, ECharacterSoundType SoundType)
 {
 	if (!CharacterSoundMap.Contains(SoundType))

@@ -111,6 +111,7 @@ public:
 	const ECharacterType GetWitchType() const;
 	const FVector GetHeadLocation() const;
 	const FVector GetFootLocation() const;
+	const ECharacterSoundType GetAttackSoundType() const;
 	AActor* GetLastDamageCasuser() const;
 	UAudioComponent* GetAudioComponent() const;
 
@@ -244,6 +245,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effect")
 	TObjectPtr<UNiagaraComponent> RightHandEffect = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+	ECharacterSoundType AttackSoundType = ECharacterSoundType::HandEffect;
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damager")
