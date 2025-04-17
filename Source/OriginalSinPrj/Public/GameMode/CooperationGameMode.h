@@ -207,6 +207,7 @@ public:
     UPROPERTY(EditDefaultsOnly, Category = "UI")
     TSubclassOf<UCooperationWidget> CooperationWidget;
 
+    bool bIsClear = true;
 
     void RequestOpenResultUI();
 
