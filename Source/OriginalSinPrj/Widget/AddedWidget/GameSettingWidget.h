@@ -85,6 +85,9 @@ protected:
     UFUNCTION()
     void OnCheckBox5Changed(bool bIsChecked);
 
+    UFUNCTION()
+    void OnClickedCloseButton();
+
     void UncheckAllExcept(UCheckBox* CheckedBox);
 
     //����������Ʈ
@@ -97,6 +100,9 @@ protected:
 
     UPROPERTY(meta = (BindWidget))
     UTextBlock* LifePoints;
+
+    UPROPERTY(Meta = (BindWidget))
+    TObjectPtr<UButton> CloseButton;
 
 
     UFUNCTION()

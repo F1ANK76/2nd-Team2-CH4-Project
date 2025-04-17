@@ -31,11 +31,13 @@ void UOptionWidget::EndRemoveAnim()
 
 void UOptionWidget::OnClickedCloseOption()
 {
+	PlayUIEffectSound(EUISfxSoundType::Close);
 	//OnClickedCloseWidget(EWidgetType::OptionWidget);
 }
 
 void UOptionWidget::OnClickedBGMVolume(float Value)
 {
+	PlayUIEffectSound(EUISfxSoundType::Click);
 	//UISubsystem�� �����ϴ��� üũ
 	//UISubsystem Ȥ�� UIHandler�� �Է¹��� Value�� ���� ���� ��û.
 	
@@ -51,6 +53,7 @@ void UOptionWidget::OnClickedBGMVolume(float Value)
 
 void UOptionWidget::OnClickedEffectVolume(float Value)
 {
+	PlayUIEffectSound(EUISfxSoundType::Click);
 	if (CheckValidOfAudioSubsystem())
 	{
 		AudioSubsystem->SetEffectVolume(Value);
@@ -65,7 +68,7 @@ void UOptionWidget::OnClickedEffectVolume(float Value)
 
 void UOptionWidget::OpenKeySetting()
 {
-
+	PlayUIEffectSound(EUISfxSoundType::Click);
 }
 
 bool UOptionWidget::CheckValidOfAudioSubsystem()

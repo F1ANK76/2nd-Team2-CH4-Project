@@ -153,7 +153,7 @@ void UAudioSubsystem::PlayBGMSoundByLevel(ELevelType Type)
         SoundType = ELevelSoundType::SingleSound;
         break;
 
-    case ELevelType::MatchLevel:
+    case ELevelType::MultiLobbyLevel:
         SoundType = ELevelSoundType::MatchSound;
         break;
 

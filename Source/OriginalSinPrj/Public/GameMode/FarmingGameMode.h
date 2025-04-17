@@ -18,12 +18,12 @@ class ORIGINALSINPRJ_API AFarmingGameMode : public AGameMode, public IBattleEven
 {
 	GENERATED_BODY()
 	
-    //³«»ç ÀÖÀ½, ¼­·Î µ¥¹ÌÁö ¾øÀ½.
+    //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
     //GameMode Default Function
 public:
     AFarmingGameMode();
-    virtual void StartPlay() override; // BeginPlayº¸´Ù ¸ÕÀú È£Ãâ
-    virtual void BeginPlay() override; // °ÔÀÓÀ» ½ÃÀÛÇÒ ÁØºñ°¡ µÇ¸é È£Ãâ
+    virtual void StartPlay() override; // BeginPlayï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½
+    virtual void BeginPlay() override; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Øºï¿½ ï¿½Ç¸ï¿½ È£ï¿½ï¿½
 
     TObjectPtr<AFarmingGameState> FarmingGameState = nullptr;
     
@@ -37,7 +37,7 @@ public:
     
     void EndMultiGame();
     
-    void EndGame(); // Å¸ÀÌ¸Ó = 0 ÀÌ¸é È£Ãâ
+    void EndGame(); // Å¸ï¿½Ì¸ï¿½ = 0 ï¿½Ì¸ï¿½ È£ï¿½ï¿½
 
     UFUNCTION()
     void OnCharacterStateReceived(const FCharacterStateBuffer& State);
@@ -48,11 +48,11 @@ public:
     UPROPERTY(EditDefaultsOnly, Category = "Camera")
     TSubclassOf<ABaseCamera> BaseCamera;
 
-    // »ý¼ºµÈ Ä«¸Þ¶ó¸¦ °ü¸®ÇÒ ¹è¿­
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½è¿­
     UPROPERTY()
     TArray<ABaseCamera*> SpawnedBaseCamera;
 
-    //Ä«¸Þ¶ó »ý¼º ÇÔ¼ö
+    //Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
     void SpawnCamera();
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BossCamera")
@@ -61,7 +61,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "KillZone")
     TSubclassOf<AKillZone> ActorKillZone;
 
-    // killzone »ý¼º ÇÔ¼ö
+    // killzone ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
     void SpawnKillZone();
 
 
@@ -71,7 +71,7 @@ public:
     
 
     UFUNCTION(BlueprintCallable)
-    void HandleMonsterKilled(AActor* DeadMonster, AActor* Killer); //¸ó½ºÅÍ°¡ Á×À¸¸é ÀÌ°É È£Ãâ
+    void HandleMonsterKilled(AActor* DeadMonster, AActor* Killer); //ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì°ï¿½ È£ï¿½ï¿½
 
 
     UPROPERTY(EditDefaultsOnly, Category = "Spawn")
@@ -80,7 +80,7 @@ public:
     UPROPERTY(EditDefaultsOnly, Category = "UI")
     TSubclassOf<UBattleWidget> BattleWidgetClass;
 
-    // »ý¼ºµÈ Ä³¸¯ÅÍ¸¦ °ü¸®ÇÒ ¹è¿­
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½è¿­
     UPROPERTY()
     TArray<ABaseWitch*> SpawnedCharacters;
 
@@ -116,7 +116,7 @@ public:
 
     void SetPlayerLocation(AActor* Player);
 
-    // °ÔÀÓ¸ðµå Å¬·¡½º¿¡ ¼±¾ð
+    // ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Controller")
     TSubclassOf<APlayerController> NewPlayerControllerClass;
 
@@ -129,7 +129,7 @@ public:
     void PlayerRespawn();
 
 
-    // Ä³¸¯ÅÍ »ý¼º ÇÔ¼ö
+    // Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
     void SpawnPlayers();
 
     void PossessCharacter(APlayerController* PC, APawn* PawnToPossess);
@@ -142,7 +142,7 @@ public:
     void SpawnPlayerByCharacterType(UClass* SpawnClass, APlayerController* PlayerController);
 
 
-    //¸ó½ºÅÍ ½ºÆ÷³Ê °®°í ÀÖ±â
+    //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö±ï¿½
     //UPROPERTY(BlueprintReadWrite, Category = "Spawn")
     //TSubclassOf<AMonsterSpawner> MonsterSpawner;
 
@@ -170,9 +170,9 @@ public:
     void InitPlayerUI();
 
     //Test
-    void PostLogin(APlayerController* NewPlayer); // Ã³À½ ÇÃ·¹ÀÌ¾î°¡ ·Î±×ÀÎ ÇÏ¸é... Å×½ºÆ®¿ë...
+    void PostLogin(APlayerController* NewPlayer); // Ã³ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½Î±ï¿½ï¿½ï¿½ ï¿½Ï¸ï¿½... ï¿½×½ï¿½Æ®ï¿½ï¿½...
 
-    //¸ÖÆ¼ Àü¿ë
+    //ï¿½ï¿½Æ¼ ï¿½ï¿½ï¿½ï¿½
 
     virtual void PostSeamlessTravel() override;
 

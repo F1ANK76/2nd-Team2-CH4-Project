@@ -92,26 +92,29 @@ void UOriginalSinPrjGameInstance::ResponseShowWidget()
     AudioSubsystem->PlayBGMSoundByLevel(GetCurrentLevelType());
 }
 
+FGameSettingData& UOriginalSinPrjGameInstance::GetGameSettingData()
+{
+    return GameSetting;
+}
+
 ECharacterType UOriginalSinPrjGameInstance::GetSelectedCharacterType() const
 {
-    return CharacterType;
+    return GameSetting.SelectedCharacterType;
 }
 
 int32 UOriginalSinPrjGameInstance::GetPlayerFarmingLevel() const
 {
-    return FarmingLevel;
+    return GameSetting.PlayerLevel;
 }
 
 void UOriginalSinPrjGameInstance::SetSelectedCharacterType(ECharacterType SelectedType)
 {
-    CharacterType = SelectedType;
-
-    //UE_LOG(LogTemp, Warning, TEXT("Selected Character Convert To Index : %d"), (int32)CharacterType);
+    GameSetting.SelectedCharacterType = SelectedType;
 }
 
 void UOriginalSinPrjGameInstance::SetPlayerFarmingLevel(int32 LevelValue)
 {
-    FarmingLevel = FMath::Clamp(LevelValue, 0, 5);
+    GameSetting.PlayerLevel = FMath::Clamp(LevelValue, 0, 5);
 }
 
 const ELevelType UOriginalSinPrjGameInstance::GetCurrentLevelType()

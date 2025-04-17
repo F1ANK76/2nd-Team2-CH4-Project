@@ -33,10 +33,13 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	UPROPERTY()
+	ABossCharacter* BossCharacter;
+	UPROPERTY()
+	ABossController* BossController;
+	
 	int32 CurrentHP;
 	bool bIsDead;
-	ABossCharacter* BossCharacter;
-	ABossController* BossController;
 
 	void SetFacingDirection(float Direction);
 };

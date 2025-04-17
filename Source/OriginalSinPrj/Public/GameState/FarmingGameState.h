@@ -45,7 +45,7 @@ public:
     void SetMyDataForNextLevel(int32 Level);
 
 
-    //Ä«¸Þ¶ó Ã³¸®¿ë ÇÔ¼ö.
+    //Ä«ï¿½Þ¶ï¿½ Ã³ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½.
     virtual FVector GetCameraLocation() const override { return CameraLocation; }
     virtual FRotator GetCameraRotation() const override { return CameraRotation; }
     virtual float GetCameraDistance() const override { return CameraDistance; }
@@ -129,11 +129,11 @@ public:
 
     void StartFarmingMode();
 
-    void EndFarmingMode(); // 0ÃÊ µÆÀ» ¶§ Ã³¸®ÇÒ ÇÔ¼ö
+    void EndFarmingMode(); // 0ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 private:
 
     UPROPERTY(EditDefaultsOnly, Category = "UI")
-    TSubclassOf<class UBattleWidget> BattleWidgetClass; // UI Å¬·¡½º
+    TSubclassOf<class UBattleWidget> BattleWidgetClass; // UI Å¬ï¿½ï¿½ï¿½ï¿½
     
 
     FTimerHandle TimerHandle;

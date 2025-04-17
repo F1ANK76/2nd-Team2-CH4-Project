@@ -6,6 +6,7 @@
 #include "Engine/GameInstance.h"
 #include "OriginalSinPrj/GameInstance/EnumSet.h"
 #include "Player/WitchTypes.h"
+#include "OriginalSinPrj/GameInstance/Struct/GameSettingData.h"
 #include "OriginalSinPrjGameInstance.generated.h"
 
 class UUISubsystem;
@@ -29,11 +30,15 @@ public:
 	void RequestOpenLevelByType(ELevelType Type, bool bIsSingle);
 	void ResponseShowWidget();
 
+	FGameSettingData& GetGameSettingData();
 
 	ECharacterType GetSelectedCharacterType() const;
 	int32 GetPlayerFarmingLevel() const;
+
 	void SetSelectedCharacterType(ECharacterType SelectedType);
 	void SetPlayerFarmingLevel(int32 LevelValue);
+
+	void SetSelectedMapIndex(int32 Index);
 
 	const ELevelType GetCurrentLevelType();
 
@@ -52,6 +57,9 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<APlayerController> OwningPlayer = nullptr;
+
+	UPROPERTY()
+	FGameSettingData GameSetting;
 
 	UPROPERTY()
 	ECharacterType CharacterType = ECharacterType::Hand;
