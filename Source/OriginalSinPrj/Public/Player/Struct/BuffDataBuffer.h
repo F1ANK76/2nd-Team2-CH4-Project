@@ -20,10 +20,10 @@ public:
 	float AddedKnockGauge = 0.0f;
 
 	UPROPERTY()
-	float AddedAttackRange = 0.0f;
+	float AddedAttackRange = 1.0f;
 
 	UPROPERTY()
-	float AddedAttackSpeed = 0.0f;
+	float AddedAttackSpeed = 1.0f;
 
 	UPROPERTY()
 	float AddedGuardPoint = 0.0f;

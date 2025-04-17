@@ -25,9 +25,9 @@ public:
 	UWitchAbilityComponent();
 
 	void CallMove(const FVector2D& Value);
-	void CallNormalAttack();
-	void CallSpecialAttack();
-	void CallSkillAttack(int32 SkillNum);
+	void CallNormalAttack(float AttackSpeed);
+	void CallSpecialAttack(float AttackSpeed);
+	void CallSkillAttack(int32 SkillNum, float AttackSpeed);
 	void CallJump();
 	void CallHit(AActor* DamageCauser, float DamageValue);
 	void CallBeginGuard();
@@ -37,7 +37,6 @@ public:
 
 	void ResponseEndAnim();
 	void PauseBufferTimer();
-	void AddCurrentMana(float Value);
 	void ResetAbility();
 
 protected:
@@ -123,6 +122,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
 	TSubclassOf<ABaseWitchAbility> Skill5AbilityClass = nullptr;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Ability")
+	FAbilityDataBuffer AbilityBuffer;
+
 private:
 	UPROPERTY()
 	TObjectPtr<ABaseWitch> ParentWitch = nullptr;
@@ -130,8 +132,8 @@ private:
 	UPROPERTY()
 	TObjectPtr<UCharacterMovementComponent> ParentMovementComp = nullptr;
 
-	UPROPERTY()
-	FAbilityDataBuffer AbilityBuffer;
+	/*UPROPERTY()
+	FAbilityDataBuffer AbilityBuffer;*/
 
 	FTimerHandle BufferTimer;
 

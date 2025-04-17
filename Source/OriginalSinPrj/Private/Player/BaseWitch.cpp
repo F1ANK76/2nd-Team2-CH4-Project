@@ -15,6 +15,10 @@
 #include "Engine/DamageEvents.h"
 #include "Player/Projectile/BaseProjectile.h"
 #include "Components/CapsuleComponent.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "OriginalSinPrj/Interface/BattleEvent.h"
+#include "Components/AudioComponent.h"
+#include "GameFramework/GameModeBase.h"
 
 ABaseWitch::ABaseWitch()
 {
@@ -31,6 +35,8 @@ ABaseWitch::ABaseWitch()
 
 	AbilityComp = CreateDefaultSubobject<UWitchAbilityComponent>(TEXT("Ability Component"));
 	BuffComp = CreateDefaultSubobject<UBuffComponent>(TEXT("Buff Component"));
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component"));
+	PerceptionStimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Perceptions Stimuli Source Component"));
 
 	LeftHandDamager = CreateDefaultSubobject<UBoxComponent>(TEXT("Left Hand Damager"));
 	RightHandDamager = CreateDefaultSubobject<UBoxComponent>(TEXT("Right Hand Damager"));
@@ -54,6 +60,8 @@ ABaseWitch::ABaseWitch()
 	HatItem->SetupAttachment(MainMesh, (FName)"Head");
 	FootItem->SetupAttachment(MainMesh, (FName)"Foot");
 
+	AudioComp->SetupAttachment(RootComponent);
+
 	LeftHandEffect->SetupAttachment(LeftHandItem);
 	RightHandEffect->SetupAttachment(RightHandItem);
 
@@ -74,7 +82,7 @@ void ABaseWitch::SetWitchState_Implementation(const EWitchStateType NewState)
 	CurrentState = NewState;
 }
 
-void ABaseWitch::PlayAnimation_Implementation(UAnimMontage* Target)
+void ABaseWitch::ResponsePlayAnimation_Implementation(UAnimMontage* Target, float SpeedValue)
 {
 	if (!IsValid(Target))
 	{
@@ -90,25 +98,25 @@ void ABaseWitch::PlayAnimation_Implementation(UAnimMontage* Target)
 	if (IsValid(WitchAnimInstance))
 	{
 		WitchAnimInstance->Montage_Play(Target);
-		CheckAttackSpeed(WitchAnimInstance, Target);
+		CheckAttackSpeed(WitchAnimInstance, Target, SpeedValue);
 	}
 
 	if (IsValid(DressAnimInstance))
 	{
 		DressAnimInstance->Montage_Play(Target);
-		CheckAttackSpeed(DressAnimInstance, Target);
+		CheckAttackSpeed(DressAnimInstance, Target, SpeedValue);
 	}
 
 	if (IsValid(StockingsAnimInstance))
 	{
 		StockingsAnimInstance->Montage_Play(Target);
-		CheckAttackSpeed(StockingsAnimInstance, Target);
+		CheckAttackSpeed(StockingsAnimInstance, Target, SpeedValue);
 	}
 
 	if (IsValid(ShoesAnimInstance))
 	{
 		ShoesAnimInstance->Montage_Play(Target);
-		CheckAttackSpeed(ShoesAnimInstance, Target);
+		CheckAttackSpeed(ShoesAnimInstance, Target, SpeedValue);
 	}
 }
 
@@ -201,14 +209,39 @@ void ABaseWitch::SetDamagerEnabled(UBoxComponent* Target, bool bIsActive)
 	}
 }
 
-void ABaseWitch::CheckAttackSpeed(UAnimInstance* TargetInstance, UAnimMontage* TargetMontage)
+void ABaseWitch::CheckAttackSpeed(UAnimInstance* TargetInstance, UAnimMontage* TargetMontage, float SpeedValue)
 {
 	if (CurrentState == EWitchStateType::Attack)
 	{
 		float OriginRate = TargetInstance->Montage_GetPlayRate(TargetMontage);
-		OriginRate *= AttackSpeed;
-		TargetInstance->Montage_SetPlayRate(TargetMontage);
+		OriginRate *= SpeedValue;
+		TargetInstance->Montage_SetPlayRate(TargetMontage, OriginRate);
 	}
+}
+
+void ABaseWitch::CheckDie()
+{
+	if (CharacterBuffer.CurrentHP <= 0)
+	{
+		//die
+		SetWitchState(EWitchStateType::Die);
+		PlayAnimation(DieMontage);
+
+		DecreaseLifePoint();
+	}
+}
+
+bool ABaseWitch::CheckAvoid()
+{
+	float RandomValue = FMath::RandRange(0.0f, 1.0f);
+
+	if (RandomValue < BuffComp->GetBuffData().AddedAvoidRate)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Success Avoid. Avoid Rate : %f, Random Value : %f"), BuffComp->GetBuffData().AddedAvoidRate, RandomValue);
+		return true;
+	}
+
+	return false;
 }
 
 bool ABaseWitch::CompareColorIndex(AActor* DamageCauser)
@@ -244,6 +277,11 @@ void ABaseWitch::SetMeshResponseToChanel_Implementation(ECollisionChannel Chanel
 {
 	MainMesh->SetCollisionResponseToChannel(Chanel, Response);
 	HitCollision->SetCollisionResponseToChannel(Chanel, Response);
+}
+
+void ABaseWitch::PlayAnimation(UAnimMontage* Target)
+{
+	ResponsePlayAnimation(Target, BuffComp->GetBuffData().AddedAttackSpeed);
 }
 
 void ABaseWitch::PlayMelleAttack(EEffectVisibleType Type, float DamageValue)
@@ -291,6 +329,18 @@ void ABaseWitch::PauseTimer()
 	AbilityComp->PauseBufferTimer();
 }
 
+void ABaseWitch::OnOverlapedDeathZone()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	SetWitchState(EWitchStateType::Die);
+	RequestDieToGameMode();
+	//LastDamageCauser = nullptr;
+}
+
 void ABaseWitch::RequestPauseTimer_Implementation()
 {
 	AbilityComp->PauseBufferTimer();
@@ -316,9 +366,14 @@ const FVector ABaseWitch::GetFootLocation() const
 	return FootItem->GetComponentLocation();
 }
 
-const UBuffComponent* ABaseWitch::GetBuffComponent() const
+AActor* ABaseWitch::GetLastDamageCasuser() const
 {
-	return BuffComp;
+	return LastDamageCauser;
+}
+
+UAudioComponent* ABaseWitch::GetAudioComponent() const
+{
+	return AudioComp;
 }
 
 void ABaseWitch::SetPlayerLevel(int32 LevelValue)
@@ -326,6 +381,16 @@ void ABaseWitch::SetPlayerLevel(int32 LevelValue)
 	CharacterBuffer.PlayerLevel = FMath::Clamp(LevelValue, 0, 5);
 	CharacterBuffer.MaxMana = FMath::Clamp(LevelValue, 0, 5);
 	OnChangedState.Broadcast(CharacterBuffer);
+}
+
+void ABaseWitch::ResponseSelectedBuff(EBuffType TargetType)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	BuffComp->ApplyBuff(TargetType);
 }
 
 void ABaseWitch::SetCharacterLifePoint(int32 LifeValue)
@@ -384,12 +449,27 @@ void ABaseWitch::IncreaseCurrentMana()
 	float AddedValue = BuffComp->GetBuffData().AddedMana;
 
 	CharacterBuffer.CurrentMana = FMath::Clamp(CharacterBuffer.CurrentMana + AddedValue, 0, MaxValue);
+	//UE_LOG(LogTemp, Warning, TEXT("Max Mana : %f, Current Mana : %f"), MaxValue, CharacterBuffer.CurrentMana);
 	OnChangedState.Broadcast(CharacterBuffer);
 }
 
-void ABaseWitch::AddKnockGauge(float KnockValue)
+void ABaseWitch::ApplyDamage(float DamageValue, AActor* DamageCauser)
 {
-	CharacterBuffer.AirbornePercent += KnockValue;
+	LastDamageCauser = DamageCauser;
+
+	if (bIsHpMode)
+	{
+		int32 MaxValue = CharacterBuffer.MaxHP;
+		int32 CurrentValue = CharacterBuffer.CurrentHP;
+
+		CharacterBuffer.CurrentHP = FMath::Clamp(CurrentValue - DamageValue, 0, MaxValue);
+		CheckDie();
+	}
+	else
+	{
+		CharacterBuffer.AirbornePercent += DamageValue;
+	}
+	
 	OnChangedState.Broadcast(CharacterBuffer);
 }
 
@@ -412,11 +492,22 @@ void ABaseWitch::ResetCharacterState()
 	CharacterBuffer.CurrentMana = 0;
 	
 	OnChangedState.Broadcast(CharacterBuffer);
+	SetWitchState(EWitchStateType::Idle);
+}
+
+const float ABaseWitch::GetCurrentMana() const
+{
+	return CharacterBuffer.CurrentMana;
 }
 
 const bool ABaseWitch::GetColorIndex() const
 {
 	return bIsFirstIndex;
+}
+
+void ABaseWitch::SetHpMode(bool Value)
+{
+	bIsHpMode = Value;
 }
 
 void ABaseWitch::SetColorMode(bool Value)
@@ -427,6 +518,28 @@ void ABaseWitch::SetColorMode(bool Value)
 void ABaseWitch::SetColorIndex(bool Value)
 {
 	bIsFirstIndex = Value;
+}
+
+void ABaseWitch::RequestDieToGameMode()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	AGameModeBase* CurrentGM = GetWorld()->GetAuthGameMode();
+
+	if (!IsValid(CurrentGM))
+	{
+		return;
+	}
+
+	IBattleEvent* BattleMode = Cast<IBattleEvent>(CurrentGM);
+
+	if (BattleMode)
+	{
+		BattleMode->OnDeathPlayer(this, GetActorLocation());
+	}
 }
 
 void ABaseWitch::RequestMoveToAbility_Implementation(float Value)
@@ -497,7 +610,7 @@ void ABaseWitch::RequestNormalAttackToAbility_Implementation()
 {
 	if (IsValid(AbilityComp))
 	{
-		AbilityComp->CallNormalAttack();
+		AbilityComp->CallNormalAttack(BuffComp->GetBuffData().AddedAttackSpeed);
 	}
 }
 
@@ -505,7 +618,7 @@ void ABaseWitch::RequestSpecialAttackToAbility_Implementation()
 {
 	if (IsValid(AbilityComp))
 	{
-		AbilityComp->CallSpecialAttack();
+		AbilityComp->CallSpecialAttack(BuffComp->GetBuffData().AddedAttackSpeed);
 	}
 }
 
@@ -513,7 +626,7 @@ void ABaseWitch::RequestSkillAttackToAbility_Implementation(int32 Value)
 {
 	if (IsValid(AbilityComp))
 	{
-		AbilityComp->CallSkillAttack(Value);
+		AbilityComp->CallSkillAttack(Value, BuffComp->GetBuffData().AddedAttackSpeed);
 	}
 }
 
@@ -527,6 +640,12 @@ void ABaseWitch::RequestHitToAbility_Implementation(AActor* DamageCauser, float 
 
 void ABaseWitch::RequestEndedAnim_Implementation()
 {
+	if (CurrentState == EWitchStateType::Die)
+	{
+		RequestDieToGameMode();
+		//LastDamageCauser = nullptr;
+		return;
+	}
 	if (IsValid(AbilityComp))
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("Request Ended Anim"));
@@ -542,6 +661,7 @@ void ABaseWitch::BeginPlay()
 	StopEffect();
 	StopMelleAttack();
 
+	CharacterBuffer.OwnWitch = this;
 	LeftHandDamager->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
 	RightHandDamager->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
 
@@ -592,7 +712,15 @@ float ABaseWitch::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 
 	if (CompareColorIndex(DamageCauser))
 	{
-		AbilityComp->CallHit(DamageCauser, DamageAmount);
+		if (CheckAvoid())
+		{
+			return 0.0f;
+		}
+
+		float DecreaseValue = BuffComp->GetBuffData().AddedGuardPoint;
+		float RealDamage = FMath::Clamp(DamageAmount - DecreaseValue, 0, 100);
+
+		AbilityComp->CallHit(DamageCauser, RealDamage);
 		return 1.0f;
 	}
 

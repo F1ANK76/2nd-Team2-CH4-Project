@@ -22,7 +22,7 @@ protected:
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
 
 public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadwrite)
 	EWitchStateType CharacterState = EWitchStateType::Idle;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

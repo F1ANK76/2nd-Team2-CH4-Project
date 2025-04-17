@@ -12,7 +12,7 @@ class ORIGINALSINPRJ_API UKnockbackComponent : public UActorComponent
 public:
     UKnockbackComponent();
 
-    UPROPERTY(ReplicatedUsing = OnRep_KnockbackGauge, VisibleAnywhere, BlueprintReadOnly, Category = "Knockback")
+    UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Knockback")
     float KnockbackGauge;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Knockback")
@@ -37,9 +37,6 @@ public:
     void ApplyKnockback_Implementation(FVector Direction, float BaseStrength);
 
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-    UFUNCTION()
-    void OnRep_KnockbackGauge();
 
 protected:
     virtual void BeginPlay() override;

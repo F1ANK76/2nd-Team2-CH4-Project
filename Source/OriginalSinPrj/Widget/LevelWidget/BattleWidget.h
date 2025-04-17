@@ -6,7 +6,7 @@
 #include "../BaseWidget.h"
 #include "BattleWidget.generated.h"
 
-struct FPlayerData; //�ӽ� ����// ���߿� Data������ ���� ���ߵ�.
+struct FPlayerData;
 
 UCLASS()
 class ORIGINALSINPRJ_API UBattleWidget : public UBaseWidget

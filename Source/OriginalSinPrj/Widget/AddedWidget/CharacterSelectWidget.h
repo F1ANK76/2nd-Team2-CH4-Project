@@ -4,9 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "../BaseWidget.h"
+#include "Player/WitchTypes.h"
 #include "CharacterSelectWidget.generated.h"
 
 class UButton;
+class UCharacterSelectTileWidget;
+class UOriginalSinPrjGameInstance;
 
 UCLASS()
 class ORIGINALSINPRJ_API UCharacterSelectWidget : public UBaseWidget
@@ -18,17 +21,25 @@ public:
 
 private:
 	UFUNCTION()
-	void OnTileClickedFromTile(int32 TileIndex); // Ÿ�Ͽ��� ������� �̺�Ʈ ó��
+	void OnTileClickedFromTile(ECharacterType SelectedType); // Ÿ�Ͽ��� ������� �̺�Ʈ ó��
 
 	UFUNCTION()
 	void OnClickedClose();
 
 	void InitDelegate();
+	void InitCharacterTiles();
+
+	bool CheckValidOfGameInstnace();
 
 private:
 	UPROPERTY(Meta = (BindWidget))
 	TObjectPtr<UButton> UICloseButton = nullptr;
 
+	UPROPERTY()
+	TArray<UCharacterSelectTileWidget*> Tiles;
+
+	UPROPERTY()
+	TObjectPtr<UOriginalSinPrjGameInstance> GameInstance = nullptr;
 	//UI Open animation
 	//UI close Animation
 };

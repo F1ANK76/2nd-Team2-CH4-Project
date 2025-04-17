@@ -8,6 +8,7 @@
 #include "../Widget/LevelWidget/CooperationWidget.h"
 #include "GameState/CooperationGameState.h"
 #include "BaseCamera.h"
+#include "KillZone.h"
 #include "CooperationGameMode.generated.h"
 
 
@@ -21,9 +22,12 @@ public: //for test
     UFUNCTION()
     void HandleBuffSelection(AActor* SourceActor, int32 BuffIndex);
 
-    void ApplyBuffToPlayer(APlayerController* Controller, int32 BuffIndex, FBuffInfo buff);
+    void ApplyBuffToPlayer(APlayerController* Controller, int32 BuffIndex, EBuffType buff);
     
     void RequestTurnOffBuffSelectUI();
+    
+    UFUNCTION()
+    void OnCharacterStateReceived(const FCharacterStateBuffer& State);
 
 public:
     ACooperationGameMode();
@@ -36,16 +40,42 @@ public:
     void StartGame(); //game 시작 트리거
 
     void EndGame();
+
+
+    void RequestUpdateUI(int PlayerIndex)
+    {
+        CooperationGameState->UpdatePlayerUIInfo();
+        if (PlayerIndex == 0)
+        {
+            CooperationGameState->Player1DataChanged++;
+        }
+        
+        if (PlayerIndex == 1)
+        {
+            CooperationGameState->Player2DataChanged++;
+        }
+    }
+
     
 public:
     TObjectPtr<ACooperationGameState> CooperationGameState = nullptr;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "KillZone")
+    TSubclassOf<AKillZone> ActorKillZone;
+    
+    // killzone 생성 함수
+    void SpawnKillZone();
 
     UPROPERTY(BlueprintReadWrite)
     TArray<ABaseWitch*> SpawnedCharacters;
     
     // 생성된 캐릭터를 관리할 배열
     TArray<AActor*> ActivePlayers;
+    TArray<AActor*> AlivePlayers;
+
+    void ResetAlivePlayers();
+
+
 
     // return Current Activated Players
     TArray<AActor*> GetActivePlayers() const
@@ -69,7 +99,8 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> PlayerResultLocations;
 
-
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+    TArray<FVector>RespawnLocation;
 
 
     UPROPERTY(EditDefaultsOnly, Category = "Camera")
@@ -150,14 +181,24 @@ public:
 
     void ApplyBuffToBothPlayer();
 
-    UFUNCTION(BlueprintCallable)
-    void HandleMonsterKilled(AActor* DeadMonster, AController* Killer); //몬스터가 죽으면 이걸 호출
-    
-    UFUNCTION(BlueprintCallable)
-    void HandleEnemyKilled(AActor* DeadMonster, AController* Killer); //몬스터가 죽으면 이걸 호출
+    void PlayerDie(AActor* DeadPlayer, AActor* Killer);
+    void PlayerFallDie(AActor* DeadPlayer, AActor* Killer);
+
+    void Respawn(AActor* DeadActor);
 
     UFUNCTION(BlueprintCallable)
-    void HandlePlayerKilled(AActor* DeadPlayer, AController* Killer); //플레이어가 죽으면 이걸 호출
+    void HandleMonsterKilled(AActor* DeadMonster, AActor* Killer); //몬스터가 죽으면 이걸 호출
+    
+    UFUNCTION(BlueprintCallable)
+    void HandleEnemyKilled(AActor* DeadMonster, AActor* Killer); //몬스터가 죽으면 이걸 호출
+
+    UFUNCTION(BlueprintCallable)
+    void HandlePlayerKilled(AActor* DeadPlayer, AActor* Killer); //플레이어가 죽으면 이걸 호출
+
+    //낙사처리
+
+    UFUNCTION()
+    void FallDie(AActor* Character);
 
 
     UPROPERTY(EditDefaultsOnly, Category = "Spawn")
@@ -183,6 +224,7 @@ public:
     TSubclassOf<APlayerController> PlayerControllerClass;
 
     void SetPlayerUnReady();
+    void SetPlayerUnReady(AActor* actor);
 
     void SetPlayerReady();
 
@@ -274,10 +316,13 @@ public:
     void SpawnGhostBoss();
 
     UFUNCTION(BlueprintCallable)
-    void HandleBossMonsterKilled(AController* Killer);
+    void HandleBossMonsterKilled(AActor* Killer);
 
     UFUNCTION()
     void TravelLevel();
+
+
+
 
 protected:
     //UFUNCTION(NetMulticast, Reliable)
@@ -285,6 +330,7 @@ protected:
 
     //멀티 전용
     virtual void PostSeamlessTravel() override;
+
 
 public:
     virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;
