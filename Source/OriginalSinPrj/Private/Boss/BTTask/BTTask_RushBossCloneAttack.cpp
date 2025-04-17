@@ -76,8 +76,4 @@ void UBTTask_RushBossCloneAttack::OnMontageEnded(UAnimMontage* Montage, bool bIn
 		CloningRushBoss();
 		FinishLatentTask(*BTComp, EBTNodeResult::Succeeded);
 	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("RangeAttack : BTComp가 이미 Destroy됨"));
-	}
 }

@@ -17,23 +17,30 @@ class ORIGINALSINPRJ_API UBTTask_HijackPatternAttack : public UBTTaskNode
 {
 	GENERATED_BODY()
 
+public:
+	UBTTask_HijackPatternAttack();
+
+	void InitialTask();
+	
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& BTComponent, uint8* NodeMemory) override;
 	virtual void TickTask(UBehaviorTreeComponent& BTComponent, uint8* NodeMemory, float DeltaSeconds) override;
-
+	
 private:
 	UPROPERTY()
-	ABossController* BossController;
+	ABossController* BossController = nullptr;
 	UPROPERTY()
-	ABossCharacter* BossCharacter;
+	ABossCharacter* BossCharacter = nullptr;
 	UPROPERTY()
-	AHijackBossCharacter* HijackBossCharacter;
+	AHijackBossCharacter* HijackBossCharacter = nullptr;
 	UPROPERTY()
-	AHijackBossController* HijackBossController;
+	AHijackBossController* HijackBossController = nullptr;
 	UPROPERTY()
-	UBossObjectPoolWorldSubsystem* PoolWorldSubsystem;
+	UBossObjectPoolWorldSubsystem* PoolWorldSubsystem = nullptr;
 	UPROPERTY()
 	APawn* TargetPlayer;
 
-	bool bIsTaskExecuting;
+	bool bIsTaskExecuting = false;
+	bool bIsRegenerateDestructibleObject = false;
+	UBehaviorTreeComponent* BTComp = nullptr;
 };

@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "RushBossClone.generated.h"
 
+class USphereComponent;
 class UProjectileMovementComponent;
 
 UCLASS()
@@ -24,16 +25,18 @@ protected:
 	virtual void OnPooledObjectReset_Implementation() override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Components")
-	UProjectileMovementComponent* ProjectileMovementComponent;
+	USphereComponent* SphereComponent = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
-	float ZOffset;
+	float ZOffset = 100.0f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
-	float AcceptableDistance;
+	float AcceptableDistance = 300.0f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
-	float RushSpeed;
+	float RushSpeed = 12000.0f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
-	float AttackDuration;
+	float AttackDuration = 2.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
+	float LifeTime = 5.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	UAnimMontage* CloneAttackMontage;
@@ -43,6 +46,15 @@ protected:
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetActive(bool bIsActive);
+
+	UFUNCTION()
+	void OnBeginOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult);
 
 	void InitializeClone(const FVector& InTargetLocation);
 	void CheckArrival();
@@ -56,8 +68,9 @@ protected:
 private:
 	FVector TargetLocation;
 	FVector TargetDirection;
-	bool bIsRushing;
-	bool bHasArrived;
+	bool bIsRushing = false;
+	bool bHasArrived = false;
 	bool bIsActivate;
+	FTimerHandle LifeTimeTimerHandle;
 	FTimerHandle DisappearTimerHandle;
 };

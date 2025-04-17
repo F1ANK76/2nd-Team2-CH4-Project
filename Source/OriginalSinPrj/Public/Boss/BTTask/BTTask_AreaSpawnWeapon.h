@@ -14,43 +14,18 @@ class ORIGINALSINPRJ_API UBTTask_AreaSpawnWeapon : public UBTTaskNode
 {
 	GENERATED_BODY()
 
-public:
-	UBTTask_AreaSpawnWeapon();
-
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& BTComponent, uint8* NodeMemory) override;
-	virtual void TickTask(UBehaviorTreeComponent& BTComponent, uint8* NodeMemory, float DeltaSeconds) override;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AreaSpawnWeapon | Property")
-	float DelayTime;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AreaSpawnWeapon | Property")
-	float SpawnInterval;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AreaSpawnWeapon | Property")
-	float TotalDuration;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AreaSpawnWeapon | Property")
-	float SpawnWidth;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AreaSpawnWeapon | Property");
-	float SpawnHeight;
+	virtual void OnTaskFinished(UBehaviorTreeComponent& BTComponent, uint8* NodeMemory, EBTNodeResult::Type TaskResult) override;
 	
 private:
 	UPROPERTY()
 	UBehaviorTreeComponent* BTComp;
 	UPROPERTY()
-	ABossController* BossController;
+	ABossController* BossController = nullptr;
 	UPROPERTY()
-	ABossCharacter* BossCharacter;
-	
-	FTimerHandle SpawnWeaponTimerHandle;
-	int32 SpawnCount;
-	int32 MaxSpawnCount;
+	ABossCharacter* BossCharacter = nullptr;
 
-	float AccumulatedTime;
-	float LastSpawnTime;
-	bool bIsTaskExecuting;
-	
-	void FireWeapon();
+	UFUNCTION()
+	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 };

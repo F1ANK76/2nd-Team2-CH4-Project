@@ -16,6 +16,8 @@ class ORIGINALSINPRJ_API AHijackBossController : public AAIController
 	GENERATED_BODY()
 
 public:
+	AHijackBossController();
+	
 	void SwitchBattleState();
 
 	//테스트용
