@@ -2,7 +2,7 @@
 #include "LevelObject/BasePlatform.h"
 #include "Player/BaseWitch.h"
 #include "GameMode/MultiBattleGameMode.h"
-
+#include "OriginalSinPrj/Public/SingleGameMode.h"
 #include "Net/UnrealNetwork.h"
 #include "Components/BoxComponent.h"
 
@@ -82,13 +82,31 @@ void ADeathZone::TriggerOverlapPlatformEvent()
 
 void ADeathZone::Server_TriggerOverlapWitchEvent_Implementation(ABaseWitch* WitchActor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("플랫폼&마녀 캐릭터 오버랩 이벤트 발생"));
-
 	if (HasAuthority())
 	{
-		if (AMultiBattleGameMode* MultiBattleGameMode = Cast<AMultiBattleGameMode>(GetWorld()->GetAuthGameMode()))
+		if (WitchActor->IsPlayerControlled())
 		{
-			MultiBattleGameMode->OnDeathMonster(WitchActor, WitchActor->GetActorLocation());
+			if (AMultiBattleGameMode* MultiBattleGameMode = Cast<AMultiBattleGameMode>(GetWorld()->GetAuthGameMode()))
+			{
+				MultiBattleGameMode->OnDeathPlayer(WitchActor, WitchActor->GetActorLocation());
+				UE_LOG(LogTemp, Warning, TEXT("MultiBattleGameMode OnDeathPlayer"));
+			}
+			else if (ASingleGameMode* SingleGameMode = Cast<ASingleGameMode>(GetWorld()->GetAuthGameMode()))
+			{
+				SingleGameMode->OnDeathPlayer(WitchActor, WitchActor->GetActorLocation());
+			}
+		}
+		else
+		{
+			if (AMultiBattleGameMode* MultiBattleGameMode = Cast<AMultiBattleGameMode>(GetWorld()->GetAuthGameMode()))
+			{
+				MultiBattleGameMode->OnDeathMonster(WitchActor, WitchActor->GetActorLocation());
+				UE_LOG(LogTemp, Warning, TEXT("MultiBattleGameMode OnDeathMonster"));
+			}
+			else if (ASingleGameMode* SingleGameMode = Cast<ASingleGameMode>(GetWorld()->GetAuthGameMode()))
+			{
+				SingleGameMode->OnDeathMonster(WitchActor, WitchActor->GetActorLocation());
+			}
 		}
 	}
 }
