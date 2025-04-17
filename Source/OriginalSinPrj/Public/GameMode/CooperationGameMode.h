@@ -208,7 +208,6 @@ public:
     TSubclassOf<UCooperationWidget> CooperationWidget;
 
 
-
     void RequestOpenResultUI();
 
     void CheckUntilAllPlayerSelectBuff(); // 모든 플레이어가 버프를 선택했는지 보고 대기하는 함수.

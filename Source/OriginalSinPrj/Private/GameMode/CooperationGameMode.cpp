@@ -52,6 +52,8 @@ void ACooperationGameMode::BeginPlay()
     InitPlayerUI();
     SpawnKillZone();
     //Game Start Condition -> Start with a timer temporarily
+
+
     FTimerHandle TimerHandle;
     GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
         {
@@ -60,7 +62,6 @@ void ACooperationGameMode::BeginPlay()
 
 
 }
-
 
 
 void ACooperationGameMode::SetPlayerColorIndex()
@@ -494,10 +495,20 @@ void ACooperationGameMode::SetPlayerUnReady()
         APlayerController* PC = It->Get();
         if (PC && PC->GetPawn())
         {
+            FString ControllerName = PC->GetName();
+            FString PawnName = PC->GetPawn()->GetName();
+
+            UE_LOG(LogTemp, Warning, TEXT("Disabling input for PlayerController: %s, Pawn: %s"), *ControllerName, *PawnName);
+
             PC->GetPawn()->DisableInput(PC);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("PlayerController or Pawn is null (PC: %s)"), PC ? *PC->GetName() : TEXT("nullptr"));
         }
     }
 }
+
 
 void ACooperationGameMode::SetPlayerUnReady(AActor* actor)
 {
