@@ -16,6 +16,7 @@ void ASingleGameMode::BeginPlay()
 	SpawnManager = GetWorld()->SpawnActor<ASpawnManager>(SpawnManagerClass);
 
 	PlayerControllerClass = AWitchController::StaticClass();
+	GameStateClass = ASingleGameState::StaticClass();
 
 	FTimerHandle DelayTimer;
 
@@ -50,6 +51,7 @@ void ASingleGameMode::StartToSpawnActor()
 	}
 
 	SpawnPlayer();
+	SpawnAI();
 }
 
 void ASingleGameMode::SpawnPlayer()
@@ -61,22 +63,6 @@ void ASingleGameMode::SpawnPlayer()
 		if (AWitchController* WitchController = Cast<AWitchController>(PC))
 		{
 			SpawnManager->SpawnPlayer(WitchController, FVector(0.0f, -250.0f, 1500.0f));
-
-			// AIController
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-			APlayer_AIController* CharacterAIController = GetWorld()->SpawnActor<APlayer_AIController>(
-				APlayer_AIController::StaticClass(),
-				FVector(0.0f, 0.0f, 0.0f),
-				FRotator::ZeroRotator,
-				SpawnParams
-			);
-
-			if (CharacterAIController)
-			{
-				SpawnManager->SpawnMonster(CharacterAIController, FVector(0.0f, 250.0f, 1500.0f));
-			}
 		}
 		else
 		{
@@ -86,6 +72,24 @@ void ASingleGameMode::SpawnPlayer()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ASingleGameMode PC None"));
+	}
+}
+
+void ASingleGameMode::SpawnAI()
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	APlayer_AIController* CharacterAIController = GetWorld()->SpawnActor<APlayer_AIController>(
+		APlayer_AIController::StaticClass(),
+		FVector(0.0f, 0.0f, 0.0f),
+		FRotator::ZeroRotator,
+		SpawnParams
+	);
+
+	if (CharacterAIController)
+	{
+		SpawnManager->SpawnMonster(CharacterAIController, FVector(0.0f, 250.0f, 1500.0f));
 	}
 }
 

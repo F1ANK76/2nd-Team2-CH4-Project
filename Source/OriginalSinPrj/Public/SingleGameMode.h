@@ -18,6 +18,7 @@ public:
 
 	void StartToSpawnActor();
 	void SpawnPlayer();
+	void SpawnAI();
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;

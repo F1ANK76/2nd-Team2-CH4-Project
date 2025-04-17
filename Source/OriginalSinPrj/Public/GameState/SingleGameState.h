@@ -2,11 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "OriginalSinPrj/Interface/BattleEvent.h"
-#include "GameFramework/GameState.h"
+#include "GameState/BaseGameState.h"
 #include "SingleGameState.generated.h"
 
 UCLASS()
-class ORIGINALSINPRJ_API ASingleGameState : public AGameState, public IBattleEvent
+class ORIGINALSINPRJ_API ASingleGameState : public ABaseGameState, public IBattleEvent
 {
 	GENERATED_BODY()
 	
