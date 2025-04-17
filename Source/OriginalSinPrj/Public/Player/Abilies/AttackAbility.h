@@ -55,9 +55,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Melle")
 	EEffectVisibleType MelleType = EEffectVisibleType::Right;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Melle")
-	ECharacterSoundType AttackSound = ECharacterSoundType::HandEffect;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Projectile")
 	float MoveDelayTime = 0.0f;
 

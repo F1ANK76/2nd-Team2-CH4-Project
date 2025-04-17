@@ -13,6 +13,7 @@ class UBoxComponent;
 class ABaseWitch;
 class UProjectileMovementComponent;
 class UAudioComponent;
+class ABaseGameState;
 struct FAbilityDataBuffer;
 struct FProjectileDataBuffer;
 
@@ -64,6 +65,7 @@ protected:
 	void RequestPlayAttackSound();
 	void RequestPlayEndSound();
 	
+	bool CheckValidOfGameState();
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -102,6 +104,9 @@ public:
 protected:
 	UPROPERTY()
 	TObjectPtr<ABaseWitch> ParentWitch = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<ABaseGameState> BaseGameState = nullptr;
 
 	bool bActiveOverlapEvent = false;
 	bool bCompleteDeactive = false;

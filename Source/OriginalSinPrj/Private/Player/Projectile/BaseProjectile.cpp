@@ -10,6 +10,7 @@
 #include "Player/Struct/ProjectileDataBuffer.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/AudioComponent.h"
+#include "GameState/BaseGameState.h"
 
 ABaseProjectile::ABaseProjectile()
 {
@@ -72,6 +73,7 @@ void ABaseProjectile::DeactiveProjectile()
 	MoveComp->Velocity = FVector::ZeroVector;
 
 	OnDeactivedProjectile();
+	RequestPlayEndSound();
 	bIsActivated = false;
 }
 
@@ -94,11 +96,13 @@ void ABaseProjectile::ApplyAttack()
 {
 	SetActorEnableCollision(true);
 	CollisionComp->Activate(true);
+	RequestPlayAttackSound();
 }
 
 void ABaseProjectile::ApplyVisible()
 {
 	OnActivedProjectile();
+	RequestPlayStratSound();
 }
 
 EProjectileType ABaseProjectile::GetProjectileType() const
@@ -182,17 +186,75 @@ void ABaseProjectile::ResetProjectile()
 
 void ABaseProjectile::RequestPlayStratSound()
 {
-	
+	if (StartSoundType == ECharacterSoundType::None)
+	{
+		return;
+	}
+
+	if (!CheckValidOfGameState())
+	{
+		return;
+	}
+
+	BaseGameState->PlayCharacterSound(AudioComp, StartSoundType);
 }
 
 void ABaseProjectile::RequestPlayAttackSound()
 {
+	if (AttackSoundType == ECharacterSoundType::None)
+	{
+		return;
+	}
 
+	if (!CheckValidOfGameState())
+	{
+		return;
+	}
+
+	BaseGameState->PlayCharacterSound(AudioComp, AttackSoundType);
 }
 
 void ABaseProjectile::RequestPlayEndSound()
 {
-	// None is Audio Stop.
+	if (!CheckValidOfGameState())
+	{
+		return;
+	}
+
+	if (EndSoundType == ECharacterSoundType::None)
+	{
+		BaseGameState->StopEffectSound(AudioComp);
+		return;
+	}
+
+	BaseGameState->PlayCharacterSound(AudioComp, EndSoundType);
+}
+
+bool ABaseProjectile::CheckValidOfGameState()
+{
+	if (!HasAuthority())
+	{
+		return false;
+	}
+
+	if (IsValid(BaseGameState))
+	{
+		return true;
+	}
+
+	if (!IsValid(GetWorld()->GetGameState()))
+	{
+		return false;
+	}
+
+	BaseGameState = GetWorld()->GetGameState<ABaseGameState>();
+
+	if (!IsValid(BaseGameState))
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void ABaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
