@@ -15,7 +15,7 @@
 UCLASS()
 class ORIGINALSINPRJ_API ACooperationGameMode : public AGameMode, public IBattleEvent
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
     //GameMode Default Function
 public: //for test
@@ -23,11 +23,14 @@ public: //for test
     void HandleBuffSelection(AActor* SourceActor, int32 BuffIndex);
 
     void ApplyBuffToPlayer(APlayerController* Controller, int32 BuffIndex, EBuffType buff);
-    
+
     void RequestTurnOffBuffSelectUI();
-    
+
     UFUNCTION()
     void OnCharacterStateReceived(const FCharacterStateBuffer& State);
+
+    UFUNCTION()
+    void OnEnemyStateReceived(const FCharacterStateBuffer& State);
 
 public:
     ACooperationGameMode();
@@ -40,6 +43,7 @@ public:
     void StartGame(); //game 시작 트리거
 
     void EndGame();
+    void SeamlessTravel();
 
 
     void RequestUpdateUI(int PlayerIndex)
@@ -49,26 +53,31 @@ public:
         {
             CooperationGameState->Player1DataChanged++;
         }
-        
+
         if (PlayerIndex == 1)
         {
             CooperationGameState->Player2DataChanged++;
         }
+
+        if (PlayerIndex == 2)
+        {
+            CooperationGameState->Enemy1DataChanged++;
+        }
     }
 
-    
+
 public:
     TObjectPtr<ACooperationGameState> CooperationGameState = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "KillZone")
     TSubclassOf<AKillZone> ActorKillZone;
-    
+
     // killzone 생성 함수
     void SpawnKillZone();
 
     UPROPERTY(BlueprintReadWrite)
     TArray<ABaseWitch*> SpawnedCharacters;
-    
+
     // 생성된 캐릭터를 관리할 배열
     TArray<AActor*> ActivePlayers;
     TArray<AActor*> AlivePlayers;
@@ -155,22 +164,22 @@ public:
 
     UFUNCTION(BlueprintCallable)
     void StartStage1(); //Stage1 시작 트리거
-    
+
     UFUNCTION(BlueprintCallable)
     void StartStage2(); //Stage2 시작 트리거
-    
+
     UFUNCTION(BlueprintCallable)
     void StartStage3(); //Stage3 시작 트리거
-    
+
     UFUNCTION(BlueprintCallable)
     void EndStage1(); //Stage1 종료 트리거
-    
+
     UFUNCTION(BlueprintCallable)
     void EndStage2(); //Stage2 종료 트리거
-    
+
     UFUNCTION(BlueprintCallable)
     void EndStage3(); //Stage3 종료 트리거
-    
+
     //스테이지 시작마다 플레이어 위치 정해진 곳에 조정하기
     void SetPlayerLocation();
 
@@ -188,7 +197,7 @@ public:
 
     UFUNCTION(BlueprintCallable)
     void HandleMonsterKilled(AActor* DeadMonster, AActor* Killer); //몬스터가 죽으면 이걸 호출
-    
+
     UFUNCTION(BlueprintCallable)
     void HandleEnemyKilled(AActor* DeadMonster, AActor* Killer); //몬스터가 죽으면 이걸 호출
 
@@ -273,6 +282,8 @@ public:
     UPROPERTY(BlueprintReadWrite)
     TArray<AActor*> ActiveEnemies;
 
+    TArray<AActor*> AliveEnemies;
+
     void SpawnEnemies();
 
     int32 CurrentEnemyCount = 0;
@@ -287,6 +298,8 @@ public:
 
     void SpawnBossMonsters();
 
+    void InitEnemyInfo();
+    void InitEnemyUIInfo();
 
     UPROPERTY(BlueprintReadWrite)
     TArray<AActor*> ActiveBossMonster;
@@ -309,9 +322,9 @@ public:
 
     UFUNCTION(BlueprintCallable)
     void BossReturnPlayerLocation(ACharacter* PlayerChar);
-    
-        
-        //또다른 보스 소환?
+
+
+    //또다른 보스 소환?
     UFUNCTION(BlueprintCallable)
     void SpawnGhostBoss();
 

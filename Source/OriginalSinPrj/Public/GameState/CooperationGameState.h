@@ -28,12 +28,12 @@ struct FMonsterAudioDataStruct;
 UCLASS()
 class ORIGINALSINPRJ_API ACooperationGameState : public AGameState, public ICameraStateInterface, public IBattleEvent
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
     UOriginalSinPrjGameInstance* GameInstance = nullptr;
     ACooperationGameMode* CooperationGameGameMode;
-    
+
 
     UPROPERTY(EditDefaultsOnly, Category = "UI")
     TObjectPtr<UBaseWidget> BuffSelectWidget;
@@ -89,8 +89,8 @@ protected:
     ACooperationGameState();
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaSeconds) override;
-    
-    //���ø�����Ʈ �Լ�
+
+    //   ø     Ʈ  Լ 
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 public:
 
@@ -98,12 +98,12 @@ public:
 
 
 
-    //ī�޶� ó���� �Լ�.
+    //ī ޶  ó      Լ .
     virtual FVector GetCameraLocation() const override { return CameraLocation; }
     virtual FRotator GetCameraRotation() const override { return CameraRotation; }
     virtual float GetCameraDistance() const override { return CameraDistance; }
-    
-    //ī�޶� ��ġ �����ϱ�... //
+
+    //ī ޶    ġ      ϱ ... //
     void SetStage1CameraTransform();
     void SetStage2CameraTransform();
     void SetStage3CameraTransform();
@@ -119,8 +119,8 @@ protected:
     float CameraDistance;
 
 public:
-    //������ Ÿ�̸� �ѱ�
-    void TurnOnTimer(); 
+    //       Ÿ ̸   ѱ 
+    void TurnOnTimer();
     void TurnOffTimer();
     void RegisterInitialController(APlayerController* PC);
 
@@ -135,7 +135,7 @@ public:
 
     UFUNCTION()
     void OnRep_TurnOnStageUI();
-    
+
     void TurnOnStage1Widget();
     void TurnOnStage2Widget();
     void TurnOnStage3Widget();
@@ -162,7 +162,7 @@ public:
     void TurnOnResultWidget();
 
     void CreateBuffSelectUI();
-    void ReceiveSelectedBuff(APlayerController* player, FBuffType* Bufftype); // �÷��̾� UI���� ���õ� ���� ���� �ް� ���ٰ� ������ѳ���.
+    void ReceiveSelectedBuff(APlayerController* player, FBuffType* Bufftype); //  ÷  ̾  UI        õ             ް     ٰ        ѳ   .
     void CloseBuffSelectUI();
 
     UPROPERTY(ReplicatedUsing = OnRep_TurnOffBuffUI)
@@ -186,8 +186,8 @@ public:
     UFUNCTION()
     void OnRep_SetPlayerMove();
 
-    //////////////////////////////////////////////////////////// UI�� �����ϴ� �Լ�////////////////////////////////////////////////////
-    // Player ���� ����
+    //////////////////////////////////////////////////////////// UI        ϴ   Լ ////////////////////////////////////////////////////
+    // Player          
     UPROPERTY(BlueprintReadOnly)
     TMap<AActor*, FPlayerData> PlayerInfos;
 
@@ -205,10 +205,10 @@ public:
 
 
     ///////////////////
-    //�÷��̾� ��Ʈ�ѷ� �����س���
+    // ÷  ̾    Ʈ ѷ       س   
     UPROPERTY()
     TArray<TWeakObjectPtr<APlayerController>> PlayerControllerSet;
-    
+
     UPROPERTY()
     TArray<EBuffType> SelectedBuff;
 
@@ -217,16 +217,16 @@ public:
 
     FBuffType* Player1Stage2SelectedBuff;
     FBuffType* Player2Stage2SelectedBuff;
-    
-    void ApplyBuffStat(); // ���Ӹ�尡 ������� ���� �����Ű��
+
+    void ApplyBuffStat(); //    Ӹ 尡                   Ű  
 
     void AddExperienceToPlayer(AActor* Player, int32 Amount);
 
 
 
-    //////�������//////
+    //////       //////
     UPROPERTY(ReplicatedUsing = OnRep_UpdateBossDataUI)
-    TArray<FBossUIData> BossData; //�ʱ�ȭ �ʿ�
+    TArray<FBossUIData> BossData; // ʱ ȭ  ʿ 
 
     UFUNCTION()
     void OnRep_UpdateBossDataUI();
@@ -234,7 +234,7 @@ public:
     void UpdateBossDataUI();
 
 
-   
+
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     UPROPERTY(Replicated)
@@ -281,7 +281,7 @@ public:
     UPROPERTY(Replicated)
     bool bIsStage3Started = false;
 
- 
+
 
 
     UPROPERTY(ReplicatedUsing = OnRep_UpdateTimer)
@@ -296,7 +296,7 @@ public:
 private:
     UPROPERTY()
     ABaseWitch* PlayerPawnRef;
-	
+
 public:
     virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;
     virtual void TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation) override;
@@ -314,4 +314,78 @@ public:
 
     UFUNCTION(NetMulticast, Reliable)
     void Multicast_OnDeathMonster(AActor* Monster, const FVector& DeathLocation);
+
+
+
+
+
+
+
+
+
+
+
+
+
+    UPROPERTY(ReplicatedUsing = OnRep_UpdateEnemyInitData)
+    int EnemyDataChanged = 0;
+
+    UFUNCTION()
+    void OnRep_UpdateEnemyInitData();
+
+
+
+    UPROPERTY(Replicated)
+    FPlayerData Enemy1StateData;
+
+    UPROPERTY(Replicated)
+    FPlayerData Enemy2StateData;
+
+    UPROPERTY(Replicated)
+    FPlayerData Enemy3StateData;
+
+    UPROPERTY(Replicated)
+    FPlayerData Enemy4StateData;
+
+    UPROPERTY(BlueprintReadOnly)
+    TMap<AActor*, FPlayerData> EnemyInfos;
+
+    UPROPERTY(ReplicatedUsing = OnRep_UpdateEnemy1DataUI)
+    int Enemy1DataChanged = 0;
+
+    UFUNCTION()
+    void OnRep_UpdateEnemy1DataUI();
+
+    UPROPERTY(ReplicatedUsing = OnRep_UpdateEnemy2DataUI)
+    int Enemy2DataChanged = 0;
+
+    UFUNCTION()
+    void OnRep_UpdateEnemy2DataUI();
+
+    UPROPERTY(ReplicatedUsing = OnRep_UpdateEnemy3DataUI)
+    int Enemy3DataChanged = 0;
+
+    UFUNCTION()
+    void OnRep_UpdateEnemy3DataUI();
+
+    UPROPERTY(ReplicatedUsing = OnRep_UpdateEnemy4DataUI)
+    int Enemy4DataChanged = 0;
+
+    UFUNCTION()
+    void OnRep_UpdateEnemy4DataUI();
+
+
+
+
+    void InitEnemyInfo();
+
+    void UpdateEnemyInfo(const FCharacterStateBuffer& State);
+
+    void InitEnemyUIInfo();
+
+    void UpdateEnemyUIInfo();
+
+
+
+
 };

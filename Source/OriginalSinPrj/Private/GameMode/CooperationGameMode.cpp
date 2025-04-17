@@ -49,7 +49,7 @@ void ACooperationGameMode::BeginPlay()
 
     //Open Player UI;
     //InitPlayerUI();
-    InitPlayerUI();
+
     SpawnKillZone();
     //Game Start Condition -> Start with a timer temporarily
 
@@ -113,7 +113,8 @@ void ACooperationGameMode::StartGame()
     //Camera Settings
     AttachPlayerToCamera(SpawnedCharacters[0], SpawnedBaseCamera[0]);
     AttachPlayerToCamera(SpawnedCharacters[1], SpawnedBaseCamera[0]);
-    
+
+    InitPlayerUI();
     CooperationGameState->InitPlayerInfo();
     CooperationGameState->PlayerDataChanged++;
     //Functions to be processed before loading and starting the stage
@@ -221,7 +222,7 @@ void ACooperationGameMode::ReadyStage2()
     CooperationGameState->TurnOnStage2Widget();
 
 
-    
+
     // 버프 완료 되었는지 확인하기
     CheckUntilAllPlayerSelectBuff();
 
@@ -236,7 +237,6 @@ void ACooperationGameMode::ReadyStage3()
     SetPlayerUnReady();
 
     SetPlayerLocation();
-    SpawnBossMonsters();
 
     //보스 못 움직이게 잠시 세팅값 조정.
 
@@ -263,7 +263,7 @@ void ACooperationGameMode::ReadyStage3()
     CooperationGameState->SetStage3CameraTransform();
 
     AttachPlayerToCamera(SpawnedCharacters[0], SpawnedBaseCamera[0]);
-    AttachPlayerToCamera(SpawnedCharacters[1], SpawnedBaseCamera[1]);
+    AttachPlayerToCamera(SpawnedCharacters[1], SpawnedBaseCamera[0]);
     //Test Code
     //임시 딜레이 기능
 
@@ -288,6 +288,8 @@ void ACooperationGameMode::StartStage2()
 {
     UE_LOG(LogTemp, Warning, TEXT("Start Stage2"));
     SpawnEnemies();
+    CooperationGameState->InitEnemyInfo();
+    CooperationGameState->InitEnemyUIInfo();
     //Turn On Player Input
     SetPlayerReady();
     CooperationGameState->bIsStage2Started = true;
@@ -301,6 +303,7 @@ void ACooperationGameMode::StartStage3()
 {
     UE_LOG(LogTemp, Warning, TEXT("Start Stage3"));
 
+    SpawnBossMonsters();
     //Turn On Player Input
     SetPlayerReady();
 
@@ -375,7 +378,7 @@ void ACooperationGameMode::SetPlayerLocation()
     case 3:
         SpawnedCharacters[0]->SetActorLocation(PlayerSettingLocations[4]);
         SpawnedCharacters[1]->SetActorLocation(PlayerSettingLocations[5]);
-        
+
         break;
     default:
 
@@ -401,15 +404,15 @@ void ACooperationGameMode::ResetAlivePlayers()
 }
 
 
-    //set color mode
-    //set player level
+//set color mode
+//set player level
 
 void ACooperationGameMode::MoveNextStage()
 {
     switch (StageIndex)
     {
     case 1:
-        
+
         ReadyStage1();
         break;
     case 2:
@@ -437,7 +440,7 @@ void ACooperationGameMode::RequestTurnOffBuffSelectUI()
     CooperationGameState->SelectBuffPlayer++;
     CooperationGameState->CloseBuffSelectUI();
 }
-    
+
 void ACooperationGameMode::ApplyBuffToBothPlayer()
 {
     //버프 두개 골랐으면 스탯 적용하라고 요청.
@@ -537,7 +540,7 @@ void ACooperationGameMode::SetPlayerUnReady(AActor* actor)
 void ACooperationGameMode::SetPlayerReady()
 {
     CooperationGameState->SetPlayerMove(true);
-    
+
     UWorld* WorldContext = GetWorld();
 
     for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
@@ -567,6 +570,11 @@ void ACooperationGameMode::SpawnEnemies()
         {
             ActiveEnemies.Add(SpawnedEnemy);
             CurrentEnemyCount++;
+            AliveEnemies.Add(SpawnedEnemy);
+            Cast<ABaseWitch>(SpawnedEnemy)->OnChangedState.AddDynamic(this, &ACooperationGameMode::OnEnemyStateReceived);
+            UE_LOG(LogTemp, Warning, TEXT("Enemy Login"));
+
+
         }
     }
 }
@@ -652,16 +660,16 @@ void ACooperationGameMode::HandlePlayerKilled(AActor* DeadPlayer, AActor* Killer
     }
     CurrentPlayerCount--;
 
-    if (CurrentPlayerCount <= 0)
+    if (CurrentPlayerCount <= 0 && AlivePlayers.Num() == 0)
     {
         bIsClear = false;
         SetPlayerUnReady();
 
         FTimerHandle DefeatHandle;
         GetWorldTimerManager().SetTimer(DefeatHandle, FTimerDelegate::CreateLambda([this]()
-        {
-            EndGame();
-        }), 5.0f, false);
+            {
+                EndGame();
+            }), 5.0f, false);
     }
 }
 
@@ -693,35 +701,44 @@ void ACooperationGameMode::PlayerFallDie(AActor* DeadPlayer, AActor* Killer)
 
 
 void ACooperationGameMode::PlayerDie(AActor* DeadPlayer, AActor* Killer)
-{    
+{
     UE_LOG(LogTemp, Warning, TEXT("PlayerDie Event Begin"));
     ABaseWitch* Witch = Cast<ABaseWitch>(DeadPlayer);
     //test Code
-    CooperationGameState->PlayerInfos[Witch].LifePoint--;
-
-    if (IsValid(Witch))
+    if (Witch == ActivePlayers[0] || Witch == ActivePlayers[1])
     {
-        UE_LOG(LogTemp, Warning, TEXT("Witch IsValid"));
-        if (CooperationGameState->PlayerInfos[Witch].LifePoint < 0)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("LifePoint < 0"));
-            Witch->ResetCharacterState();
-            HandlePlayerKilled(DeadPlayer, Killer);
-        }
-        else
-        {
+        CooperationGameState->PlayerInfos[Witch].LifePoint--;
 
-            Witch->ResetCharacterState();
-            Respawn(DeadPlayer);
+        if (IsValid(Witch))
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Witch IsValid"));
+            if (CooperationGameState->PlayerInfos[Witch].LifePoint < 0)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("LifePoint < 0"));
+                Witch->ResetCharacterState();
+                HandlePlayerKilled(DeadPlayer, Killer);
+            }
+            else
+            {
+
+                Witch->ResetCharacterState();
+                Respawn(DeadPlayer);
+            }
         }
     }
+    else
+    {
+        HandleEnemyKilled(DeadPlayer, nullptr);
+    }
+
+
 }
 
 
 void ACooperationGameMode::Respawn(AActor* DeadPlayer)
 {
     UE_LOG(LogTemp, Warning, TEXT("PlayerWitch respawn"));
-    DeadPlayer->SetActorLocation(RespawnLocation[0]);    
+    DeadPlayer->SetActorLocation(RespawnLocation[0]);
     //DeadPlayer 상태 초기화?
 }
 
@@ -733,7 +750,7 @@ void ACooperationGameMode::HandleMonsterKilled(AActor* DeadMonster, AActor* Kill
 
     ActiveMonsters.Remove(DeadMonster); // 알아서 내부에서 찾고 제거함
 
-    if (CurrentMonsterCount <= 0)
+    if (CurrentMonsterCount <= 0 && ActiveMonsters.Num() <= 0)
     {
         EndStage1();
     }
@@ -748,12 +765,12 @@ void ACooperationGameMode::HandleEnemyKilled(AActor* DeadMonster, AActor* Killer
     //조건은 제대로 지정해야할듯
     CurrentEnemyCount--;
     // 죽은 몬스터를 ActiveMonsters 목록에서 제거
-    ActiveEnemies.Remove(DeadMonster); // 알아서 내부에서 찾고 제거함
-    
-    if (CurrentEnemyCount <= 0)
+    AliveEnemies.Remove(DeadMonster); // 알아서 내부에서 찾고 제거함
+
+    if (CurrentEnemyCount <= 0 && AliveEnemies.Num() <= 0)
     {
         EndStage2();
-    }   
+    }
 }
 
 //몬스터가 죽을 때 누구한테 죽었는지 정보를 넘기며 게임모드에 알려주면 호출되는 함수.
@@ -768,9 +785,14 @@ void ACooperationGameMode::HandleBossMonsterKilled(AActor* Killer)
 void ACooperationGameMode::FallDie(AActor* Character)
 {
     //낙사를 했을 때 어떻게 감지하는지. 이건 감지되고 처리하는 함수긴함.
-    
+
 }
 
+
+
+
+
+/*
 void ACooperationGameMode::PostSeamlessTravel()
 {
     UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Called"));
@@ -781,28 +803,15 @@ void ACooperationGameMode::PostSeamlessTravel()
     int index = 0;
     // 클라이언트의 컨트롤러와 캐릭터를 매칭시킴
 
-    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-    {
-        AWitchController* PC = Cast<AWitchController>(*It);
-        if (PC)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Controller Detected: %s"), *GetNameSafe(PC));
-            // 서버에서 클라이언트의 Pawn을 확인하고 Possess 처리
-            FTimerHandle TimerHandle;
-            GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this, PC, index]()
-                {
-                    HandleClientPossession(PC, index);
-                }), 1.5f, false);
-            index++;
-        }
-        if (IsValid(PC))
-        {
-            PC->ResponseShowLevelWidget();
-        }
-    }
+    SeamlessTravel();
+
 
     UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Done"));
 }
+
+
+
+
 
 void ACooperationGameMode::HandleClientPossession(APlayerController* PC, int index)
 {
@@ -837,10 +846,118 @@ void ACooperationGameMode::HandleClientPossession(APlayerController* PC, int ind
         UE_LOG(LogTemp, Warning, TEXT("PlayerController is invalid or no spawned characters."));
     }
     UE_LOG(LogTemp, Warning, TEXT("Client Possess ended %s"), *GetNameSafe(PC));
-    
+
     //Game Stage에서 필요한 기능을 위해 게임 스테이트에 컨트롤러 등록해두기
     CooperationGameState->RegisterInitialController(PC);
 }
+
+
+void HandleClientPossessionNextTick1111()
+{
+
+}
+void HandleClientPossessionNextTick()
+{
+
+}
+
+
+void SeamlessTravel()
+{
+
+}
+
+
+
+
+
+
+
+
+
+
+*/
+
+
+
+
+void ACooperationGameMode::PostSeamlessTravel()
+{
+    UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Called"));
+    Super::PostSeamlessTravel();  // 기본 SeamlessTravel 처리
+
+    //멀티플레이 로직
+    SpawnPlayers();
+    int index = 0;
+    // 클라이언트의 컨트롤러와 캐릭터를 매칭시킴
+
+    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+    {
+        AWitchController* PC = Cast<AWitchController>(*It);
+        if (PC)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Controller Detected: %s"), *GetNameSafe(PC));
+            // 서버에서 클라이언트의 Pawn을 확인하고 Possess 처리
+            FTimerHandle TimerHandle;
+            GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this, PC, index]()
+                {
+                    HandleClientPossession(PC, index);
+                }), 1.5f, false);
+            index++;
+        }
+        if (IsValid(PC))
+        {
+            PC->ResponseShowLevelWidget();
+        }
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Done"));
+}
+
+
+
+
+
+void ACooperationGameMode::HandleClientPossession(APlayerController* PC, int index)
+{
+    UE_LOG(LogTemp, Warning, TEXT("Client Possess start %s"), *GetNameSafe(PC));
+    if (PC && SpawnedCharacters.Num() > 0)
+    {
+        APawn* PawnToPossess = SpawnedCharacters[index];
+
+        if (PawnToPossess && IsValid(PawnToPossess))
+        {
+            // 기존 컨트롤러가 있으면 UnPossess 처리
+            APlayerController* OldPC = PawnToPossess->GetController<APlayerController>();
+            if (OldPC)
+            {
+                OldPC->UnPossess();  // 기존 컨트롤러에서 Pawn을 해제
+            }
+            // 새로운 컨트롤러가 해당 Pawn을 Possess하도록 처리
+            PC->Possess(PawnToPossess);
+            PC->ClientRestart(PawnToPossess); // 클라쪽에 제대로 상태 적용
+
+
+            UE_LOG(LogTemp, Warning, TEXT("Client Possessed Pawn: %s by %s"),
+                *GetNameSafe(PawnToPossess), *GetNameSafe(PC));
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Pawn to possess is not valid."));
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("PlayerController is invalid or no spawned characters."));
+    }
+    UE_LOG(LogTemp, Warning, TEXT("Client Possess ended %s"), *GetNameSafe(PC));
+
+    //Game Stage에서 필요한 기능을 위해 게임 스테이트에 컨트롤러 등록해두기
+    CooperationGameState->RegisterInitialController(PC);
+}
+
+
+
 
 void ACooperationGameMode::SpawnPlayers()
 {
@@ -917,12 +1034,21 @@ void ACooperationGameMode::SpawnKillZone()
 
 
 void ACooperationGameMode::OnCharacterStateReceived(const FCharacterStateBuffer& State)
-{   
+{
     if (CooperationGameState)
     {
         CooperationGameState->UpdatePlayerInfo(State);
     }
 }
+
+void ACooperationGameMode::OnEnemyStateReceived(const FCharacterStateBuffer& State)
+{
+    if (CooperationGameState)
+    {
+        CooperationGameState->UpdateEnemyInfo(State);
+    }
+}
+
 
 void ACooperationGameMode::PossessCharacter(APlayerController* PC, APawn* PawnToPossess)
 {
@@ -1065,6 +1191,8 @@ void ACooperationGameMode::OnDeathPlayer(ACharacter* Player, const FVector& Deat
 void ACooperationGameMode::OnDeathMonster(AActor* Monster, const FVector& DeathLocation)
 {
     CooperationGameState->OnDeathMonster(Monster, DeathLocation);
+    HandleMonsterKilled(Monster, nullptr);
+
 }
 
 
