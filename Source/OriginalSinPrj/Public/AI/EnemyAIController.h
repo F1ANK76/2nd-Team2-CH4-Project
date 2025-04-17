@@ -26,11 +26,6 @@ public:
     bool MoveToTargetWithFalling_Validate();
     void MoveToTargetWithFalling_Implementation();
 
-protected:
-
-    // 딜레이 후 호출될 함수
-   // void SetCollisionToBlock();
-
 private:
     FTimerHandle TimerHandle;
     class UCapsuleComponent* CapsuleComp;
