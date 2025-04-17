@@ -59,6 +59,26 @@ void ULobbyWidget::NativeConstruct()
     if (GameSettingWidget) GameSettingWidget->SetVisibility(ESlateVisibility::Collapsed);
 
     bIsReadied = false;
+
+    if (CheckValidOfPlayerController())
+    {
+        if (OwningPC->HasAuthority())
+        {
+            GameStartButton->SetVisibility(ESlateVisibility::Visible);
+            MapSelectButton->SetVisibility(ESlateVisibility::Visible);
+            ReadyButton->SetVisibility(ESlateVisibility::Visible);
+            GameSettingButton->SetVisibility(ESlateVisibility::Visible);
+            CharacterSelectButton->SetVisibility(ESlateVisibility::Visible);
+        }
+        else
+        {
+            GameStartButton->SetVisibility(ESlateVisibility::Collapsed);
+            MapSelectButton->SetVisibility(ESlateVisibility::Collapsed);
+            ReadyButton->SetVisibility(ESlateVisibility::Visible);
+            GameSettingButton->SetVisibility(ESlateVisibility::Collapsed);
+            CharacterSelectButton->SetVisibility(ESlateVisibility::Visible);
+        }
+    }
 }
 
 void ULobbyWidget::OnClickMapSelect()

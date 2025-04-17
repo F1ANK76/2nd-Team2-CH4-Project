@@ -13,6 +13,15 @@
  활성화시, 기본 공격(원거리, 무기소환, 돌진) 무작위 위치에서 납치된 플레이어를 향해 발사
  */
 
+AHijackBossController::AHijackBossController()
+{
+	CheckBattleStateDelay = 0.2f;
+	FindClosestPlayerDelay = 0.2f;
+	ProjectileSpawnDelay = 0.3f;
+	WeaponSpawnDelay = 0.5f;
+	CloneSpawnDelay = 1.0f;
+}
+
 //BTTask에서 상태변화에 따라 스위칭
 void AHijackBossController::SwitchBattleState()
 {
@@ -31,12 +40,6 @@ void AHijackBossController::OnPossess(APawn* Possesser)
 	Super::OnPossess(Possesser);
 
 	HijackBossCharacter = Cast<AHijackBossCharacter>(GetPawn());
-
-	CheckBattleStateDelay = 0.2f;
-	FindClosestPlayerDelay = 0.2f;
-	ProjectileSpawnDelay = 0.3f;
-	WeaponSpawnDelay = 0.5f;
-	CloneSpawnDelay = 1.0f;
 	
 	PlayerSpawnLocation = HijackBossCharacter->GetActorLocation();
 	PlayerSpawnLocation.Y += 3000.0f;
@@ -195,10 +198,16 @@ void AHijackBossController::FireWeapon()
 
 void AHijackBossController::CloningRushBoss()
 {
-	FVector SpawnLocation = HijackBossCharacter->GetActorLocation();
-	int32 RightOrLeft = FMath::RandBool() ? -1 : 1;
-	SpawnLocation.Y += FMath::RandRange(-5000, 5000) * RightOrLeft;
-	SpawnLocation.Z += (FMath::RandBool() ? -1 : 1) * 5000;
+	FVector BossLocation = HijackBossCharacter->GetActorLocation();
+
+	FVector RandomDirection = FVector(
+		0.f,
+		FMath::FRandRange(-1.f, 1.f),
+		FMath::FRandRange(-0.5f, 0.5f)
+	).GetSafeNormal();
+
+	float DistanceFromBoss = 8000.f;
+	FVector SpawnLocation = BossLocation + RandomDirection * DistanceFromBoss;
 
 	PoolWorldSubsystem->SpawnRushBossClone(SpawnLocation, FRotator::ZeroRotator);
 }

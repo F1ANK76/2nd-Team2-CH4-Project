@@ -17,19 +17,14 @@ class ORIGINALSINPRJ_API ADestructibleObject : public AActor, public IBossPoolab
 
 public:
 	ADestructibleObject();
-
+	
 	void SetBossControllerCache(ABossController* InBossController) { BossController = InBossController; }
 
 protected:
 	virtual void BeginPlay() override;
+	virtual float TakeDamage(float DamageAmount,struct FDamageEvent const& DamageEvent,class AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void OnPooledObjectSpawn_Implementation() override;
 	virtual void OnPooledObjectReset_Implementation() override;
-	virtual float TakeDamage(
-		float DamageAmount,
-		struct FDamageEvent const& DamageEvent,
-		int32 DamageTypeID,
-		AController* EventInstigator,
-		AActor* DamageCauser);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USceneComponent* SceneRoot;
@@ -39,7 +34,7 @@ protected:
 	USphereComponent* SphereComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Property")
-	int32 HP;
+	int32 CurrentHp;
 
 	UFUNCTION()
 	void OnOverlapBegin(

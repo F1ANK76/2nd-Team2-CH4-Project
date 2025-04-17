@@ -5,6 +5,7 @@
 #include "Player/BaseWitch.h"
 #include "Player/Struct/AbilityDataBuffer.h"
 #include "Player/Projectile/BaseProjectile.h"
+#include "GameState/CooperationGameState.h"
 
 bool AAttackAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 {
@@ -23,6 +24,22 @@ bool AAttackAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 
 	Buffer.ParentWitch->SetWitchState(EWitchStateType::Attack);
 	Buffer.ParentWitch->PlayAnimation(AbilityMontage);
+
+	if (HasAuthority())
+	{
+		AGameStateBase* GameState = GetWorld()->GetGameState();
+
+		if (IsValid(GameState))
+		{
+			ACooperationGameState* CooperGameState = Cast<ACooperationGameState>(GameState);
+
+			if (IsValid(CooperGameState))
+			{
+				//UE_LOG(LogTemp, Warning, TEXT("Request Play Sound To GameState"));
+				CooperGameState->PlayCharacterSound(Buffer.ParentWitch->GetAudioComponent(), ECharacterSoundType::Attack);
+			}
+		}
+	}
 
 	return true;
 }
