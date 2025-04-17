@@ -102,6 +102,15 @@ enum class EBossSoundType : uint8
 };
 
 UENUM(BlueprintType)
+enum class EMapType : uint8
+{
+	Map1 = 0,
+	Map2,
+	Map3,
+	Map4
+};
+
+UENUM(BlueprintType)
 enum class EBuffType : uint8
 {
 	ManaUp = 0,

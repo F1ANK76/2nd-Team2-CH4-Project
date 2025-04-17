@@ -308,14 +308,10 @@ void ABaseWitch::ApplyAttack(AActor* Target, float ApplyValue)
 
 	float RealDamage = ApplyValue + BuffComp->GetBuffData().AddedKnockGauge;
 
-	float Result = Target->TakeDamage(RealDamage, FDamageEvent(), GetController(), this);
+	Target->TakeDamage(RealDamage, FDamageEvent(), GetController(), this);
 
 	IncreaseCurrentMana();
-	CharacterBuffer.CurrentMana = 5;
-	if (Result > 0)
-	{
-		
-	}
+	//CharacterBuffer.CurrentMana = 5;
 }
 
 void ABaseWitch::EndAnimNotify()
@@ -728,7 +724,6 @@ float ABaseWitch::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 		float RealDamage = FMath::Clamp(DamageAmount - DecreaseValue, 0, 100);
 
 		AbilityComp->CallHit(DamageCauser, RealDamage);
-		return 1.0f;
 	}
 
 	//RequestHitToAbility(DamageCauser);
