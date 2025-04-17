@@ -46,14 +46,21 @@ protected:
 	float CloneSpawnDelay = 0.0f;
 
 private:
+	UPROPERTY()
+	AHijackBossCharacter* HijackBossCharacter = nullptr;
+	UPROPERTY()
+	ABossCharacter* BossCharacter = nullptr;
+	UPROPERTY()
+	UBossObjectPoolWorldSubsystem* PoolWorldSubsystem = nullptr;
+	UPROPERTY()
 	float FindClosestPlayerDelay = 0.0f;
+	UPROPERTY()
 	bool bIsBattleStart = false;
+	
 	APawn* TargetPlayerPawn = nullptr;
 	FVector TargetLocation = FVector::ZeroVector;
 	FVector PlayerSpawnLocation = FVector::ZeroVector;
-	AHijackBossCharacter* HijackBossCharacter = nullptr;
-	ABossCharacter* BossCharacter = nullptr;
-	UBossObjectPoolWorldSubsystem* PoolWorldSubsystem = nullptr;
+	
 	FTimerHandle CheckBattleStateTimerHandle;
 	FTimerHandle FindClosestPlayerTimerHandle;
 	FTimerHandle ProjectileTimerHandle;

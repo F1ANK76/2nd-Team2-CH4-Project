@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BossPoolableActorInterface.h"
+#include "NiagaraComponent.h"
 #include "GameFramework/Actor.h"
 #include "IndexPatternProjectile.generated.h"
 
@@ -39,6 +40,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "IndexPatternProjectile | Components")
 	UProjectileMovementComponent* ProjectileMovementComponent;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IndexPatternProjectile | Components")
+	UNiagaraComponent* NiagaraComponent1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IndexPatternProjectile | Components")
+	UNiagaraComponent* NiagaraComponent2;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "IndexPatternProjectile | Property")
 	float Damage;
 
@@ -53,6 +60,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IndexPatternProjectile | Material")
 	UMaterialInterface* Material2;
+	
 	
 	UPROPERTY(ReplicatedUsing = OnRep_IsFirstIndex)
 	bool bIsFirstIndex = false;
@@ -75,8 +83,12 @@ protected:
 		const FHitResult& SweapResult);
 
 private:
+	UPROPERTY()
+	UNiagaraComponent* NiagaraToActive;
+	
 	FVector Direction;
 	bool bIsActivate;
 
 	void ApplyMaterialFromIndex(bool bFirst);
+	void ApplyNiagaraFromIndex(bool bFirst);
 };

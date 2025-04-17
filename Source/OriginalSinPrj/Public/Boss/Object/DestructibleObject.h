@@ -9,6 +9,7 @@
 
 class ABossController;
 class USphereComponent;
+class UNiagaraSystem;
 
 UCLASS()
 class ORIGINALSINPRJ_API ADestructibleObject : public AActor, public IBossPoolableActorInterface
@@ -32,9 +33,12 @@ protected:
 	UStaticMeshComponent* MeshComponent;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	USphereComponent* SphereComponent;
-
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Property")
 	int32 CurrentHp;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Effect")
+	UNiagaraSystem* ExplosionEffect;
 
 	UFUNCTION()
 	void OnOverlapBegin(
@@ -49,6 +53,8 @@ protected:
 	void MulticastSetActive(bool bIsActive);
 
 private:
-	bool bIsActivate;
+	UPROPERTY()
 	ABossController* BossController;
+
+	bool bIsActivate;
 };

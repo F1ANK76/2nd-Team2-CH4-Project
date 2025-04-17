@@ -13,7 +13,7 @@ AWeaponToSpawn::AWeaponToSpawn()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	Damage = 50.0f; //임시
+	Damage = 15.0f; //임시
 	LifeTimeOnGround = 2.0f;
 	bIsActivate = false;
 
