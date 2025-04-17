@@ -10,6 +10,7 @@
 #include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
 #include "GameFramework/GameState.h"
 #include "BaseCamera.h"
+#include "GameState/BaseGameState.h"
 #include "OriginalSinPrj/Interface/CameraStateInterface.h"
 #include "FarmingGameState.generated.h"
 
@@ -17,7 +18,7 @@ class AFarmingGameMode;
 class AKillZone;
 
 UCLASS()
-class ORIGINALSINPRJ_API AFarmingGameState : public AGameState, public IBattleEvent, public ICameraStateInterface
+class ORIGINALSINPRJ_API AFarmingGameState : public ABaseGameState, public IBattleEvent, public ICameraStateInterface
 {
 	GENERATED_BODY()
 	
