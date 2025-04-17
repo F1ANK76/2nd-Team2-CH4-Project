@@ -22,9 +22,7 @@ public:
 	AMultiBattleGameMode();
 
 	virtual void BeginPlay() override;
-	virtual void PostLogin(APlayerController* NewPlayer) override;
 
-	void IsStart();
 	void StartGame();
 	void SpawnPlayers();
 	void RespawnPlayer(APlayerController* PlayerController);
@@ -121,5 +119,4 @@ private:
 	FTimerHandle ActorRevealTimer;
 	int32 CurrentActorArrayIndex;
 	int CurrentPlayerCount = 0;
-	FTimerHandle DelayTimer;
 };

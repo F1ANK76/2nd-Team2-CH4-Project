@@ -8,6 +8,9 @@ ABaseCamera::ABaseCamera()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+    bReplicates = true;
+    bAlwaysRelevant = true;
+    
     RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 
     CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
@@ -18,7 +21,7 @@ ABaseCamera::ABaseCamera()
 void ABaseCamera::BeginPlay()
 {
 	Super::BeginPlay();
-    // ÇöÀç WorldÀÇ GameState °¡Á®¿À±â
+    // ï¿½ï¿½ï¿½ï¿½ Worldï¿½ï¿½ GameState ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     GameState = GetWorld()->GetGameState();
     if (IsValid(GameState))
     {

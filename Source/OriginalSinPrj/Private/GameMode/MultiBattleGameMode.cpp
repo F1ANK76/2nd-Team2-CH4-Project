@@ -14,6 +14,7 @@ AMultiBattleGameMode::AMultiBattleGameMode()
 {
 	bUseSeamlessTravel = true; // Seamless Travel
 	GameStateClass = AMultiBattleGameState::StaticClass();
+	PlayerControllerClass = AWitchController::StaticClass();
 }
 
 void AMultiBattleGameMode::BeginPlay()
@@ -28,56 +29,30 @@ void AMultiBattleGameMode::BeginPlay()
 	LevelObjectManager = GetWorld()->SpawnActor<ALevelObjectManager>(LevelObjectManagerClass);
 	SpawnManager = GetWorld()->SpawnActor<ASpawnManager>(SpawnManagerClass);
 
+	InitializeTempObjects();
+	LevelObjectManager->SpawnDeathZone();
+
+	FTimerHandle DelayTimer;
 	GetWorldTimerManager().SetTimer(
 		DelayTimer,
 		this,
-		&AMultiBattleGameMode::IsStart,
-		0.1f,
+		&AMultiBattleGameMode::StartGame,
+		10.0f,
 		false
 	);
 }
 
-void AMultiBattleGameMode::PostLogin(APlayerController* NewPlayer)
-{
-	Super::PostLogin(NewPlayer);
-
-	if (AWitchController* WitchController = Cast<AWitchController>(NewPlayer))
-	{
-		APawn* SpawnedPlayer = SpawnManager->SpawnPlayer(WitchController, FVector(0, 100.0f, 0));
-
-		if (ABaseWitch* BaseWitch = Cast<ABaseWitch>(SpawnedPlayer))
-		{
-			BaseWitch->OnChangedState.AddDynamic(this, &AMultiBattleGameMode::OnCharacterStateReceived);
-			AttachPlayerToCamera(BaseWitch, SpawnedBaseCamera[0]);
-
-			SpawnedCharacters.Add(BaseWitch);
-			ActivePlayers.Add(BaseWitch);
-			CurrentPlayerCount++;
-
-			BaseWitch->SetHpMode(false);
-		}
-		MultiBattleGameState->RegisterInitialController(WitchController);
-		WitchController->ResponseShowLevelWidget();
-	}
-}
-
-void AMultiBattleGameMode::IsStart()
-{
-	if (SpawnedCharacters.Num() >= 2)
-	{
-		GetWorldTimerManager().ClearTimer(DelayTimer);
-		StartGame();
-	}
-}
-
 void AMultiBattleGameMode::StartGame()
 {
+	SpawnedCharacters[0]->OnChangedState.AddDynamic(this, &AMultiBattleGameMode::OnCharacterStateReceived);
+	SpawnedCharacters[1]->OnChangedState.AddDynamic(this, &AMultiBattleGameMode::OnCharacterStateReceived);
+
+	AttachPlayerToCamera(SpawnedCharacters[0], SpawnedBaseCamera[0]);
+	AttachPlayerToCamera(SpawnedCharacters[1], SpawnedBaseCamera[0]);
+	
 	MultiBattleGameState->InitPlayerInfo();
 	MultiBattleGameState->PlayerDataChanged++;
 	MultiBattleGameState->TurnOnBattleWidget();	
-
-	InitializeTempObjects();
-	LevelObjectManager->SpawnDeathZone();
 }
 
 void AMultiBattleGameMode::SpawnPlayers()
@@ -270,7 +245,33 @@ void AMultiBattleGameMode::PostSeamlessTravel()
 {
 	UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Called"));
 	Super::PostSeamlessTravel();  // �⺻ SeamlessTravel ó��
-	
+
+	//��Ƽ�÷��� ����
+	SpawnPlayers();
+	int index = 0;
+	// Ŭ���̾�Ʈ�� ��Ʈ�ѷ��� ĳ���͸� ��Ī��Ŵ
+
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		AWitchController* PC = Cast<AWitchController>(*It);
+		if (PC)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Controller Detected: %s"), *GetNameSafe(PC));
+			// �������� Ŭ���̾�Ʈ�� Pawn�� Ȯ���ϰ� Possess ó��
+			FTimerHandle TimerHandle;
+			GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this, PC, index]()
+				{
+					HandleClientPossession(PC, index);
+				}), 1.5f, false);
+			index++;
+		}
+		if (IsValid(PC))
+		{
+			PC->ResponseShowLevelWidget();
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Done"));
 }
 
 

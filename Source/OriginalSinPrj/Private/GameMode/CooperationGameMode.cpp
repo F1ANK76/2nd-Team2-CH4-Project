@@ -49,15 +49,6 @@ void ACooperationGameMode::BeginPlay()
     InitPlayerUI();
     SpawnKillZone();
     //Game Start Condition -> Start with a timer temporarily
-
-
-    FTimerHandle TimerHandle;
-    GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
-        {
-            StartGame();
-        }), 5.0f, false);
-
-
 }
 
 
@@ -865,6 +856,12 @@ void ACooperationGameMode::HandleClientPossession(APlayerController* PC, int ind
     UE_LOG(LogTemp, Warning, TEXT("Client Possess ended %s"), *GetNameSafe(PC));
     //Game Stage에서 필요한 기능을 위해 게임 스테이트에 컨트롤러 등록해두기
     CooperationGameState->RegisterInitialController(PC);
+
+    FTimerHandle TimerHand1e;
+    GetWorldTimerManager().SetTimer(TimerHand1e, FTimerDelegate::CreateLambda([this]()
+        {
+            StartGame();
+        }), 5.0f, false);
 }
 
 void ACooperationGameMode::SpawnPlayers()

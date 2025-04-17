@@ -174,7 +174,7 @@ public:
     //�������� ���۸��� �÷��̾� ��ġ ������ ���� �����ϱ�
     void SetPlayerLocation();
 
-    //�� Stage ���� �� �Ų���� ����� ��ȯ�ϱ� ���� �Լ� �ʿ�
+    //�� Stage ���� �� �Ų����� ����� ��ȯ�ϱ� ���� �Լ� �ʿ�
     void MoveNextStage();
 
     void RequestTurnOnBuffSelectUI();
@@ -328,7 +328,7 @@ protected:
     //UFUNCTION(NetMulticast, Reliable)
     void InitPlayerUI();
 
-    //��Ƽ ����
+    //멀티 전용
     virtual void PostSeamlessTravel() override;
     void SeamlessTravel();
 
