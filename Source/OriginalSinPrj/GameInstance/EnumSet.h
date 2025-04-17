@@ -89,7 +89,9 @@ enum class ECharacterSoundType : uint8
 	OnFire,
 	OnIce,
 	OnPoison,
-	OnThunder
+	OnThunder,
+	OnWind,
+	OnGround
 };
 
 UENUM(BlueprintType)

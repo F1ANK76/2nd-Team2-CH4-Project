@@ -368,6 +368,11 @@ const FVector ABaseWitch::GetFootLocation() const
 	return FootItem->GetComponentLocation();
 }
 
+const ECharacterSoundType ABaseWitch::GetAttackSoundType() const
+{
+	return AttackSoundType;
+}
+
 AActor* ABaseWitch::GetLastDamageCasuser() const
 {
 	return LastDamageCauser;

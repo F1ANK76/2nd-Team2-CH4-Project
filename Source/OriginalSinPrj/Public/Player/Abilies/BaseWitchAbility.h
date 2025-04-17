@@ -8,6 +8,7 @@
 #include "BaseWitchAbility.generated.h"
 
 class ABaseWitch;
+class ABaseGameState;
 struct FAbilityDataBuffer;
 
 UCLASS()
@@ -28,10 +29,16 @@ protected:
 	virtual void BeginPlay() override;
 	virtual bool CheckExcuteable(FAbilityDataBuffer& Buffer) { return true; };
 
+	bool CheckValidOfGameState();
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability Settings")
 	TObjectPtr<UAnimMontage> AbilityMontage = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability Settings")
 	EAbilityType AbilityType = EAbilityType::None;
+
+protected:
+	UPROPERTY()
+	TObjectPtr<ABaseGameState> BaseGameState = nullptr;
 };

@@ -28,6 +28,9 @@ public:
     UFUNCTION(NetMulticast, Unreliable)
     void PlayMonsterSound(UAudioComponent* AudioComp, EMonsterSoundType SoundType);
 
+    UFUNCTION(NetMulticast, Unreliable)
+    void StopEffectSound(UAudioComponent* AudioComp);
+
 protected:
     UFUNCTION(NetMulticast, Reliable)
     void InitCharacterSounds();
