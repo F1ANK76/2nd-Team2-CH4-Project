@@ -76,7 +76,7 @@ void ABaseCamera::UpdateCameraLocationandRotation()
 
     }
 
-    CameraComponent->SetWorldLocation(FMath::VInterpTo(CameraComponent->GetComponentLocation(), CamLoc, 0.01f, 5.0f));
+    CameraComponent->SetWorldLocation(FMath::VInterpTo(CameraComponent->GetComponentLocation(), CamLoc, 0.03f, 5.0f));
     CameraComponent->SetWorldRotation(CamRot);
 
 }

@@ -93,6 +93,7 @@ void AFarmingGameState::SetCameraTransform()
         CameraDistance = maxY - minY + 2 * (maxZ - minZ);
 
         CameraLocation = MeanPlayerLocation;
+        CameraLocation.X -= 400.0f;
         CameraRotation = FRotator::ZeroRotator;
     }
 
