@@ -12,6 +12,7 @@
 #include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
 
 
+
 //initWidget�� ������� �ʾ� ���� �ӽ� �Լ�...
 void UCharacterSelectWidget::InitWidget(UUISubsystem* uiHandle)
 {

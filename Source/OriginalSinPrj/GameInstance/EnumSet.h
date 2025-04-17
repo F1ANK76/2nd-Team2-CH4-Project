@@ -34,7 +34,7 @@ enum class EAddWidgetType : uint8
 UENUM(BlueprintType)
 enum class ESfxSoundType : uint8
 {
-	UI,
+	UI = 0,
 	Monster,
 	Character,
 	Boss
@@ -73,8 +73,25 @@ enum class EMonsterSoundType : uint8
 UENUM(BlueprintType)
 enum class ECharacterSoundType : uint8
 {
-	Attack = 0,
-	Death
+	None = 0,
+	HandEffect,
+	StaffEffect,
+	WandEffect,
+	BookEffect,
+	Hitted,
+	Guard,
+	Death,
+	FlyFire,
+	FlyIce,
+	FlyPoison,
+	FlyLigtning,
+	OnExplosion,
+	OnFire,
+	OnIce,
+	OnPoison,
+	OnThunder,
+	OnWind,
+	OnGround
 };
 
 UENUM(BlueprintType)

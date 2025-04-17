@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Player/Abilies/BaseWitchAbility.h"
 #include "Player/Struct/ProjectileDataBuffer.h"
+#include "OriginalSinPrj/GameInstance/EnumSet.h"
 #include "AttackAbility.generated.h"
 
 class ABaseProjectile;
@@ -38,6 +39,8 @@ protected:
 
 	void CheckProjectilePool();
 	void SpawnProjectileObj();
+
+	void CheckIsPlayWitchEffect(ABaseWitch* Parent, bool bIsStart);
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Attack")

@@ -6,6 +6,7 @@
 
 class UKnockbackComponent;
 class USphereComponent;
+class UBuffComponent;
 
 UCLASS()
 class ORIGINALSINPRJ_API AMonsterCharacter : public ACharacter
@@ -23,6 +24,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Knockback")
     float BaseKnockbackStrength;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Knockback")
+    float KnockbackScaleFactor;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Knockback")
     UKnockbackComponent* KnockbackComp;
@@ -51,7 +55,6 @@ public:
     UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Animation")
     bool bIsAttack;
 
-    // 리플리케이션
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "State")
@@ -60,31 +63,43 @@ public:
     UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "State")
     bool bIsMovingToBackLocation;
 
-    // Dead 상태 추가
     UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "State")
     bool bIsDead;
 
-    // 경험치 값 추가
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
     int32 ExpValue;
 
-    // 서버에서 몬스터 사망 처리
     UFUNCTION(BlueprintCallable, Server, Reliable)
     void ServerDie();
 
-    // 클라이언트에서 사망 상태 동기화
     UFUNCTION(NetMulticast, Reliable)
     void MulticastDie();
 
-    // 풀링을 위해 비활성화
     UFUNCTION(BlueprintCallable)
     void DeactivateMonster();
 
-    // 풀링을 위해 활성화
     UFUNCTION(BlueprintCallable)
     void ActivateMonster();
 
-    // 경험치 획득 처리
     UFUNCTION(BlueprintCallable, Server, Reliable)
     void ServerGiveExpToPlayer(ACharacter* PlayerCharacter);
+
+    virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+    float Damage = 10.0f;
+
+    float AddedKnockGauge = 2.0f;
+    bool bIsActivedOverlap = false;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    TObjectPtr<UBuffComponent> BuffComp = nullptr;
+
+    UFUNCTION()
+    void ApplyAttack(AActor* Target, float ApplyValue);
+
+    UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Knockback")
+    float KnockbackGauge = 0.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Knockback")
+    float MaxKnockbackGauge = 200.0f;
 };
