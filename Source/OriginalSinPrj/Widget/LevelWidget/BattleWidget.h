@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "../BaseWidget.h"
+#include "OriginalSinPrj/Widget/AddedWidget/PlayerStateWidget.h"
 #include "BattleWidget.generated.h"
 
 struct FPlayerData;
@@ -40,11 +41,9 @@ private:
 	class UPlayerStateWidget* Player2StateUI;
 
 public:
-	UFUNCTION(BlueprintCallable)
-	void InitPlayerUI(FPlayerData Player1, FPlayerData Player2);
+	void InitPlayerUI(FPlayerData* Player1, FPlayerData* Player2);
 	
-	UFUNCTION(BlueprintCallable)
-	void UpdatePlayerUI(FPlayerData Player1, FPlayerData Player2);
+	void UpdatePlayerUI(FPlayerData* Player1, FPlayerData* Player2);
 
 
 	UFUNCTION()
