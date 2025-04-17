@@ -13,6 +13,8 @@
 #include "Engine/DamageEvents.h"
 #include "Engine/OverlapResult.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/AudioComponent.h"
+#include "GameState/BaseGameState.h"
 #include "Player/BaseWitch.h"
 
 ARushBossClone::ARushBossClone()
@@ -34,6 +36,9 @@ ARushBossClone::ARushBossClone()
 	DamageArea->SetCollisionObjectType(ECC_WorldDynamic);
 	DamageArea->SetCollisionResponseToAllChannels(ECR_Ignore);
 	DamageArea->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // Pawn만 감지
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+	AudioComponent->SetupAttachment(RootComponent);
 	
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->Deactivate();
@@ -91,6 +96,12 @@ void ARushBossClone::OnPooledObjectSpawn_Implementation()
 		InitializeClone(BossController->GetTargetPlayerPawnLocation());
 	}
 
+	ABaseGameState* GameState = GetWorld()->GetGameState<ABaseGameState>();
+	if (IsValid(GameState))
+	{
+		GameState->PlayBossSound(AudioComponent, EBossSoundType::Rush);
+	}
+	
 	GetWorld()->GetTimerManager().SetTimer(
 		LifeTimeTimerHandle,
 		this,
@@ -199,8 +210,13 @@ void ARushBossClone::StartAttack()
 		}
 	}
 	PlayExplodeMontage();
-	//데미지
 
+	ABaseGameState* GameState = GetWorld()->GetGameState<ABaseGameState>();
+	if (IsValid(GameState))
+	{
+		GameState->PlayBossSound(AudioComponent, EBossSoundType::Explosion);
+	}
+	
 	//비활성화 타이머
 	GetWorldTimerManager().SetTimer(
 		DisappearTimerHandle,

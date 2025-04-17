@@ -7,6 +7,8 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Components/AudioComponent.h"
+#include "GameState/BaseGameState.h"
 #include "Player/BaseWitch.h"
 
 AWeaponToSpawn::AWeaponToSpawn()
@@ -41,6 +43,9 @@ AWeaponToSpawn::AWeaponToSpawn()
 	ProjectileMovementComponent->InitialSpeed = 10000.0f;
 	ProjectileMovementComponent->MaxSpeed = 10000.0f;
 	ProjectileMovementComponent->ProjectileGravityScale = 0.0f; //중력 영향 없음
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>("AudioComponent");
+	AudioComponent->SetupAttachment(SceneRoot);
 }
 
 void AWeaponToSpawn::BeginPlay()
@@ -129,6 +134,11 @@ void AWeaponToSpawn::OnCapsuleOverlapBegin(UPrimitiveComponent* OverlappedCompon
 	{
 		if (OtherActor->Tags.Contains("Ground"))
 		{
+			ABaseGameState* GameState = GetWorld()->GetGameState<ABaseGameState>();
+			if (IsValid(GameState))
+			{
+				GameState->PlayBossSound(AudioComponent, EBossSoundType::WeaponOnGround);
+			}
 			MulticastOffProjectileMovement();
 			GetWorldTimerManager().SetTimer(
 				LifeTimeTimerHandle,

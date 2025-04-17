@@ -8,8 +8,10 @@
 #include "Boss/BossController.h"
 #include "Engine/DamageEvents.h"
 #include "Components/SphereComponent.h"
+#include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/BaseWitch.h"
+#include "GameState/BaseGameState.h"
 
 
 ADestructibleObject::ADestructibleObject()
@@ -34,6 +36,9 @@ ADestructibleObject::ADestructibleObject()
 	SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	SphereComponent->SetCollisionResponseToAllChannels(ECR_Overlap);
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &ADestructibleObject::OnOverlapBegin);
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>("AudioComponent");
+	AudioComponent->SetupAttachment(SceneRoot);
 }
 
 void ADestructibleObject::BeginPlay()
@@ -74,6 +79,12 @@ void ADestructibleObject::OnPooledObjectReset_Implementation()
 {
 	if (!HasAuthority()) return;
 
+	ABaseGameState* GameState = GetWorld()->GetGameState<ABaseGameState>();
+	if (IsValid(GameState))
+	{
+		GameState->PlayBossSound(AudioComponent, EBossSoundType::ObjectDestroy);
+	}
+	
 	BossController->SetOneMinusDestructibleObjectCount();
 	bIsActivate = false;
 	MulticastSetActive(bIsActivate);

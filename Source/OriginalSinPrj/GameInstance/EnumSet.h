@@ -105,6 +105,7 @@ enum class EBossSoundType : uint8
 	IndexAttack,
 	ObjectDestroy,
 	SpawnWeapon,
+	Explosion
 };
 
 UENUM(BlueprintType)

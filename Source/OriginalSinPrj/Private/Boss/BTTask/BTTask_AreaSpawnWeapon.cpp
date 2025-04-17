@@ -7,6 +7,8 @@
 #include "Boss/BossController.h"
 #include "Boss/BossObjectPoolWorldSubsystem.h"
 #include "Boss/Object/WeaponToSpawn.h"
+#include "GameState/BaseGameState.h"
+#include "OriginalSinPrj/GameInstance/EnumSet.h"
 
 EBTNodeResult::Type UBTTask_AreaSpawnWeapon::ExecuteTask(UBehaviorTreeComponent& BTComponent, uint8* NodeMemory)
 {
@@ -25,6 +27,12 @@ EBTNodeResult::Type UBTTask_AreaSpawnWeapon::ExecuteTask(UBehaviorTreeComponent&
 		}
 	}
 	BossCharacter->PlayAreaSpawnWeaponMontage();
+
+	ABaseGameState* GameState = GetWorld()->GetGameState<ABaseGameState>();
+	if (IsValid(GameState))
+	{
+		GameState->PlayBossSound(BossCharacter->GetAudioComponent(), EBossSoundType::SpawnWeapon);
+	}
 	
 	return EBTNodeResult::InProgress;
 }
