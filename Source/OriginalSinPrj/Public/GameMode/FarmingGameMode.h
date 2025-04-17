@@ -11,8 +11,10 @@
 #include "../Widget/LevelWidget/BattleWidget.h"
 #include "FarmingGameMode.generated.h"
 
+class AKillZone;
+
 UCLASS()
-class ORIGINALSINPRJ_API AFarmingGameMode : public AGameMode, public IBattleEvent, public IMatchManage
+class ORIGINALSINPRJ_API AFarmingGameMode : public AGameMode, public IBattleEvent
 {
 	GENERATED_BODY()
 	
@@ -22,32 +24,54 @@ public:
     AFarmingGameMode();
     virtual void StartPlay() override; // BeginPlay보다 먼저 호출
     virtual void BeginPlay() override; // 게임을 시작할 준비가 되면 호출
+
     TObjectPtr<AFarmingGameState> FarmingGameState = nullptr;
+    
+    void MoveLevel();
+    
+    void StartSingleGame();
+    
+    void StartMultiGame();
+    
+    void EndSingleGame();
+    
+    void EndMultiGame();
+    
+    void EndGame(); // 타이머 = 0 이면 호출
+
+    UFUNCTION()
+    void OnCharacterStateReceived(const FCharacterStateBuffer& State);
+
     //Added GameMode Function
     //Control Game Function
 public:
+    UPROPERTY(EditDefaultsOnly, Category = "Camera")
+    TSubclassOf<ABaseCamera> BaseCamera;
+
+    // 생성된 카메라를 관리할 배열
+    UPROPERTY()
+    TArray<ABaseCamera*> SpawnedBaseCamera;
+
+    //카메라 생성 함수
+    void SpawnCamera();
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BossCamera")
+    TArray<FVector> CameraSpawnLocations;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "KillZone")
+    TSubclassOf<AKillZone> ActorKillZone;
+
+    // killzone 생성 함수
+    void SpawnKillZone();
+
+
 
     void RequestTurnOnPlayerUI();
     void RequestTurnOnEnemyUI();
     
 
-    void MoveLevel(const FName& LevelName);
-
     UFUNCTION(BlueprintCallable)
-    void StartSingleGame();
-
-    UFUNCTION(BlueprintCallable)
-    void StartMultiGame();
-
-    void EndSingleGame(); 
-    
-    void EndMultiGame();
-    void EndGame(); // 타이머 = 0 이면 호출
-
-    UFUNCTION(BlueprintCallable)
-    void HandleMonsterKilled(AActor* DeadMonster, AController* Killer); //몬스터가 죽으면 이걸 호출
-
-
+    void HandleMonsterKilled(AActor* DeadMonster, AActor* Killer); //몬스터가 죽으면 이걸 호출
 
 
     UPROPERTY(EditDefaultsOnly, Category = "Spawn")
@@ -60,17 +84,53 @@ public:
     UPROPERTY()
     TArray<ABaseWitch*> SpawnedCharacters;
 
+    UPROPERTY()
+    TArray<AActor*> AlivePlayers;
+    TArray<AActor*> DeadPlayers;
+
+    TArray<AActor*> ActivePlayers;
+
+    void SetPlayerUnReady();
+    void SetPlayerUnReady(AActor* actor);
+
+    void SetPlayerReady();
+
+
+    void RequestUpdateUI(int PlayerIndex)
+    {
+        FarmingGameState->UpdatePlayerUIInfo();
+        if (PlayerIndex == 0)
+        {
+            FarmingGameState->Player1DataChanged++;
+        }
+
+        if (PlayerIndex == 1)
+        {
+            FarmingGameState->Player2DataChanged++;
+        }
+    }
+
+
+
+    void AddCharacterOnAlivePlayers(AActor* Actor);
+
+    void SetPlayerLocation(AActor* Player);
+
     // 게임모드 클래스에 선언
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Controller")
     TSubclassOf<APlayerController> NewPlayerControllerClass;
 
-
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> PlayerSpawnLocations;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+    TArray<FVector> PlayerReSpawnLocations;
+
+    void PlayerRespawn();
+
+
     // 캐릭터 생성 함수
     void SpawnPlayers();
-
 
     void PossessCharacter(APlayerController* PC, APawn* PawnToPossess);
 
@@ -93,7 +153,9 @@ public:
     TArray<AActor*> ActiveMonsters;
 
 
-protected:
+    void AttachPlayerToCamera(ACharacter* Player, ABaseCamera* Camera);
+
+
     void SpawnInitialMonsters();
     void SpawnMissingMonsters();
 
@@ -102,7 +164,6 @@ protected:
 
     UPROPERTY(EditAnywhere, Category = "Spawning")
     TSubclassOf<AActor> MonsterBlueprintClass;
-
 
     ENetMode NetMode;
 
@@ -115,17 +176,11 @@ protected:
 
     virtual void PostSeamlessTravel() override;
 
-    
-public:
-    
-    virtual void FinishMatch() override {};
-    virtual void VictoryMatch() override {};
-    virtual void DefeatMatch() override {};
-    virtual void DrawMatch() override {};
+  
 
 public:
-    virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override {};
-    virtual void TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation) override {};
-    virtual void OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation) override {};
-    virtual void OnDeathMonster(AActor* Monster, const FVector& DeathLocation) override {};   
+    virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;
+    virtual void TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation) override;
+    virtual void OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation) override;
+    virtual void OnDeathMonster(AActor* Monster, const FVector& DeathLocation) override;   
 };

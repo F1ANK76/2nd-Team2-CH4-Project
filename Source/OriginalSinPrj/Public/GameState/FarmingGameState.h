@@ -9,12 +9,15 @@
 #include "../Player/BaseWitch.h"
 #include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
 #include "GameFramework/GameState.h"
+#include "BaseCamera.h"
+#include "OriginalSinPrj/Interface/CameraStateInterface.h"
 #include "FarmingGameState.generated.h"
 
 class AFarmingGameMode;
+class AKillZone;
 
 UCLASS()
-class ORIGINALSINPRJ_API AFarmingGameState : public AGameState, public IBattleEvent
+class ORIGINALSINPRJ_API AFarmingGameState : public AGameState, public IBattleEvent, public ICameraStateInterface
 {
 	GENERATED_BODY()
 	
@@ -28,9 +31,53 @@ public:
 
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+
+    void SetPlayerMove(bool bCanMove);
+
+    UPROPERTY(ReplicatedUsing = OnRep_SetPlayerMove)
+    bool bIsPlayerCanMove;
+
+    UFUNCTION()
+    void OnRep_SetPlayerMove();
+
+
+
+    void SetMyDataForNextLevel(int32 Level);
+
+
+    //카메라 처리용 함수.
+    virtual FVector GetCameraLocation() const override { return CameraLocation; }
+    virtual FRotator GetCameraRotation() const override { return CameraRotation; }
+    virtual float GetCameraDistance() const override { return CameraDistance; }
+
+
+    void SetCameraTransform();
+
+
+    UPROPERTY(Replicated, BlueprintReadWrite, Category = "Camera")
+    FVector CameraLocation;
+
+    UPROPERTY(Replicated, BlueprintReadWrite, Category = "Camera")
+    FRotator CameraRotation;
+
+    UPROPERTY(Replicated, BlueprintReadWrite, Category = "Camera")
+    float CameraDistance;
+
+
+
+    UPROPERTY(BlueprintReadOnly)
+    TMap<AActor*, FPlayerData> PlayerInfos;
+
+
+    UPROPERTY(Replicated)
+    FPlayerData Player1StateData;
+
+    UPROPERTY(Replicated)
+    FPlayerData Player2StateData;
+
+
     UPROPERTY(Replicated)
     bool bIsFarmingStarted;
-
 
     UPROPERTY(ReplicatedUsing = OnRep_UpdateTimer)
     float TimeRemaining;
@@ -38,12 +85,30 @@ public:
     UFUNCTION()
     void OnRep_UpdateTimer();
 
+    UPROPERTY(ReplicatedUsing = OnRep_SaveLevel)
+    int SaveTrigger = 0;
+
+    UFUNCTION()
+    void OnRep_SaveLevel();
+
+    void SaveLevel();
+
+
     void UpdateTimer();
 
 
-    // Player 정보 관리
-    UPROPERTY(BlueprintReadOnly)
-    TMap<APlayerController*, FPlayerData> PlayerInfos;
+    UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayer1DataUI)
+    int Player1DataChanged = 0;
+
+    UFUNCTION()
+    void OnRep_UpdatePlayer1DataUI();
+
+    UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayer2DataUI)
+    int Player2DataChanged = 0;
+
+    UFUNCTION()
+    void OnRep_UpdatePlayer2DataUI();
+
 
 
     void TurnOnPlayerUI();
@@ -56,14 +121,13 @@ public:
     void OnRep_TurnOnAllUI();
 
     void InitPlayerInfo();
-    void UpdatePlayerInfo();
+    void UpdatePlayerInfo(const FCharacterStateBuffer& State);
     void InitPlayerUIInfo();
     void UpdatePlayerUIInfo();
 
     void AddExperienceToPlayer(APlayerController* Player, int32 Amount);
 
     void StartFarmingMode();
-
 
     void EndFarmingMode(); // 0초 됐을 때 처리할 함수
 private:
@@ -77,7 +141,6 @@ private:
     
 public:
     void SetPlayerPawn(ABaseWitch* InPawn);
-private:
     UPROPERTY()
     ABaseWitch* PlayerPawnRef;
 
