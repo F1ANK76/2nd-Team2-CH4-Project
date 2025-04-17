@@ -19,59 +19,116 @@ AMultiBattleGameMode::AMultiBattleGameMode()
 void AMultiBattleGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	//CreateTestPlatform(FVector::ZeroVector, FRotator::ZeroRotator);
 
+	MultiBattleGameState = GetWorld()->GetGameState<AMultiBattleGameState>();
+	
 	SpawnCamera();
 	InitPlayerUI();
 	
 	LevelObjectManager = GetWorld()->SpawnActor<ALevelObjectManager>(LevelObjectManagerClass);
 	SpawnManager = GetWorld()->SpawnActor<ASpawnManager>(SpawnManagerClass);
-	StartDelay();
-}
-
-void AMultiBattleGameMode::StartDelay()
-{
-	FTimerHandle DelayTimer;
 
 	GetWorldTimerManager().SetTimer(
 		DelayTimer,
 		this,
-		&AMultiBattleGameMode::StartGame,
-		2.0f,
+		&AMultiBattleGameMode::IsStart,
+		0.1f,
 		false
 	);
 }
 
-void AMultiBattleGameMode::StartGame()
+void AMultiBattleGameMode::PostLogin(APlayerController* NewPlayer)
 {
-	SpawnedCharacters[0]->OnChangedState.AddDynamic(this, &AMultiBattleGameMode::OnCharacterStateReceived);
-	SpawnedCharacters[1]->OnChangedState.AddDynamic(this, &AMultiBattleGameMode::OnCharacterStateReceived);
-	
-	InitializeTempObjects();
-	LevelObjectManager->SpawnDeathZone();
+	Super::PostLogin(NewPlayer);
 
-	// 테스트 
-	SpawnPlayer();
+	if (AWitchController* WitchController = Cast<AWitchController>(NewPlayer))
+	{
+		APawn* SpawnedPlayer = SpawnManager->SpawnPlayer(WitchController, FVector(0, 100.0f, 0));
+
+		if (ABaseWitch* BaseWitch = Cast<ABaseWitch>(SpawnedPlayer))
+		{
+			BaseWitch->OnChangedState.AddDynamic(this, &AMultiBattleGameMode::OnCharacterStateReceived);
+			AttachPlayerToCamera(BaseWitch, SpawnedBaseCamera[0]);
+
+			SpawnedCharacters.Add(BaseWitch);
+			ActivePlayers.Add(BaseWitch);
+			CurrentPlayerCount++;
+
+			BaseWitch->SetHpMode(false);
+		}
+		MultiBattleGameState->RegisterInitialController(WitchController);
+		WitchController->ResponseShowLevelWidget();
+	}
 }
 
-void AMultiBattleGameMode::SpawnPlayer()
+void AMultiBattleGameMode::IsStart()
 {
-	float DeltaY = 100.0f;
-	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	if (SpawnedCharacters.Num() >= 2)
 	{
-		APlayerController* PC = It->Get();
-		if (PC)
+		GetWorldTimerManager().ClearTimer(DelayTimer);
+		StartGame();
+	}
+}
+
+void AMultiBattleGameMode::StartGame()
+{
+	MultiBattleGameState->InitPlayerInfo();
+	MultiBattleGameState->PlayerDataChanged++;
+	MultiBattleGameState->TurnOnBattleWidget();	
+
+	InitializeTempObjects();
+	LevelObjectManager->SpawnDeathZone();
+}
+
+void AMultiBattleGameMode::SpawnPlayers()
+{
+	// ĳ���� Ÿ�� ���� (��: �⺻ ĳ���� Ŭ����)
+	TArray<UClass*> CharacterClasses = { ABaseWitch::StaticClass(), ABaseWitch::StaticClass() };
+
+	for (int32 i = 0; i < CharacterClasses.Num(); ++i)
+	{
+		UClass* SpawnClass = CharacterClasses[i];
+
+		if (HasAuthority() && IsValid(SpawnClass))
 		{
-			if (AWitchController* WitchController = Cast<AWitchController>(PC))
+			// �÷��̾� ���� ���� ã��
+			AActor* StartActor = FindPlayerStart(nullptr);  // Ư�� �÷��̾��� ���� ���� ã��
+			if (!StartActor) continue;
+
+			FVector StartPos = StartActor->GetActorLocation();
+
+			FActorSpawnParameters SpawnParam;
+			SpawnParam.Owner = nullptr;  // �⺻������ ����
+			SpawnParam.Instigator = nullptr;  // �⺻������ ����
+
+			// ĳ���� ����
+			ABaseWitch* SpawnedCharacter = GetWorld()->SpawnActor<ABaseWitch>(SpawnClass, PlayerSpawnLocations[i], FRotator::ZeroRotator, SpawnParam);
+
+			if (SpawnedCharacter)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("컨트롤러 할당, 플레이어 스폰"));
-				SpawnManager->SpawnPlayer(WitchController, FVector(0.0f, 0.0f + DeltaY, 100.0f));
-				DeltaY += 100.0f;
+				SpawnedCharacters.Add(SpawnedCharacter);
+				ActivePlayers.Add(SpawnedCharacter);
+				CurrentPlayerCount++;
+
+				SpawnedCharacter->SetHpMode(false);
+
+				UE_LOG(LogTemp, Warning, TEXT("Spawned Pawn: %s"), *GetNameSafe(SpawnedCharacter));
 			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("컨트롤러 캐스팅 실패"))
-			}
+		}
+	}
+
+	// SpawnedCharacters �迭�� ������ ĳ���͵��� Ȯ���� �� �ֽ��ϴ�.
+	for (ABaseWitch* Character : SpawnedCharacters)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Managed Character: %s"), *GetNameSafe(Character));
+	}
+
+	AlivePlayers.Empty(); // ���� ������ �����
+	for (AActor* Player : ActivePlayers)
+	{
+		if (Player) // null üũ �� ���� ���� �� ����
+		{
+			AlivePlayers.Add(Player);
 		}
 	}
 }
@@ -108,14 +165,14 @@ void AMultiBattleGameMode::SpawnCamera()
 	UWorld* World = GetWorld();
 	if (!IsValid(World) || !IsValid(BaseCamera)) return;
 
-	for (const FVector& SpawnLocation : CameraSpawnLocations)
+	for (int i = 0; i < 2; i++)
 	{
 		FRotator SpawnRotation = FRotator::ZeroRotator;
 
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-		ABaseCamera* SpawnedCamera = World->SpawnActor<ABaseCamera>(BaseCamera, SpawnLocation, SpawnRotation, SpawnParams);
+		ABaseCamera* SpawnedCamera = World->SpawnActor<ABaseCamera>(BaseCamera, FVector::ZeroVector, SpawnRotation, SpawnParams);
 		if (SpawnedCamera)
 		{
 			SpawnedBaseCamera.Add(SpawnedCamera);
@@ -141,6 +198,16 @@ void AMultiBattleGameMode::InitPlayerUI()
 	{
 		MyGI->ResponseShowWidget();
 	}
+}
+
+void AMultiBattleGameMode::PossessCharacter(APlayerController* PC, APawn* PawnToPossess)
+{
+	if (!PC || !PawnToPossess) return;
+
+	PawnToPossess->SetOwner(PC);
+	PC->Possess(PawnToPossess);
+
+	UE_LOG(LogTemp, Warning, TEXT("Possessed Pawn: %s by Controller: %s"), *GetNameSafe(PawnToPossess), *GetNameSafe(PC));
 }
 
 void AMultiBattleGameMode::InitializeTempObjects()
@@ -194,7 +261,7 @@ void AMultiBattleGameMode::HandleClientPossession(APlayerController* PC, int ind
 		UE_LOG(LogTemp, Warning, TEXT("PlayerController is invalid or no spawned characters."));
 	}
 	UE_LOG(LogTemp, Warning, TEXT("Client Possess ended %s"), *GetNameSafe(PC));
-    
+
 	//Game Stage���� �ʿ��� ����� ���� ���� ������Ʈ�� ��Ʈ�ѷ� ����صα�
 	MultiBattleGameState->RegisterInitialController(PC);
 }
@@ -203,31 +270,7 @@ void AMultiBattleGameMode::PostSeamlessTravel()
 {
 	UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Called"));
 	Super::PostSeamlessTravel();  // �⺻ SeamlessTravel ó��
-
-	//��Ƽ�÷��� ����
-	SpawnPlayer();
-	int index = 0;
-	// Ŭ���̾�Ʈ�� ��Ʈ�ѷ��� ĳ���͸� ��Ī��Ŵ
-
-	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-	{
-		AWitchController* PC = Cast<AWitchController>(*It);
-		if (PC)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Controller Detected: %s"), *GetNameSafe(PC));
-			// �������� Ŭ���̾�Ʈ�� Pawn�� Ȯ���ϰ� Possess ó��
-			FTimerHandle TimerHandle;
-			GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this, PC, index]()
-				{
-					HandleClientPossession(PC, index);
-				}), 1.0f, false);
-			index++;
-
-			PC->ResponseShowLevelWidget();
-		}
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Done"));
+	
 }
 
 

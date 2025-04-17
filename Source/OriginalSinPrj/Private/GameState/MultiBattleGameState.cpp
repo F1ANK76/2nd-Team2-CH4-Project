@@ -10,6 +10,8 @@
 
 AMultiBattleGameState::AMultiBattleGameState()
 {
+    bReplicates = true;
+    bAlwaysRelevant = true;
 }
 
 void AMultiBattleGameState::BeginPlay()
@@ -31,6 +33,13 @@ void AMultiBattleGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME(AMultiBattleGameState, CameraLocation);
     DOREPLIFETIME(AMultiBattleGameState, CameraRotation);
     DOREPLIFETIME(AMultiBattleGameState, CameraDistance);
+}
+
+void AMultiBattleGameState::Tick(float DeltaSeconds)
+{
+    Super::Tick(DeltaSeconds);
+
+    SetCameraTransform();
 }
 
 void AMultiBattleGameState::ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation)
@@ -132,7 +141,7 @@ void AMultiBattleGameState::UpdatePlayerInfo(const FCharacterStateBuffer& State)
     }
 }
 
-void AMultiBattleGameState::SetStage2CameraTransform()
+void AMultiBattleGameState::SetCameraTransform()
 {
     FVector SumPlayerLocation = FVector::ZeroVector;
     FVector SumEnemyLocation = FVector::ZeroVector;
@@ -220,6 +229,38 @@ void AMultiBattleGameState::RegisterInitialController(APlayerController* PC)
         UE_LOG(LogTemp, Log, TEXT("Controller Registered: %s"), *PC->GetName());
     }
 }
+
+void AMultiBattleGameState::TurnOnBattleWidget()
+{
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        if (IsValid(MyGI))
+        {
+            UE_LOG(LogTemp, Warning, TEXT("GameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is Ready"));
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("InValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValid"));
+        }
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
+        {
+            if (IsValid(UISubsystem->CurrentActiveWidget))
+            {
+                UE_LOG(LogTemp, Warning, TEXT("IValidlilasidladilasiladd"));
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("INVALID"));
+            }
+            UE_LOG(LogTemp, Warning, TEXT("I::::::::::::%d "), UISubsystem->GetCurrentLevelType());
+            
+            // ���⼭ UISubsystem ��� ����!
+            Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->ActivePlayerWidget();
+            Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->ActiveEnemyWidget();
+        }
+    }
+}
+
 
 void AMultiBattleGameState::OnRep_UpdatePlayerInitData()
 {

@@ -22,10 +22,11 @@ public:
 	AMultiBattleGameMode();
 
 	virtual void BeginPlay() override;
+	virtual void PostLogin(APlayerController* NewPlayer) override;
 
-	void StartDelay();
+	void IsStart();
 	void StartGame();
-	void SpawnPlayer();
+	void SpawnPlayers();
 	void RespawnPlayer(APlayerController* PlayerController);
 
 	UFUNCTION(BlueprintCallable)
@@ -57,6 +58,7 @@ public:
 	void SpawnCamera();
 	void AttachPlayerToCamera(ACharacter* Player, ABaseCamera* Camera);
 	void InitPlayerUI();
+	void PossessCharacter(APlayerController* PC, APawn* PawnToPossess);
 
 	UFUNCTION()
 	void OnCharacterStateReceived(const FCharacterStateBuffer& State);
@@ -90,14 +92,17 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	TSubclassOf<ABaseCamera> BaseCamera;
 
+	UPROPERTY()
 	TObjectPtr<AMultiBattleGameState> MultiBattleGameState = nullptr;
+	
 	TArray<AActor*> ActivePlayers;
+	TArray<AActor*> AlivePlayers;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Platform")
 	TArray<AActor*> ActorArray;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BossCamera")
-	TArray<FVector> CameraSpawnLocations;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+	TArray<FVector> PlayerSpawnLocations;
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<ABaseWitch*> SpawnedCharacters;
@@ -115,5 +120,6 @@ private:
 
 	FTimerHandle ActorRevealTimer;
 	int32 CurrentActorArrayIndex;
-
+	int CurrentPlayerCount = 0;
+	FTimerHandle DelayTimer;
 };

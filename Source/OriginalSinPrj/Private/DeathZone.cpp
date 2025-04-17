@@ -7,7 +7,7 @@
 #include "Components/BoxComponent.h"
 
 ADeathZone::ADeathZone()
-	: MoveSpeed(100.0f)
+	: MoveSpeed(10.0f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 

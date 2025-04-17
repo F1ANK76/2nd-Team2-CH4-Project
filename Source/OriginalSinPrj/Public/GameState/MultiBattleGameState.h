@@ -20,6 +20,8 @@ public:
 
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void Tick(float DeltaSeconds) override;
+
 
 	virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;
 	virtual void TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation) override;
@@ -32,10 +34,11 @@ public:
 
 	void InitPlayerInfo();
 	void UpdatePlayerInfo(const FCharacterStateBuffer& State);
-	void SetStage2CameraTransform();
+	void SetCameraTransform();
 	void InitPlayerUIInfo();
 	void UpdatePlayerUIInfo();
 	void RegisterInitialController(APlayerController* PC);
+	void TurnOnBattleWidget();
 
 	UFUNCTION()
 	void OnRep_UpdatePlayerInitData();
@@ -46,6 +49,9 @@ public:
 	UFUNCTION()
 	void OnRep_UpdatePlayer2DataUI();
 
+	UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayerInitData)
+	int PlayerDataChanged = 0;
+	
 	UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayer1DataUI)
 	int Player1DataChanged = 0;
 
