@@ -6,14 +6,14 @@
 #include "Boss/BossController.h"
 #include "Boss/BossCharacter.h"
 #include "Boss/HijackBossController.h"
-#include "Boss/BTTask/BTTask_RushBossCloneAttack.h"
 #include "Boss/Object/DestructibleObject.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h"
-#include "Net/UnrealNetwork.h"
+#include "Engine/DamageEvents.h"
+#include "Engine/OverlapResult.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/BaseWitch.h"
 
 ARushBossClone::ARushBossClone()
 {
@@ -27,6 +27,13 @@ ARushBossClone::ARushBossClone()
 	SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	SphereComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	SphereComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
+
+	DamageArea = CreateDefaultSubobject<USphereComponent>(TEXT("DamageArea"));
+	DamageArea->SetupAttachment(RootComponent);
+	DamageArea->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	DamageArea->SetCollisionObjectType(ECC_WorldDynamic);
+	DamageArea->SetCollisionResponseToAllChannels(ECR_Ignore);
+	DamageArea->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // Pawn만 감지
 	
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->Deactivate();
@@ -115,11 +122,11 @@ void ARushBossClone::MulticastSetActive_Implementation(bool bIsActive)
 	SphereComponent->SetActive(bIsActive);
 }
 
-void ARushBossClone::MulticastPlayCloneAttackMontage()
+void ARushBossClone::MulticastPlayExplodeMontage()
 {
-	if (CloneAttackMontage)
+	if (ExplodeMontage)
 	{
-		PlayAnimMontage(CloneAttackMontage);
+		PlayAnimMontage(ExplodeMontage);
 	}
 }
 
@@ -135,8 +142,12 @@ void ARushBossClone::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AA
 		{
 			BossController->EnterToStunState();
 		}
+		
 		IBossPoolableActorInterface::Execute_OnPooledObjectReset(this);
-		IBossPoolableActorInterface::Execute_OnPooledObjectReset(Cast<ADestructibleObject>(DestructibleObject));
+		if (IsValid(Cast<ADestructibleObject>(OtherActor)) && !OtherActor->IsHidden())
+		{
+			IBossPoolableActorInterface::Execute_OnPooledObjectReset(Cast<ADestructibleObject>(DestructibleObject));	
+		}
 	}
 }
 
@@ -169,6 +180,7 @@ void ARushBossClone::CheckArrival()
 		FinalLocation.Z += ZOffset;
 		SetActorLocation(FinalLocation);
 
+		UE_LOG(LogTemp, Warning, TEXT("Arrived"));
 		StartAttack();
 	}
 }
@@ -176,9 +188,17 @@ void ARushBossClone::CheckArrival()
 void ARushBossClone::StartAttack()
 {
 	if (!HasAuthority()) return;
-
+	UE_LOG(LogTemp, Warning, TEXT("StartAttack"));
 	//애니메이션
-
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (IsValid(ExplodeMontage) && IsValid(AnimInstance))
+	{
+		if (!AnimInstance->OnMontageEnded.IsAlreadyBound(this, &ARushBossClone::OnMontageEnded))
+		{
+			AnimInstance->OnMontageEnded.AddDynamic(this, &ARushBossClone::OnMontageEnded);	
+		}
+	}
+	PlayExplodeMontage();
 	//데미지
 
 	//비활성화 타이머
@@ -208,10 +228,58 @@ void ARushBossClone::SetFacingDirection()
 	}
 }
 
-void ARushBossClone::PlayCloneAttackMontage()
+void ARushBossClone::PlayExplodeMontage()
 {
 	if (HasAuthority())
 	{
-		MulticastPlayCloneAttackMontage();
+		MulticastPlayExplodeMontage();
 	}
+}
+
+void ARushBossClone::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (!HasAuthority()) return;
+	if (Montage != ExplodeMontage) return;
+
+	UAnimInstance* BossAnimInstance = GetMesh()->GetAnimInstance();
+	if (IsValid(BossAnimInstance))
+	{
+		BossAnimInstance->OnMontageEnded.RemoveDynamic(this, &ARushBossClone::OnMontageEnded);
+	}
+
+	TArray<FOverlapResult> OverlapResults;
+	FCollisionQueryParams QueryParams;
+	QueryParams.bTraceComplex = false;
+	QueryParams.AddIgnoredActor(this); // 자기 자신 제외
+	ABossCharacter* BossCharacter = Cast<ABossCharacter>(
+		UGameplayStatics::GetActorOfClass(this, ABossCharacter::StaticClass()));
+	QueryParams.AddIgnoredActor(BossCharacter);
+
+	bool bHit = GetWorld()->OverlapMultiByChannel(
+		OverlapResults,
+		DamageArea->GetComponentLocation(),
+		FQuat::Identity,
+		ECC_Pawn, // Pawn 채널
+		FCollisionShape::MakeSphere(DamageArea->GetScaledSphereRadius()), // Sphere
+		QueryParams
+	);
+
+	if (bHit)
+	{
+		for (const FOverlapResult& Result : OverlapResults)
+		{
+			AActor* HitActor = Result.GetActor();
+			if (IsValid(HitActor) && HitActor->IsA(ABaseWitch::StaticClass()))
+			{
+				ABaseWitch* HitWitch = Cast<ABaseWitch>(HitActor);
+				FDamageEvent DamageEvent;
+				HitWitch->TakeDamage(
+					Damage,
+					DamageEvent,
+					GetInstigatorController(),
+					this);
+			}
+		}
+	}
+	IBossPoolableActorInterface::Execute_OnPooledObjectReset(this);
 }

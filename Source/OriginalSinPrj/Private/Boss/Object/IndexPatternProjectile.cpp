@@ -12,7 +12,7 @@ AIndexPatternProjectile::AIndexPatternProjectile()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	Damage = 50.0f;
+	Damage = 5.0f;
 	LifeTime = 5.0f;
 	Speed = 2500.0f;
 	bIsActivate = false;
@@ -36,6 +36,14 @@ AIndexPatternProjectile::AIndexPatternProjectile()
 	SphereComponent->SetCollisionResponseToAllChannels(ECR_Overlap);
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AIndexPatternProjectile::OnOverlapBegin);
 
+	//Niagara
+	NiagaraComponent1 = CreateDefaultSubobject<UNiagaraComponent>("NiagaraComponent1");
+	NiagaraComponent1->SetupAttachment(SceneRoot);
+	NiagaraComponent1->SetAutoActivate(false);
+	NiagaraComponent2 = CreateDefaultSubobject<UNiagaraComponent>("NiagaraComponent2");
+	NiagaraComponent2->SetupAttachment(SceneRoot);
+	NiagaraComponent2->SetAutoActivate(false);
+
 	//투사체 - ProjectileMovementComponent
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovementComponent");
 	ProjectileMovementComponent->bShouldBounce = false;
@@ -49,27 +57,24 @@ void AIndexPatternProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//if (!HasAuthority()) return;
-
 	bIsActivate = false;
 	SetActorHiddenInGame(true);
 	SetActorEnableCollision(false);
-	//MulticastSetActive(bIsActivate);
 	ProjectileMovementComponent->StopMovementImmediately();
 	ProjectileMovementComponent->Deactivate();
 }
 
 void AIndexPatternProjectile::OnPooledObjectSpawn_Implementation()
 {
-	//if (!HasAuthority()) return;
-
 	bIsActivate = true;
 	SetActorHiddenInGame(false);
 	SetActorEnableCollision(true);
-	//MulticastSetActive(bIsActivate);
 	ProjectileMovementComponent->Activate();
 
 	ApplyMaterialFromIndex(bIsFirstIndex);
+	ApplyNiagaraFromIndex(bIsFirstIndex);
+
+	NiagaraToActive->SetActive(true);
 	
 	GetWorldTimerManager().SetTimer(
 		LifeTimeTimerHandle,
@@ -81,16 +86,14 @@ void AIndexPatternProjectile::OnPooledObjectSpawn_Implementation()
 
 void AIndexPatternProjectile::OnPooledObjectReset_Implementation()
 {
-	//if (!HasAuthority()) return;
-
 	bIsActivate = false;
-	//MulticastSetActive(bIsActivate);
 	SetActorHiddenInGame(true);
 	SetActorEnableCollision(false);
 	ProjectileMovementComponent->StopMovementImmediately();
 	ProjectileMovementComponent->Deactivate();
 	ProjectileMovementComponent->Velocity = FVector::ZeroVector;
-
+	NiagaraToActive->SetActive(false);
+	
 	if (GetWorldTimerManager().IsTimerActive(LifeTimeTimerHandle))
 	{
 		GetWorldTimerManager().ClearTimer(LifeTimeTimerHandle);
@@ -113,6 +116,7 @@ void AIndexPatternProjectile::MulticastSetActive_Implementation(bool bIsActive)
 void AIndexPatternProjectile::OnRep_IsFirstIndex()
 {
 	ApplyMaterialFromIndex(bIsFirstIndex);
+	ApplyNiagaraFromIndex(bIsFirstIndex);
 }
 
 void AIndexPatternProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -156,10 +160,17 @@ void AIndexPatternProjectile::ApplyMaterialFromIndex(bool bFirst)
 	}
 }
 
+void AIndexPatternProjectile::ApplyNiagaraFromIndex(bool bFirst)
+{
+	if (IsValid(NiagaraComponent1) && IsValid(NiagaraComponent2))
+	{
+		NiagaraToActive = bFirst ? NiagaraComponent1 : NiagaraComponent2;
+	}
+}
+
+
 void AIndexPatternProjectile::SetDirectionAndVelocity(const FVector& InDirection)
 {
-	//if (!HasAuthority()) return;
-
 	Direction = InDirection;
 	ProjectileMovementComponent->Velocity = Direction * Speed;
 }
@@ -174,4 +185,5 @@ void AIndexPatternProjectile::SetIndex(int32 InIndex)
 	//bIsFirstIndex : true, false, true, false
 	bIsFirstIndex = ((InIndex + 1) % 2 == 1);
 	ApplyMaterialFromIndex(bIsFirstIndex);
+	ApplyNiagaraFromIndex(bIsFirstIndex);
 }

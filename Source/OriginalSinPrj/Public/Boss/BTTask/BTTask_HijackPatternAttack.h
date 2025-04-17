@@ -39,8 +39,10 @@ private:
 	UBossObjectPoolWorldSubsystem* PoolWorldSubsystem = nullptr;
 	UPROPERTY()
 	APawn* TargetPlayer;
-
+	UPROPERTY()
+	UBehaviorTreeComponent* BTComp = nullptr;
+	
 	bool bIsTaskExecuting = false;
 	bool bIsRegenerateDestructibleObject = false;
-	UBehaviorTreeComponent* BTComp = nullptr;
+	
 };

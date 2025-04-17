@@ -3,6 +3,8 @@
 
 #include "Boss/Object/DestructibleObject.h"
 
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
 #include "Boss/BossController.h"
 #include "Engine/DamageEvents.h"
 #include "Components/SphereComponent.h"
@@ -94,4 +96,14 @@ void ADestructibleObject::OnOverlapBegin(UPrimitiveComponent* OverlappedComponen
 void ADestructibleObject::MulticastSetActive_Implementation(bool bIsActive)
 {
 	SetActorHiddenInGame(!bIsActive);
+	if (!bIsActive)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),
+            ExplosionEffect,
+            GetActorLocation(),
+            FRotator::ZeroRotator,
+            FVector(1.0f),
+            true);
+	}
 }

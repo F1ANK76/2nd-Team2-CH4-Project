@@ -26,7 +26,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Components")
 	USphereComponent* SphereComponent = nullptr;
-	
+
+	UPROPERTY(VisibleAnywhere)
+	class USphereComponent* DamageArea;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
+	float Damage = 15.0f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
 	float ZOffset = 100.0f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
@@ -39,10 +44,10 @@ protected:
 	float LifeTime = 5.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	UAnimMontage* CloneAttackMontage;
-
+	UAnimMontage* ExplodeMontage;
+	
 	UFUNCTION()
-	void MulticastPlayCloneAttackMontage();
+	void MulticastPlayExplodeMontage();
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetActive(bool bIsActive);
@@ -63,7 +68,7 @@ protected:
 	void SetFacingDirection();
 
 	//애니메이션
-	void PlayCloneAttackMontage();
+	void PlayExplodeMontage();
 
 private:
 	FVector TargetLocation;
@@ -73,4 +78,7 @@ private:
 	bool bIsActivate;
 	FTimerHandle LifeTimeTimerHandle;
 	FTimerHandle DisappearTimerHandle;
+
+	UFUNCTION()
+	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 };

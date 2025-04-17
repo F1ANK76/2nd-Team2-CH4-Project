@@ -36,6 +36,6 @@ private:
 	float Duration = 10.0f;
 	float RotationOffset = 0.0f;
 	float TimeElapsed = 0.0f;
-	float InitialShotCooldown = 0.08f;
-	float ShotCooldown = 0.08f;
+	float InitialShotCooldown = 0.25f;
+	float ShotCooldown = 0.25f;
 };
