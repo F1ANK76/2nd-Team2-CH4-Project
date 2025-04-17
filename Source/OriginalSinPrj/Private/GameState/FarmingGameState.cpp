@@ -12,6 +12,7 @@ AFarmingGameState::AFarmingGameState()
     bIsFarmingStarted = false;
     TimeRemaining = 60.0f;
     bReplicates = true;
+    bIsPlayerCanMove = true;
 }
 
 // ShowUI는 서버에서 호출할 필요 없으므로 삭제 예정
@@ -132,7 +133,16 @@ void AFarmingGameState::EndFarmingMode()
     UE_LOG(LogTemp, Warning, TEXT("Farming Mode Ended"));
 
     //alert to Gamemode
+
     FarmingGameMode->EndGame();
+}
+
+void AFarmingGameState::SetMyDataForNextLevel(int32 Level)
+{
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        MyGI->SetPlayerFarmingLevel(Level);
+    }
 }
 
 
@@ -211,30 +221,51 @@ void AFarmingGameState::InitPlayerInfo()
         //어디선가 받아와야해...
         FCharacterStateBuffer Player1State;
         FCharacterStateBuffer Player2State;
+        if (FarmingGameMode->NetMode == ENetMode::NM_Standalone)
+        {
+            PlayerInfos.Add(FarmingGameMode->ActivePlayers[0], FPlayerData{
+            "Player1", nullptr,
+            100.0f, 100.0f,
+            0, 0,
+            0, 0.0f,
+            0,
+            0,
+            0, 100, 1 });
+            Player1StateData = PlayerInfos[FarmingGameMode->ActivePlayers[0]];
 
-        PlayerInfos.Add(FarmingGameMode->ActivePlayers[0], FPlayerData{
-        "Player1", nullptr,
-        100.0f, 100.0f,
-        0, 0,
-        0, 0.0f,
-        0,
-        0,
-        0, 100, 1 });
-        Player1StateData = PlayerInfos[FarmingGameMode->ActivePlayers[0]];
+            Cast<ABaseWitch>(FarmingGameMode->ActivePlayers[0])->ResetCharacterState();
+        }
+        else
+        {
+            PlayerInfos.Add(FarmingGameMode->ActivePlayers[0], FPlayerData{
+            "Player1", nullptr,
+            100.0f, 100.0f,
+            0, 0,
+            0, 0.0f,
+            0,
+            0,
+            0, 100, 1 });
+            Player1StateData = PlayerInfos[FarmingGameMode->ActivePlayers[0]];
 
-        PlayerInfos.Add(FarmingGameMode->ActivePlayers[1], FPlayerData{
-        "Player2", nullptr,
-        100.0f, 100.0f,
-        0, 0,
-        0, 0.0f,
-        0,
-        0,
-        0, 100, 1 });
-        Player2StateData = PlayerInfos[FarmingGameMode->ActivePlayers[1]];
+            PlayerInfos.Add(FarmingGameMode->ActivePlayers[1], FPlayerData{
+            "Player2", nullptr,
+            100.0f, 100.0f,
+            0, 0,
+            0, 0.0f,
+            0,
+            0,
+            0, 100, 1 });
+            Player2StateData = PlayerInfos[FarmingGameMode->ActivePlayers[1]];
+            Cast<ABaseWitch>(FarmingGameMode->ActivePlayers[0])->ResetCharacterState();
+            Cast<ABaseWitch>(FarmingGameMode->ActivePlayers[1])->ResetCharacterState();
+        }
+        
+        
+
+
         InitPlayerUIInfo();
 
-        Cast<ABaseWitch>(FarmingGameMode->ActivePlayers[0])->ResetCharacterState();
-        Cast<ABaseWitch>(FarmingGameMode->ActivePlayers[1])->ResetCharacterState();
+
     }
 }
 
@@ -353,6 +384,16 @@ void AFarmingGameState::OnRep_UpdateTimer()
 }
 
 
+void AFarmingGameState::OnRep_SaveLevel()
+{
+    SetMyDataForNextLevel(Player1StateData.PlayerLevel);
+}
+
+void AFarmingGameState::SaveLevel()
+{
+    //SetMyDataForNextLevel(Level);
+}
+
 
 void AFarmingGameState::SetPlayerPawn(ABaseWitch* InPawn)
 {
@@ -374,4 +415,62 @@ void AFarmingGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
     DOREPLIFETIME(AFarmingGameState, Player2StateData);
     DOREPLIFETIME(AFarmingGameState, Player1DataChanged);
     DOREPLIFETIME(AFarmingGameState, Player2DataChanged);
+    DOREPLIFETIME(AFarmingGameState, bIsPlayerCanMove);
+    DOREPLIFETIME(AFarmingGameState, SaveTrigger);
+}
+
+void AFarmingGameState::OnRep_SetPlayerMove()
+{
+    UE_LOG(LogTemp, Log, TEXT("This is NOT the local player controller."));
+    UWorld* WorldContext = GetWorld();
+    for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+    {
+        APlayerController* PC = It->Get();
+        if (PC && PC->GetPawn())
+        {
+            if (bIsPlayerCanMove)
+            {
+                PC->GetPawn()->DisableInput(PC);
+            }
+            else
+            {
+                PC->GetPawn()->EnableInput(PC);
+            }
+        }
+    }
+
+}
+
+void AFarmingGameState::SetPlayerMove(bool bCanMove)
+{
+    bIsPlayerCanMove = bCanMove;
+    UE_LOG(LogTemp, Log, TEXT("Disable Input"));
+    if (bIsPlayerCanMove)
+    {
+        bIsPlayerCanMove = false;
+        UWorld* WorldContext = GetWorld();
+
+        for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+        {
+            APlayerController* PC = It->Get();
+            if (PC && PC->GetPawn())
+            {
+                PC->GetPawn()->DisableInput(PC);
+            }
+        }
+    }
+    else
+    {
+        bIsPlayerCanMove = true;
+        UWorld* WorldContext = GetWorld();
+
+        for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+        {
+            APlayerController* PC = It->Get();
+            if (PC && PC->GetPawn())
+            {
+                PC->GetPawn()->EnableInput(PC);
+            }
+        }
+    }
 }

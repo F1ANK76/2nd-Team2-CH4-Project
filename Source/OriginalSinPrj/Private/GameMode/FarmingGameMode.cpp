@@ -68,7 +68,7 @@ void AFarmingGameMode::StartSingleGame()
     }
     //Spawn Monster
     SpawnInitialMonsters();
-
+    SetPlayerReady();
     //Turn on timer 
     if (FarmingGameState)
     {
@@ -87,11 +87,13 @@ void AFarmingGameMode::StartMultiGame()
     //Open UI for multi Farming 
     SpawnedCharacters[0]->OnChangedState.AddDynamic(this, &AFarmingGameMode::OnCharacterStateReceived);
     SpawnedCharacters[1]->OnChangedState.AddDynamic(this, &AFarmingGameMode::OnCharacterStateReceived);
-    SpawnedCharacters[0]->SetActorLocation(PlayerSpawnLocations[0]);
-    SpawnedCharacters[1]->SetActorLocation(PlayerSpawnLocations[1]);
+  
 
     SpawnedCharacters[0]->SetActorRotation(FRotator::ZeroRotator);
+    SpawnedCharacters[0]->SetActorLocation(PlayerSpawnLocations[0]);
     SpawnedCharacters[1]->SetActorRotation(FRotator::ZeroRotator);
+    SpawnedCharacters[1]->SetActorLocation(PlayerSpawnLocations[1]);
+
 
     
     if (IsValid(SpawnedCharacters[0]))
@@ -113,6 +115,7 @@ void AFarmingGameMode::StartMultiGame()
 
     //몬스터 소환하면서,
     SpawnInitialMonsters();
+    SetPlayerReady();
 
     //Turn on Timer
     if (FarmingGameState)
@@ -162,18 +165,32 @@ void AFarmingGameMode::EndGame()
     else
     {
         EndMultiGame();
+
+        FarmingGameState->SaveTrigger++;
     }
+    FarmingGameState->SetMyDataForNextLevel(FarmingGameState->Player1StateData.PlayerLevel);
 }
 
 void AFarmingGameMode::EndSingleGame()
 {
     //SingleMode Farming Ended..
     // Move to next...
+    FTimerHandle TimerHandle;
+    GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
+        {
+            MoveLevel();
+        }), 5.0f, false);
+
 }
 
 void AFarmingGameMode::EndMultiGame()
 {
-
+    FTimerHandle TimerHandle;
+    GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
+        {
+            MoveLevel();
+        }), 5.0f, false);
+    
     //MultiMode Farming Ended..
     // Move to next...
 }
@@ -182,20 +199,30 @@ void AFarmingGameMode::EndMultiGame()
 //이전 게임모드에서 캐릭터를 받아오는 함수.
 
 
-void AFarmingGameMode::MoveLevel(const FName& LevelName)
+void AFarmingGameMode::MoveLevel()
 {
     UWorld* World = GetWorld();
     if (IsValid(World)) 
     {
         if (NetMode == NM_Standalone)
         {
-            //선택한 맵으로 이동할 수 있도록 수정.
-            //World->ServerTravel(TEXT("/Game/Maps/SingleLevel?listen"), true);
+            if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+            {
+                if (IsValid(MyGI))
+                {
+                    MyGI->RequestOpenLevelByType(ELevelType::SingleLevel, true);
+                }
+            }
         }
         else
         {
-            //선택한 맵으로 이동할 수 있도록 수정.
-            //World->ServerTravel(TEXT("/Game/Maps/MatchLevel?listen"), true);
+            if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+            {
+                if (IsValid(MyGI))
+                {
+                    MyGI->RequestOpenLevelByType(ELevelType::MultiLevel, false);
+                }
+            }
         }
     }
     
@@ -327,12 +354,16 @@ void AFarmingGameMode::PostSeamlessTravel()
         // 싱글플레이용 초기화
         UE_LOG(LogTemp, Warning, TEXT("[FarmingGameMode] SinglePlay"));
 
-        if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+        if (AWitchController* PC = Cast<AWitchController>(UGameplayStatics::GetPlayerController(this, 0)))
         {
             // 직접 캐릭터 스폰
             if (DefaultCharacterClass)
             {
                 SpawnPlayerByCharacterType(DefaultCharacterClass, PC);
+            }
+            if (IsValid(PC))
+            {
+                PC->ResponseShowLevelWidget();
             }
         }
     }
@@ -352,7 +383,13 @@ void AFarmingGameMode::PostSeamlessTravel()
             if (PC)
             {
                 UE_LOG(LogTemp, Warning, TEXT("Controller Detected: %s"), *GetNameSafe(PC));
+
                 // 서버에서 클라이언트의 Pawn을 확인하고 Possess 처리
+                PC->SetIgnoreLookInput(true);
+                if (PC)
+                {
+                    PC->SetControlRotation(FRotator::ZeroRotator);
+                }
                 FTimerHandle TimerHandle;
                 GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this, PC, index]()
                     {
@@ -386,10 +423,12 @@ void AFarmingGameMode::HandleClientPossession(APlayerController* PC, int index)
                 OldPC->UnPossess();  // 기존 컨트롤러에서 Pawn을 해제
             }
             // 새로운 컨트롤러가 해당 Pawn을 Possess하도록 처리
+            PC->SetControlRotation(FRotator::ZeroRotator);
             PC->Possess(PawnToPossess);
+            PC->SetControlRotation(FRotator::ZeroRotator);
+            PawnToPossess->SetActorRotation(FRotator::ZeroRotator);
             PC->ClientRestart(PawnToPossess); // 클라쪽에 제대로 상태 적용
-
-
+            PC->SetIgnoreLookInput(false);
             UE_LOG(LogTemp, Warning, TEXT("Client Possessed Pawn: %s by %s"),
                 *GetNameSafe(PawnToPossess), *GetNameSafe(PC));
         }
@@ -403,6 +442,8 @@ void AFarmingGameMode::HandleClientPossession(APlayerController* PC, int index)
         UE_LOG(LogTemp, Warning, TEXT("PlayerController is invalid or no spawned characters."));
     }
     UE_LOG(LogTemp, Warning, TEXT("Client Possess ended %s"), *GetNameSafe(PC));
+
+    SetPlayerUnReady();
 }
 
 
@@ -424,6 +465,9 @@ void AFarmingGameMode::SpawnPlayerByCharacterType(UClass* SpawnClass, APlayerCon
     ABaseWitch* PlayerCharacter = GetWorld()->SpawnActor<ABaseWitch>(SpawnClass, PlayerSpawnLocations[0], FRotator::ZeroRotator, SpawnParam);
     if (!PlayerCharacter) return;
 
+    AddCharacterOnAlivePlayers(PlayerCharacter);
+    SpawnedCharacters.Add(PlayerCharacter);
+    ActivePlayers.Add(PlayerCharacter);
     if (PlayerController->GetPawn())
     {
         PlayerController->UnPossess();
@@ -438,6 +482,14 @@ void AFarmingGameMode::SpawnPlayerByCharacterType(UClass* SpawnClass, APlayerCon
     PlayerCharacter->SetHpMode(true);
     UE_LOG(LogTemp, Warning, TEXT("Spawned Pawn: %s"), *GetNameSafe(PlayerCharacter));
     UE_LOG(LogTemp, Warning, TEXT("PlayerController after possess: %s"), *GetNameSafe(PlayerController->GetPawn()));
+
+
+    FTimerHandle TimerHandle;
+    GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
+        {
+            SetPlayerUnReady();
+        }), 0.5f, false);
+
 }
 
 
@@ -499,8 +551,8 @@ void AFarmingGameMode::SetPlayerLocation(AActor* Player)
     {
         if (SpawnedCharacters.Num() > 0)
         {
-            Player->SetActorLocation(PlayerReSpawnLocations[0]);
             Player->SetActorRotation(FRotator::ZeroRotator);
+            Player->SetActorLocation(PlayerReSpawnLocations[0]);
         }
     }
     else
@@ -509,13 +561,14 @@ void AFarmingGameMode::SetPlayerLocation(AActor* Player)
         {
             if (Player == SpawnedCharacters[0])
             {
-                Player->SetActorLocation(PlayerReSpawnLocations[0]);
                 Player->SetActorRotation(FRotator::ZeroRotator);
+                Player->SetActorLocation(PlayerReSpawnLocations[0]);
             }
             else if (Player == SpawnedCharacters[1])
             {
-                Player->SetActorLocation(PlayerReSpawnLocations[0]);
+
                 Player->SetActorRotation(FRotator::ZeroRotator);
+                Player->SetActorLocation(PlayerReSpawnLocations[0]);
             }
         }
     }
@@ -602,4 +655,53 @@ void AFarmingGameMode::PlayerRespawn()
 void AFarmingGameMode::OnDeathMonster(AActor* Monster, const FVector& DeathLocation) 
 {
     HandleMonsterKilled(Monster, nullptr);
+}
+
+
+
+
+void AFarmingGameMode::SetPlayerUnReady()
+{
+    FarmingGameState->SetPlayerMove(false);
+    UWorld* WorldContext = GetWorld();
+
+    for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+    {
+        APlayerController* PC = It->Get();
+        if (PC && PC->GetPawn())
+        {
+            PC->GetPawn()->DisableInput(PC);
+        }
+    }
+}
+
+void AFarmingGameMode::SetPlayerUnReady(AActor* actor)
+{
+    FarmingGameState->SetPlayerMove(false);
+    UWorld* WorldContext = GetWorld();
+
+    for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+    {
+        APlayerController* PC = It->Get();
+        if (PC && (PC->GetPawn() == actor))
+        {
+            PC->GetPawn()->DisableInput(PC);
+        }
+    }
+}
+
+void AFarmingGameMode::SetPlayerReady()
+{
+    FarmingGameState->SetPlayerMove(true);
+
+    UWorld* WorldContext = GetWorld();
+
+    for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+    {
+        APlayerController* PC = It->Get();
+        if (PC && PC->GetPawn())
+        {
+            PC->GetPawn()->EnableInput(PC);
+        }
+    }
 }

@@ -32,6 +32,18 @@ public:
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 
+    void SetPlayerMove(bool bCanMove);
+
+    UPROPERTY(ReplicatedUsing = OnRep_SetPlayerMove)
+    bool bIsPlayerCanMove;
+
+    UFUNCTION()
+    void OnRep_SetPlayerMove();
+
+
+
+    void SetMyDataForNextLevel(int32 Level);
+
 
     //카메라 처리용 함수.
     virtual FVector GetCameraLocation() const override { return CameraLocation; }
@@ -72,6 +84,15 @@ public:
 
     UFUNCTION()
     void OnRep_UpdateTimer();
+
+    UPROPERTY(ReplicatedUsing = OnRep_SaveLevel)
+    int SaveTrigger = 0;
+
+    UFUNCTION()
+    void OnRep_SaveLevel();
+
+    void SaveLevel();
+
 
     void UpdateTimer();
 

@@ -27,7 +27,7 @@ public:
 
     TObjectPtr<AFarmingGameState> FarmingGameState = nullptr;
     
-    void MoveLevel(const FName& LevelName);
+    void MoveLevel();
     
     void StartSingleGame();
     
@@ -90,6 +90,11 @@ public:
 
     TArray<AActor*> ActivePlayers;
 
+    void SetPlayerUnReady();
+    void SetPlayerUnReady(AActor* actor);
+
+    void SetPlayerReady();
+
 
     void RequestUpdateUI(int PlayerIndex)
     {
@@ -114,7 +119,6 @@ public:
     // 게임모드 클래스에 선언
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Controller")
     TSubclassOf<APlayerController> NewPlayerControllerClass;
-
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> PlayerSpawnLocations;
