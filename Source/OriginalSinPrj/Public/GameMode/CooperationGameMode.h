@@ -15,7 +15,7 @@
 UCLASS()
 class ORIGINALSINPRJ_API ACooperationGameMode : public AGameMode, public IBattleEvent
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
     //GameMode Default Function
 public: //for test
@@ -23,11 +23,14 @@ public: //for test
     void HandleBuffSelection(AActor* SourceActor, int32 BuffIndex);
 
     void ApplyBuffToPlayer(APlayerController* Controller, int32 BuffIndex, EBuffType buff);
-    
+
     void RequestTurnOffBuffSelectUI();
-    
+
     UFUNCTION()
     void OnCharacterStateReceived(const FCharacterStateBuffer& State);
+
+    UFUNCTION()
+    void OnEnemyStateReceived(const FCharacterStateBuffer& State);
 
 public:
     ACooperationGameMode();
@@ -40,6 +43,7 @@ public:
     void StartGame(); //game ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
 
     void EndGame();
+    void SeamlessTravel();
 
 
     void RequestUpdateUI(int PlayerIndex)
@@ -49,27 +53,30 @@ public:
         {
             CooperationGameState->Player1DataChanged++;
         }
-        
+
         if (PlayerIndex == 1)
         {
             CooperationGameState->Player2DataChanged++;
         }
+
+        if (PlayerIndex == 2)
+        {
+            CooperationGameState->Enemy1DataChanged++;
+        }
     }
 
-    
+
 public:
     TObjectPtr<ACooperationGameState> CooperationGameState = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "KillZone")
     TSubclassOf<AKillZone> ActorKillZone;
-    
-    // killzone ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
+
     void SpawnKillZone();
 
     UPROPERTY(BlueprintReadWrite)
     TArray<ABaseWitch*> SpawnedCharacters;
-    
-    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½è¿­
+
     TArray<AActor*> ActivePlayers;
     TArray<AActor*> AlivePlayers;
 
@@ -86,7 +93,7 @@ public:
     int CurrentPlayerCount = 0;
 
 
-    // ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    // ï¿½ï¿½ï¿½Ó¸ï¿½ï¿?Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Controller")
     TSubclassOf<APlayerController> NewPlayerControllerClass;
 
@@ -154,27 +161,28 @@ public:
     void ReadyStage3(); //Stage3 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
 
     UFUNCTION(BlueprintCallable)
-    void StartStage1(); //Stage1 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
-    
+    void StartStage1(); //Stage1 ½ÃÀÛ Æ®¸®°Å
+
     UFUNCTION(BlueprintCallable)
-    void StartStage2(); //Stage2 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
-    
+    void StartStage2(); //Stage2 ½ÃÀÛ Æ®¸®°Å
+
     UFUNCTION(BlueprintCallable)
-    void StartStage3(); //Stage3 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
-    
+    void StartStage3(); //Stage3 ½ÃÀÛ Æ®¸®°Å
+
     UFUNCTION(BlueprintCallable)
-    void EndStage1(); //Stage1 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
-    
+    void EndStage1(); //Stage1 Á¾·á Æ®¸®°Å
+
     UFUNCTION(BlueprintCallable)
-    void EndStage2(); //Stage2 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
-    
+    void EndStage2(); //Stage2 Á¾·á Æ®¸®°Å
+
     UFUNCTION(BlueprintCallable)
-    void EndStage3(); //Stage3 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
-    
-    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Û¸ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½
+    void EndStage3(); //Stage3 Á¾·á Æ®¸®°Å
+
+
+
     void SetPlayerLocation();
 
-    //ï¿½ï¿½ Stage ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Å²ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ ï¿½Ê¿ï¿½
+    //ï¿½ï¿½ Stage ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Å²ï¿½ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½ï¿½ï¿?ï¿½ï¿½È¯ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ ï¿½Ê¿ï¿½
     void MoveNextStage();
 
     void RequestTurnOnBuffSelectUI();
@@ -187,8 +195,9 @@ public:
     void Respawn(AActor* DeadActor);
 
     UFUNCTION(BlueprintCallable)
-    void HandleMonsterKilled(AActor* DeadMonster, AActor* Killer); //ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì°ï¿½ È£ï¿½ï¿½
-    
+    void HandleMonsterKilled(AActor* DeadMonster, AActor* Killer); //¸ó½ºÅÍ°¡ Á×À¸¸é ÀÌ°É È£Ãâ
+
+
     UFUNCTION(BlueprintCallable)
     void HandleEnemyKilled(AActor* DeadMonster, AActor* Killer); //ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì°ï¿½ È£ï¿½ï¿½
 
@@ -211,7 +220,7 @@ public:
 
     void RequestOpenResultUI();
 
-    void CheckUntilAllPlayerSelectBuff(); // ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½.
+    void CheckUntilAllPlayerSelectBuff(); // ï¿½ï¿½ï¿?ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿?ï¿½Ô¼ï¿½.
 
 
     // Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
@@ -273,6 +282,8 @@ public:
     UPROPERTY(BlueprintReadWrite)
     TArray<AActor*> ActiveEnemies;
 
+    TArray<AActor*> AliveEnemies;
+
     void SpawnEnemies();
 
     int32 CurrentEnemyCount = 0;
@@ -287,11 +298,13 @@ public:
 
     void SpawnBossMonsters();
 
+    void InitEnemyInfo();
+    void InitEnemyUIInfo();
 
     UPROPERTY(BlueprintReadWrite)
     TArray<AActor*> ActiveBossMonster;
 
-    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ 0ï¿½Ì¸ï¿½ -> end battle È£ï¿½ï¿½ -> ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ -> ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ê¿ï¿½ï¿½ï¿½. -> ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½ ï¿½×´ï¿½ï¿½....
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ 0ï¿½Ì¸ï¿½ -> end battle È£ï¿½ï¿½ -> ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ -> ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ê¿ï¿½ï¿½ï¿½. -> ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½ ï¿½×´ï¿½ï¿?...
 
     TArray<AActor*> StartBattle(TArray<AActor*> Players);
 
@@ -309,9 +322,7 @@ public:
 
     UFUNCTION(BlueprintCallable)
     void BossReturnPlayerLocation(ACharacter* PlayerChar);
-    
-        
-        //ï¿½Ç´Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯?
+
     UFUNCTION(BlueprintCallable)
     void SpawnGhostBoss();
 
