@@ -330,12 +330,12 @@ void ABossController::OnStartMontageEnded(UAnimMontage* Montage, bool bInterrupt
 	
 	GetBlackboardComponent()->SetValueAsBool("bIsBattleStart", true);
 
-	//파괴가능 오브젝트 스폰 DestructibleObjectSpawnDelay
+	//파괴가능 오브젝트 스폰 
 	GetWorld()->GetTimerManager().SetTimer(
 		ObjectSpawnTimerHandle,
 		this,
 		&ABossController::SpawnDestructibleObject,
-		0.1f,
+		DestructibleObjectSpawnDelay,
 		true);
 
 	//플레이어 찾기
@@ -355,12 +355,12 @@ void ABossController::OnStartMontageEnded(UAnimMontage* Montage, bool bInterrupt
 		CheckBossHpDelay,
 		true);
 
-	//특수공격 타이머  SpecialAttackDelay
+	//특수공격 타이머  
 	GetWorld()->GetTimerManager().SetTimer(
 		SpecialAttackTriggerTimerHandle,
 		this,
 		&ABossController::TriggerSpecialAttack,
-		1.0f,
+		SpecialAttackDelay,
 		true);
 }
 

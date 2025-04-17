@@ -128,11 +128,14 @@ void AIndexPatternProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComp
 		{
 			FDamageEvent DamageEvent;
 
-			HitWitch->TakeDamage(
+			if (HitWitch->GetColorIndex() == bIsFirstIndex)
+			{
+				HitWitch->TakeDamage(
 				Damage,
 				DamageEvent,
 				GetInstigatorController(),
 				this);
+			}
 			
 			IBossPoolableActorInterface::Execute_OnPooledObjectReset(this);
 		}
@@ -167,6 +170,8 @@ void AIndexPatternProjectile::SetIndex(int32 InIndex)
 	
 	UMaterialInterface* MaterialToApply = nullptr;
 
+	//InIndex : 0, 1, 2, 3
+	//bIsFirstIndex : true, false, true, false
 	bIsFirstIndex = ((InIndex + 1) % 2 == 1);
 	ApplyMaterialFromIndex(bIsFirstIndex);
 }
