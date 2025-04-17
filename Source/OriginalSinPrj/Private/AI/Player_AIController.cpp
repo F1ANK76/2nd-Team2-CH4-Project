@@ -44,8 +44,6 @@ void APlayer_AIController::MoveToTargetWithJump_Implementation(AActor* TargetAct
 
 	if (HasAuthority())
 	{
-		//ControlledPlayerAI->JumpToTargetPlatform(TargetActor);
-
 		FVector TargetLocation = TargetActor->GetActorLocation();
 		TargetLocation.X = ControlledPlayerAI->GetActorLocation().X; // X√‡ ∞Ì¡§
 		MoveToLocation(TargetLocation);

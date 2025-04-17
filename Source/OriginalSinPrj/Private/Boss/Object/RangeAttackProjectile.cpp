@@ -3,6 +3,7 @@
 
 #include "Boss/Object/RangeAttackProjectile.h"
 
+#include "NiagaraComponent.h"
 #include "Engine/DamageEvents.h"
 #include "Boss/BossCharacter.h"
 #include "Boss/BossObjectPoolWorldSubsystem.h"
@@ -10,6 +11,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/DamageType.h"
 #include "Components/SphereComponent.h"
+#include "NiagaraSystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/BaseWitch.h"
 
@@ -40,6 +42,11 @@ ARangeAttackProjectile::ARangeAttackProjectile()
 	SphereComponent->SetCollisionResponseToAllChannels(ECR_Overlap);
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &ARangeAttackProjectile::OnOverlapBegin);
 
+	//Niagara
+	NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("NiagaraComponent");
+	NiagaraComponent->SetupAttachment(SceneRoot);
+	NiagaraComponent->SetAutoActivate(false);
+
 	//투사체 - ProjectileMovementComponent
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovementComponent");
 	ProjectileMovementComponent->bShouldBounce = false;
@@ -54,7 +61,7 @@ void ARangeAttackProjectile::BeginPlay()
 	Super::BeginPlay();
 
 	if (!HasAuthority()) return;
-
+	
 	bIsActivate = false;
 	MulticastSetActive(bIsActivate);
 	ProjectileMovementComponent->StopMovementImmediately();
@@ -97,6 +104,10 @@ void ARangeAttackProjectile::MulticastSetActive_Implementation(bool bIsActive)
 {
 	SetActorHiddenInGame(!bIsActive);
 	SetActorEnableCollision(bIsActive);
+	if (IsValid(NiagaraComponent))
+	{
+		NiagaraComponent->SetActive(bIsActive);
+	}
 }
 
 void ARangeAttackProjectile::OnOverlapBegin(
@@ -111,14 +122,14 @@ void ARangeAttackProjectile::OnOverlapBegin(
 	{
 		//보스 자신 제외
 		if (OtherActor->Tags.Contains("Boss")) return;
-		
+
 		if (IsValid(OtherActor) && OtherActor->IsA(ABaseWitch::StaticClass()))
 		{
 			ABaseWitch* HitWitch = Cast<ABaseWitch>(OtherActor);
 			if (IsValid(HitWitch))
 			{
 				FDamageEvent DamageEvent;
-		
+
 				HitWitch->TakeDamage(
 					Damage,
 					DamageEvent,
