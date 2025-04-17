@@ -4,6 +4,7 @@
 #include "Player/Controller/WitchController.h"
 #include <EnhancedInputSubsystems.h>
 #include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
+#include "OriginalSinPrj/Public/GameMode/CooperationGameMode.h"
 #include "InputMappingContext.h"
 #include "MenuGameMode.h"
 
@@ -148,4 +149,16 @@ void AWitchController::ShowLevelWidget(UWorld* LoadedWorld)
 	}
 
 	LocalGameInstance->ResponseShowWidget();
+}
+
+
+void AWitchController::Server_SelectBuff_Implementation(int32 BuffIndex, EBuffType buff)
+{
+	if (AGameModeBase* GM = GetWorld()->GetAuthGameMode())
+	{
+		if (ACooperationGameMode* MyGM = Cast<ACooperationGameMode>(GM))
+		{
+			MyGM->ApplyBuffToPlayer(this, BuffIndex, buff); // or GetPawn(), or PlayerState ��
+		}
+	}
 }

@@ -8,15 +8,27 @@
 #include "../Widget/LevelWidget/CooperationWidget.h"
 #include "GameState/CooperationGameState.h"
 #include "BaseCamera.h"
+#include "KillZone.h"
 #include "CooperationGameMode.generated.h"
 
 
 UCLASS()
-class ORIGINALSINPRJ_API ACooperationGameMode : public AGameMode
+class ORIGINALSINPRJ_API ACooperationGameMode : public AGameMode, public IBattleEvent
 {
 	GENERATED_BODY()
 
     //GameMode Default Function
+public: //for test
+    UFUNCTION()
+    void HandleBuffSelection(AActor* SourceActor, int32 BuffIndex);
+
+    void ApplyBuffToPlayer(APlayerController* Controller, int32 BuffIndex, EBuffType buff);
+    
+    void RequestTurnOffBuffSelectUI();
+    
+    UFUNCTION()
+    void OnCharacterStateReceived(const FCharacterStateBuffer& State);
+
 public:
     ACooperationGameMode();
     virtual void StartPlay() override; // BeginPlay보다 먼저 호출
@@ -28,16 +40,42 @@ public:
     void StartGame(); //game 시작 트리거
 
     void EndGame();
+
+
+    void RequestUpdateUI(int PlayerIndex)
+    {
+        CooperationGameState->UpdatePlayerUIInfo();
+        if (PlayerIndex == 0)
+        {
+            CooperationGameState->Player1DataChanged++;
+        }
+        
+        if (PlayerIndex == 1)
+        {
+            CooperationGameState->Player2DataChanged++;
+        }
+    }
+
     
 public:
     TObjectPtr<ACooperationGameState> CooperationGameState = nullptr;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "KillZone")
+    TSubclassOf<AKillZone> ActorKillZone;
+    
+    // killzone 생성 함수
+    void SpawnKillZone();
 
     UPROPERTY(BlueprintReadWrite)
     TArray<ABaseWitch*> SpawnedCharacters;
     
     // 생성된 캐릭터를 관리할 배열
     TArray<AActor*> ActivePlayers;
+    TArray<AActor*> AlivePlayers;
+
+    void ResetAlivePlayers();
+
+
 
     // return Current Activated Players
     TArray<AActor*> GetActivePlayers() const
@@ -61,7 +99,8 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> PlayerResultLocations;
 
-
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+    TArray<FVector>RespawnLocation;
 
 
     UPROPERTY(EditDefaultsOnly, Category = "Camera")
@@ -142,14 +181,24 @@ public:
 
     void ApplyBuffToBothPlayer();
 
-    UFUNCTION(BlueprintCallable)
-    void HandleMonsterKilled(AActor* DeadMonster, AController* Killer); //몬스터가 죽으면 이걸 호출
-    
-    UFUNCTION(BlueprintCallable)
-    void HandleEnemyKilled(AActor* DeadMonster, AController* Killer); //몬스터가 죽으면 이걸 호출
+    void PlayerDie(AActor* DeadPlayer, AActor* Killer);
+    void PlayerFallDie(AActor* DeadPlayer, AActor* Killer);
+
+    void Respawn(AActor* DeadActor);
 
     UFUNCTION(BlueprintCallable)
-    void HandlePlayerKilled(AActor* DeadPlayer, AController* Killer); //플레이어가 죽으면 이걸 호출
+    void HandleMonsterKilled(AActor* DeadMonster, AActor* Killer); //몬스터가 죽으면 이걸 호출
+    
+    UFUNCTION(BlueprintCallable)
+    void HandleEnemyKilled(AActor* DeadMonster, AActor* Killer); //몬스터가 죽으면 이걸 호출
+
+    UFUNCTION(BlueprintCallable)
+    void HandlePlayerKilled(AActor* DeadPlayer, AActor* Killer); //플레이어가 죽으면 이걸 호출
+
+    //낙사처리
+
+    UFUNCTION()
+    void FallDie(AActor* Character);
 
 
     UPROPERTY(EditDefaultsOnly, Category = "Spawn")
@@ -175,6 +224,7 @@ public:
     TSubclassOf<APlayerController> PlayerControllerClass;
 
     void SetPlayerUnReady();
+    void SetPlayerUnReady(AActor* actor);
 
     void SetPlayerReady();
 
@@ -183,10 +233,13 @@ public:
     //몬스터 스포너 갖고 있기
     //UPROPERTY(BlueprintReadWrite, Category = "Spawn")
     //TSubclassOf<AMonsterSpawner> MonsterSpawner;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> MonsterSpawnLocations;
 
     TArray<AActor*> ActiveMonsters;
+
+
 
 
     void SpawnMonsters();
@@ -235,6 +288,15 @@ public:
     void SpawnBossMonsters();
 
 
+    UPROPERTY(BlueprintReadWrite)
+    TArray<AActor*> ActiveBossMonster;
+
+    //스테이트에서 0이면 -> end battle 호출 -> 보스 내부적으로 로직 해제 -> 사망모션은 보스쪽에서. -> 게임모드는 그대로....
+
+    TArray<AActor*> StartBattle(TArray<AActor*> Players);
+
+
+
     //플레이어 강제이동(캐릭터, 로케이션)
     UFUNCTION(BlueprintCallable)
     void BossSetPlayerLocation(ACharacter* PlayerChar);
@@ -254,10 +316,13 @@ public:
     void SpawnGhostBoss();
 
     UFUNCTION(BlueprintCallable)
-    void HandleBossMonsterKilled(AController* Killer);
+    void HandleBossMonsterKilled(AActor* Killer);
 
     UFUNCTION()
     void TravelLevel();
+
+
+
 
 protected:
     //UFUNCTION(NetMulticast, Reliable)
@@ -267,6 +332,9 @@ protected:
     virtual void PostSeamlessTravel() override;
 
 
-
-
+public:
+    virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;
+    virtual void TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation) override;
+    virtual void OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation) override;
+    virtual void OnDeathMonster(AActor* Monster, const FVector& DeathLocation) override;
 };

@@ -77,24 +77,11 @@ void AEnemyAIController::MoveToTargetWithFalling_Implementation()
 			if (CapsuleComp)
 			{
 				CapsuleComp->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
-				UE_LOG(LogTemp, Warning, TEXT("Set Collision to Block for ECC_GameTraceChannel1 after 0.5s delay"));
 			}
 		},
 			0.5f,
 			false
-			//this,
-			//&AEnemyAIController::SetCollisionToBlock,
-			//0.5f,
-			//false // ÇÑ ¹ø¸¸
+			
 		);
 	}
 }
-
-//void AEnemyAIController::SetCollisionToBlock()
-//{
-//	if (CapsuleComp)
-//	{
-//		CapsuleComp->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
-//	}
-//}
-

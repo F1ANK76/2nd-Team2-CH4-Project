@@ -6,7 +6,7 @@
 #include "../BaseWidget.h"
 #include "BattleWidget.generated.h"
 
-struct FPlayerData; //�ӽ� ����// ���߿� Data������ ���� ���ߵ�.
+struct FPlayerData;
 
 UCLASS()
 class ORIGINALSINPRJ_API UBattleWidget : public UBaseWidget
@@ -57,6 +57,16 @@ public:
 	void DeactiveFarmingModeWidget();
 	UFUNCTION()
 	void DeactiveTimeLimitModeWidget();
+	
+	UFUNCTION()
+	void ActivePlayerWidget();
+
+	UFUNCTION()
+	void ActiveEnemyWidget();
+
+	UFUNCTION()
+	void DeactiveEnemyWidget();
+
 
 	FPlayerData* Player1Data;
 	FPlayerData* Player2Data;

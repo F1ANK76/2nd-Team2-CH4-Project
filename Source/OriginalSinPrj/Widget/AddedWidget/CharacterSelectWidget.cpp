@@ -6,6 +6,10 @@
 #include "Blueprint/WidgetTree.h"
 #include "Components/Button.h"
 #include "../GameInstance/UISubsystem.h"
+#include "OriginalSinPrj/GameInstance/DataSubsystem.h"
+#include "OriginalSinPrj/GameInstance/Struct/CharacterTypeData.h"
+#include "OriginalSinPrj/GameInstance/Struct/CharacterDataStruct.h"
+#include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
 
 
 //initWidget�� ������� �ʾ� ���� �ӽ� �Լ�...
@@ -14,10 +18,13 @@ void UCharacterSelectWidget::InitWidget(UUISubsystem* uiHandle)
     Super::InitWidget(uiHandle);
 
     InitDelegate();
+    InitCharacterTiles();
     UICloseButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedClose);
+
+    CheckValidOfGameInstnace();
 }
 
-void UCharacterSelectWidget::OnTileClickedFromTile(int32 TileIndex)
+void UCharacterSelectWidget::OnTileClickedFromTile(ECharacterType SelectedType)
 {
     checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 
@@ -29,9 +36,12 @@ void UCharacterSelectWidget::OnTileClickedFromTile(int32 TileIndex)
         OnClickedOpenWidget(EAddWidgetType::MapSelectWidget);
     }
     
-
-    //TODO : Character Index Send To GameMode
-    UE_LOG(LogTemp, Log, TEXT("Tile with index %d was clicked!"), TileIndex);
+    if (CheckValidOfGameInstnace())
+    {
+        GameInstance->SetSelectedCharacterType(SelectedType);
+    }
+    //TODO : Character Type Send To GameInstance
+    
     // ���� ó�� ����: UI ����, ���� ���� ��
     //���Ӹ�忡 �����ϱ�
 }
@@ -71,8 +81,57 @@ void UCharacterSelectWidget::InitDelegate()
 
         if (IsValid(Tile))
         {
+            Tiles.Add(Tile);
             Tile->InitWidget(UIHandle);
             Tile->OnCharacterSelectTileClicked.AddDynamic(this, &UCharacterSelectWidget::OnTileClickedFromTile);
+
         }
     }
+}
+
+void UCharacterSelectWidget::InitCharacterTiles()
+{
+    if (!IsValid(GetGameInstance()))
+    {
+        return;
+    }
+
+    UDataSubsystem* DataSubsystem = GetGameInstance()->GetSubsystem<UDataSubsystem>();
+
+    if (!IsValid(DataSubsystem))
+    {
+        return;
+    }
+
+    for (int32 i = 0; i < Tiles.Num(); i++)
+    {
+        ECharacterType TargetType = (ECharacterType)(i % DataSubsystem->GetCharacterTypeSize());
+
+        const FCharacterDataStruct* TargetData = DataSubsystem->GetCharacterDataByType(TargetType);
+
+        Tiles[i]->SetCharacterType(TargetType);
+        Tiles[i]->SetCharacterImage(TargetData->PortraitImage.LoadSynchronous());
+    }
+}
+
+bool UCharacterSelectWidget::CheckValidOfGameInstnace()
+{
+    if (IsValid(GameInstance))
+    {
+        return true;
+    }
+
+    if (!IsValid(GetGameInstance()))
+    {
+        return false;
+    }
+
+    GameInstance = GetGameInstance<UOriginalSinPrjGameInstance>();
+
+    if (!IsValid(GameInstance))
+    {
+        return false;
+    }
+
+    return true;
 }

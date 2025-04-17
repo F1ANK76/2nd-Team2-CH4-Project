@@ -30,7 +30,7 @@ void AFarmingGameMode::BeginPlay()
     Super::BeginPlay(); 
     UE_LOG(LogTemp, Warning, TEXT("GameMode beginPlay"));
     FarmingGameState = GetGameState<AFarmingGameState>();
-
+    
     if (NetMode == NM_Standalone)
     {
         FTimerHandle TimerHandle;
@@ -54,7 +54,7 @@ void AFarmingGameMode::StartSingleGame()
 {
     //Prepare For Singleplay farming mode
     //Open UI for Single Farming 
-
+    RequestTurnOnPlayerUI();
     if (FarmingGameState)
     {
         FarmingGameState->StartFarmingMode();
@@ -65,7 +65,10 @@ void AFarmingGameMode::StartSingleGame()
     //Turn on timer 
     if (FarmingGameState)
     {
-        //
+        FarmingGameState->UpdateTimer();
+
+        FarmingGameState->bIsFarmingStarted;
+
     }
 
     //Turn on Player Input
@@ -79,7 +82,7 @@ void AFarmingGameMode::StartMultiGame()
     
 
     //시작 신호가 오면...
-
+    RequestTurnOnEnemyUI();
     if (FarmingGameState)
     {
         FarmingGameState->StartFarmingMode();
@@ -91,7 +94,8 @@ void AFarmingGameMode::StartMultiGame()
     //Turn on Timer
     if (FarmingGameState)
     {
-
+        FarmingGameState->UpdateTimer();
+        FarmingGameState->bIsFarmingStarted;
     }
     //Turn on Player Input
 }
@@ -144,6 +148,21 @@ void AFarmingGameMode::MoveLevel(const FName& LevelName)
         }
     }
     
+}
+
+
+void AFarmingGameMode::RequestTurnOnEnemyUI()
+{
+    FarmingGameState->TurnOnAllUI();
+    FarmingGameState->MultiPlayer++;
+
+}
+
+
+void AFarmingGameMode::RequestTurnOnPlayerUI()
+{
+    FarmingGameState->TurnOnPlayerUI();
+
 }
 
 
@@ -266,10 +285,6 @@ void AFarmingGameMode::PostSeamlessTravel()
             }
         }
     }
-
-
-
-   
     UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Done"));
 }
 

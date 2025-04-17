@@ -48,6 +48,9 @@ struct FPlayerData
 
     UPROPERTY(BlueprintReadWrite)
     float MaxEXP;
+
+    UPROPERTY(BlueprintReadWrite)
+    int LifePoint;
 };
 
 UCLASS()
@@ -82,5 +85,8 @@ protected:
 
     UPROPERTY(meta = (BindWidget))
     class UTextBlock* PlayerLevel;
+
+    UPROPERTY(meta = (BindWidget))
+    class UTextBlock* PlayerLifes;
     
 };

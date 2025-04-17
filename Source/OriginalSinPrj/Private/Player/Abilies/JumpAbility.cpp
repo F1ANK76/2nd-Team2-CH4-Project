@@ -28,7 +28,7 @@ bool AJumpAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 	{
 		return false;
 	}
-
+	UE_LOG(LogTemp, Warning, TEXT("Excute Jump"));
 	Parent = Buffer.ParentWitch;
 	MoveComp = Buffer.MovementComp;
 
@@ -47,14 +47,14 @@ bool AJumpAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 	Buffer.ParentWitch->SetMeshResponseToChanel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 	Buffer.ParentWitch->SetWitchState(EWitchStateType::Jump);
 	SetActorTickEnabled(true);
-
+	
 	return true;
 }
 
 void AJumpAbility::UndoAbility(FAbilityDataBuffer& Buffer)
 {
 	Super::UndoAbility(Buffer);
-
+	UE_LOG(LogTemp, Warning, TEXT("Undo Jump"));
 	if (IsActorTickEnabled())
 	{
 		SetActorTickEnabled(false);
@@ -62,6 +62,7 @@ void AJumpAbility::UndoAbility(FAbilityDataBuffer& Buffer)
 	}
 
 	Buffer.ParentWitch->SetWitchState(EWitchStateType::Idle);
+	UE_LOG(LogTemp, Warning, TEXT("Change Witch State To Idle"));
 	Buffer.bIsJumpable = true;
 	Buffer.bIsMoveable = true;
 }

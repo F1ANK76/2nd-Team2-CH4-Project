@@ -17,7 +17,7 @@ void UKnockbackComponent::BeginPlay()
 {
     Super::BeginPlay();
 
-    KnockbackGauge = 0.0f;
+    //KnockbackGauge = 0.0f;
 }
 
 void UKnockbackComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -25,11 +25,6 @@ void UKnockbackComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
     DOREPLIFETIME(UKnockbackComponent, KnockbackGauge);
-}
-
-void UKnockbackComponent::OnRep_KnockbackGauge()
-{
-    //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Client - Knockback Gauge: %f"), KnockbackGauge));
 }
 
 bool UKnockbackComponent::AddKnockbackGauge_Validate(float Amount)
@@ -42,7 +37,6 @@ void UKnockbackComponent::AddKnockbackGauge_Implementation(float Amount)
     if (GetOwner() && GetOwner()->HasAuthority())
     {
         KnockbackGauge = FMath::Clamp(KnockbackGauge + Amount, 0.0f, MaxKnockbackGauge);
-        //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Server - Knockback Gauge: %f"), KnockbackGauge));
     }
 }
 

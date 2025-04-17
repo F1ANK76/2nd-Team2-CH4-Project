@@ -5,6 +5,7 @@
 #include "Player/BaseWitch.h"
 #include "Player/Struct/AbilityDataBuffer.h"
 #include "Player/Projectile/BaseProjectile.h"
+#include "GameState/CooperationGameState.h"
 
 bool AAttackAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 {
@@ -23,6 +24,22 @@ bool AAttackAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 
 	Buffer.ParentWitch->SetWitchState(EWitchStateType::Attack);
 	Buffer.ParentWitch->PlayAnimation(AbilityMontage);
+
+	if (HasAuthority())
+	{
+		AGameStateBase* GameState = GetWorld()->GetGameState();
+
+		if (IsValid(GameState))
+		{
+			ACooperationGameState* CooperGameState = Cast<ACooperationGameState>(GameState);
+
+			if (IsValid(CooperGameState))
+			{
+				//UE_LOG(LogTemp, Warning, TEXT("Request Play Sound To GameState"));
+				CooperGameState->PlayCharacterSound(Buffer.ParentWitch->GetAudioComponent(), ECharacterSoundType::Attack);
+			}
+		}
+	}
 
 	return true;
 }
@@ -132,11 +149,19 @@ void AAttackAbility::ExcuteSpawnAttack(const FAbilityDataBuffer& Buffer)
 		ActiveProjectilePool.Add(ProjectileObj);
 		ProjectilePool.Remove(ProjectileObj);
 	}
+
+	if (bIsPlayWitchEffect)
+	{
+		Buffer.ParentWitch->PlayEffect(MelleType);
+	}
 }
 
 void AAttackAbility::ExcuteSkillAttack(FAbilityDataBuffer& Buffer)
 {
-	
+	if (bIsPlayWitchEffect)
+	{
+		Buffer.ParentWitch->PlayEffect(MelleType);
+	}
 }
 
 void AAttackAbility::UndoMelleAttack(const FAbilityDataBuffer& Buffer)
@@ -147,6 +172,11 @@ void AAttackAbility::UndoMelleAttack(const FAbilityDataBuffer& Buffer)
 
 void AAttackAbility::UndoSpawnAttack(const FAbilityDataBuffer& Buffer)
 {
+	if (bIsPlayWitchEffect)
+	{
+		Buffer.ParentWitch->StopEffect();
+	}
+
 	if (ActiveProjectilePool.IsEmpty())
 	{
 		return;
@@ -164,19 +194,22 @@ void AAttackAbility::UndoSpawnAttack(const FAbilityDataBuffer& Buffer)
 
 void AAttackAbility::UndoSkillAttack(const FAbilityDataBuffer& Buffer)
 {
-
+	if (bIsPlayWitchEffect)
+	{
+		Buffer.ParentWitch->StopEffect();
+	}
 }
 
 void AAttackAbility::UpdateProjectileData(const FAbilityDataBuffer& Buffer)
 {
 	ProjectileData.ParentWitch = Buffer.ParentWitch;
 	ProjectileData.AttackDamage = DefaultDamage + Buffer.AddedDamage;
-	ProjectileData.AttackDelay = AttackDelayTime;
-	ProjectileData.MoveDelay = MoveDelayTime;
-	ProjectileData.VisibleDelay = VisibleDelayTime;
-	ProjectileData.DeactiveDelay = DeactiveDelayTime;
+	ProjectileData.AttackDelay = AttackDelayTime * (1 - (Buffer.AttackSpeed - 1));
+	ProjectileData.MoveDelay = MoveDelayTime * (1 - (Buffer.AttackSpeed - 1));
+	ProjectileData.VisibleDelay = VisibleDelayTime * (1 - (Buffer.AttackSpeed - 1));
+	ProjectileData.DeactiveDelay = DeactiveDelayTime * (1 - (Buffer.AttackSpeed - 1));
 	ProjectileData.MoveDirection = MoveDirection;
-	ProjectileData.MoveSpeed = MoveSpeed;
+	ProjectileData.MoveSpeed = MoveSpeed * Buffer.AttackSpeed;
 }
 
 void AAttackAbility::CalculateProjectilePos(ABaseWitch* Parent)
