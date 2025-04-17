@@ -145,7 +145,7 @@ void AAttackAbility::ExcuteSkillAttack(FAbilityDataBuffer& Buffer)
 void AAttackAbility::UndoMelleAttack(const FAbilityDataBuffer& Buffer)
 {
 	CheckIsPlayWitchEffect(Buffer.ParentWitch, false);
-	Buffer.ParentWitch->StopEffect();
+	Buffer.ParentWitch->StopMelleAttack();
 }
 
 void AAttackAbility::UndoSpawnAttack(const FAbilityDataBuffer& Buffer)
@@ -256,6 +256,7 @@ void AAttackAbility::CheckIsPlayWitchEffect(ABaseWitch* Parent, bool bIsStart)
 		else
 		{
 			Parent->StopEffect();
+
 			if (CheckValidOfGameState())
 			{
 				BaseGameState->StopEffectSound(Parent->GetAudioComponent());

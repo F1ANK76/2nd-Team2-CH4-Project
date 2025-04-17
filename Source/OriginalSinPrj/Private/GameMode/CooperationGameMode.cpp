@@ -262,7 +262,7 @@ void ACooperationGameMode::ReadyStage3()
     AttachPlayerToCamera(SpawnedCharacters[0], SpawnedBaseCamera[0]);
     AttachPlayerToCamera(SpawnedCharacters[1], SpawnedBaseCamera[1]);
     //Test Code
-    //�ӽ� ������ ���
+    //�ӽ� ����� ���
 
 
     // ���� �Ϸ� �Ǿ����� Ȯ���ϱ�
@@ -421,7 +421,7 @@ void ACooperationGameMode::MoveNextStage()
 
         break;
     }
-}//�� Stage ���� �� �Ų����� ����� ��ȯ�ϱ� ���� �Լ� �ʿ�
+}//�� Stage ���� �� �Ų���� ����� ��ȯ�ϱ� ���� �Լ� �ʿ�
 
 
 void ACooperationGameMode::RequestTurnOnBuffSelectUI()
@@ -794,7 +794,7 @@ void ACooperationGameMode::PostSeamlessTravel()
             GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this, PC, index]()
                 {
                     HandleClientPossession(PC, index);
-                }), 0.5f, false);
+                }), 3.0f, false);
             index++;
         }
         if (IsValid(PC))

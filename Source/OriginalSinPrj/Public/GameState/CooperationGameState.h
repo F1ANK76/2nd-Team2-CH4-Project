@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameState.h"
+#include "GameState/BaseGameState.h"
 #include "../Widget/LevelWidget/CooperationWidget.h"
 #include "../Widget/AddedWidget/BuffSelectWidget.h"
 #include "../Widget/AddedWidget/ResultWidget.h"
@@ -26,7 +26,7 @@ struct FBossAudioDataStruct;
 struct FMonsterAudioDataStruct;
 
 UCLASS()
-class ORIGINALSINPRJ_API ACooperationGameState : public AGameState, public ICameraStateInterface, public IBattleEvent
+class ORIGINALSINPRJ_API ACooperationGameState : public ABaseGameState, public ICameraStateInterface, public IBattleEvent
 {
 	GENERATED_BODY()
 
@@ -39,51 +39,6 @@ public:
     TObjectPtr<UBaseWidget> BuffSelectWidget;
 
     TArray<EBuffType> BuffUIInit();
-
-public:
-    UFUNCTION(NetMulticast, Unreliable)
-    void PlayCharacterSound(UAudioComponent* AudioComp, ECharacterSoundType SoundType);
-
-    UFUNCTION(NetMulticast, Unreliable)
-    void PlayBossSound(UAudioComponent* AudioComp, EBossSoundType SoundType);
-
-    UFUNCTION(NetMulticast, Unreliable)
-    void PlayMonsterSound(UAudioComponent* AudioComp, EMonsterSoundType SoundType);
-
-protected:
-    UFUNCTION(NetMulticast, Reliable)
-    void InitCharacterSounds();
-
-    UFUNCTION(NetMulticast, Reliable)
-    void InitBossSounds();
-
-    UFUNCTION(NetMulticast, Reliable)
-    void InitMonsterSounds();
-
-    void PlaySound(UAudioComponent* AudioComp, USoundBase* SoundSource);
-
-    bool LoadCharacterSoundSourceFromArray(ECharacterSoundType SoundType);
-    bool LoadBossSoundSourceFromArray(EBossSoundType SoundType);
-    bool LoadMonsterSoundSourceFromArray(EMonsterSoundType SoundType);
-    bool CheckValidOfAudioHandle();
-
-protected:
-    UPROPERTY()
-    TMap<ECharacterSoundType, USoundBase*> CharacterSoundMap;
-
-    UPROPERTY()
-    TMap<EBossSoundType, USoundBase*> BossSoundMap;
-
-    UPROPERTY()
-    TMap<EMonsterSoundType, USoundBase*> MonsterSoundMap;
-
-
-    TArray<FCharacterAudioDataStruct*> CharacterSounds;
-    TArray<FBossAudioDataStruct*> BossSounds;
-    TArray<FMonsterAudioDataStruct*> MonsterSounds;
-
-    UPROPERTY()
-    TObjectPtr<UAudioSubsystem> AudioHandle = nullptr;
 
 protected:
     ACooperationGameState();
