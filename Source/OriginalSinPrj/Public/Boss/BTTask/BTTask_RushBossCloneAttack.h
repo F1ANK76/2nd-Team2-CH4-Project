@@ -26,8 +26,9 @@ private:
 	ABossController* BossController;
 	UPROPERTY()
 	ABossCharacter* BossCharacter;
-
+	UPROPERTY()
 	UBehaviorTreeComponent* BTComp;
+	
 	float SpawnOffset;
 
 	UFUNCTION()

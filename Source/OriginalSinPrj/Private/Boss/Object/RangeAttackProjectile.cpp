@@ -19,7 +19,7 @@ ARangeAttackProjectile::ARangeAttackProjectile()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	Damage = 50.0f; //임시
+	Damage = 10.0f;
 	LifeTime = 3.0f;
 	bIsActivate = false;
 
@@ -137,22 +137,6 @@ void ARangeAttackProjectile::OnOverlapBegin(
 					this);
 			}
 		}
-
-		// //폰일 경우(추후 삭제 예정 : DefaultPawn 테스트용도)
-		// if (OtherActor->IsA(APawn::StaticClass()))
-		// {
-		// 	APawn* HitPawn = Cast<APawn>(OtherActor);
-		// 	if (IsValid(HitPawn))
-		// 	{
-		// 		UGameplayStatics::ApplyDamage(
-		// 			HitPawn,
-		// 			Damage,
-		// 			nullptr,
-		// 			this,
-		// 			nullptr);
-		// 		IBossPoolableActorInterface::Execute_OnPooledObjectReset(this);
-		// 	}
-		// }
 
 		//땅에 닿았을 때
 		if (OtherActor->Tags.Contains("Ground"))

@@ -24,7 +24,8 @@ void ABossController::BeginPlay()
 	{
 		PoolWorldSubsystem = GetWorld()->GetSubsystem<UBossObjectPoolWorldSubsystem>();
 		PoolWorldSubsystem->SetBossReference(Cast<ABossCharacter>(GetPawn()));
-		//PoolWorldSubsystem->PreSpawnPooledActor(AIndexPatternProjectile::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, 100);
+		PoolWorldSubsystem->PreSpawnPooledActor(AIndexPatternProjectile::StaticClass(), FVector::ZeroVector,
+		                                        FRotator::ZeroRotator, 100);
 		UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("PlatformSpawnTarget"), PlatformSpawnTargets);
 		FindPlatforms();
 
@@ -114,7 +115,7 @@ void ABossController::StartBattle()
 
 	BossCharacter = Cast<ABossCharacter>(GetPawn());
 	BossAnimInstance = BossCharacter->GetMesh()->GetAnimInstance();
-	
+
 	// StartBattle 바뀌면 주석 해제
 	// if (Players.Num() != 0)
 	// {
@@ -126,12 +127,12 @@ void ABossController::StartBattle()
 	// }
 
 	bIsBattleStart = true;
-	
+
 	if (IsValid(BossCharacter->StartBattleMontage) && IsValid(BossAnimInstance))
 	{
 		if (!BossAnimInstance->OnMontageEnded.IsAlreadyBound(this, &ABossController::OnStartMontageEnded))
 		{
-			BossAnimInstance->OnMontageEnded.AddDynamic(this, &ABossController::OnStartMontageEnded);	
+			BossAnimInstance->OnMontageEnded.AddDynamic(this, &ABossController::OnStartMontageEnded);
 		}
 	}
 	BossCharacter->PlayStartBattleMontage();
@@ -150,7 +151,7 @@ void ABossController::EndBattle()
 	{
 		BrainComponent->StopLogic(TEXT("Boss Battle Ended"));
 	}
-	
+
 	if (IsValid(BossAnimInstance) && BossCharacter->GetIsDead())
 	{
 		static FName IsDeadName(TEXT("bIsDead"));
@@ -214,10 +215,24 @@ void ABossController::KillAllPlayerAttack()
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("PatternPlatform"), LeftPlatforms);
 
 	if (!IsAnyBossPlatform(LeftPlatforms)) return;
-	
+
+	UAnimInstance* AnimInstance = BossCharacter->GetMesh()->GetAnimInstance();
+	if (AnimInstance->Montage_IsActive())
+	if (IsValid(BrainComponent))
+	{
+		BrainComponent->StopLogic(TEXT("Instant Death Executing"));
+	}
+
 	//즉사공격 애니메이션
+	if (IsValid(AnimInstance))
+	{
+		if (!AnimInstance->OnMontageEnded.IsAlreadyBound(this, &ABossController::OnKillAllMontageEnded))
+		{
+			AnimInstance->OnMontageEnded.AddDynamic(this, &ABossController::OnKillAllMontageEnded);
+		}
+	}
 	BossCharacter->PlayKillAllPlayerAttackMontage();
-	
+
 	//남아있는 발판 제거
 	for (AActor* Actor : LeftPlatforms)
 	{
@@ -227,7 +242,7 @@ void ABossController::KillAllPlayerAttack()
 			PoolWorldSubsystem->ReturnActorToPool(BossPlatform);
 		}
 	}
-	
+
 	//플레이어 사망처리
 	for (ACharacter* PlayerCharacter : PlayerCharacters)
 	{
@@ -248,7 +263,7 @@ void ABossController::KillAllPlayerAttack()
 bool ABossController::IsAnyBossPlatform(TArray<AActor*>& Actors)
 {
 	int32 LeftPlatformCount = 0;
-	
+
 	for (auto Platform : Actors)
 	{
 		ABossPlatform* BossPlatform = Cast<ABossPlatform>(Platform);
@@ -294,7 +309,7 @@ void ABossController::StartSpawnWeaponAttack()
 void ABossController::FireWeapon()
 {
 	FVector TargetLocation = FacingTargetPlayerPawn->GetActorLocation();
-	FVector SpawnLocation = FVector(0.0f, FMath::RandRange(-SpawnWidth/2, SpawnWidth/2), SpawnHeight);
+	FVector SpawnLocation = FVector(0.0f, FMath::RandRange(-SpawnWidth / 2, SpawnWidth / 2), SpawnHeight);
 	FRotator SpawnRotation = (TargetLocation - SpawnLocation).Rotation();
 
 	if (IsValid(PoolWorldSubsystem) && SpawnCount < MaxSpawnCount)
@@ -316,18 +331,18 @@ void ABossController::FireWeapon()
 void ABossController::OnStartMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (!IsValid(BossCharacter) || !IsValid(Montage)) return;
-	
+
 	if (IsValid(BossAnimInstance))
 	{
 		BossAnimInstance->OnMontageEnded.RemoveDynamic(this, &ABossController::OnStartMontageEnded);
 	}
-	
+
 	if (IsValid(BossBehaviorTree))
 	{
 		RunBehaviorTree(BossBehaviorTree);
 		GetBlackboardComponent()->SetValueAsInt("BossHpPercent", 100);
 	}
-	
+
 	GetBlackboardComponent()->SetValueAsBool("bIsBattleStart", true);
 
 	//파괴가능 오브젝트 스폰 
@@ -387,6 +402,20 @@ void ABossController::OnEndStunMontageEnded(UAnimMontage* Montage, bool bInterru
 	}
 }
 
+void ABossController::OnKillAllMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (!IsValid(BossCharacter) || !IsValid(Montage)) return;
+	if (IsValid(BossAnimInstance))
+	{
+		BossAnimInstance->OnMontageEnded.RemoveDynamic(this, &ABossController::OnKillAllMontageEnded);
+	}
+
+	if (IsValid(BrainComponent))
+	{
+		BrainComponent->RestartLogic();
+	}
+}
+
 void ABossController::SpawnDestructibleObject()
 {
 	if (FoundPlatformActors.Num() == 0) return;
@@ -422,7 +451,7 @@ void ABossController::SpawnDestructibleObject()
 
 	if (bHit)
 	{
-		FVector SpawnLocation = HitResult.ImpactPoint + FVector(0, 0, 50.0f);
+		FVector SpawnLocation = HitResult.ImpactPoint;
 		ADestructibleObject* DestructibleObject = PoolWorldSubsystem->SpawnDestructibleObject(
 			SpawnLocation, FRotator::ZeroRotator);
 	}
@@ -434,18 +463,18 @@ void ABossController::EnterToStunState()
 	{
 		if (!BossAnimInstance->OnMontageEnded.IsAlreadyBound(this, &ABossController::OnStartStunMontageEnded))
 		{
-			BossAnimInstance->OnMontageEnded.AddDynamic(this, &ABossController::OnStartStunMontageEnded);	
+			BossAnimInstance->OnMontageEnded.AddDynamic(this, &ABossController::OnStartStunMontageEnded);
 		}
 	}
 	BossCharacter->PlayStartStunMontage();
-	
+
 	if (IsValid(BossAnimInstance))
 	{
 		static FName IsStunnedName(TEXT("bIsStunned"));
 		FBoolProperty* BoolProperty = FindFProperty<FBoolProperty>(BossAnimInstance->GetClass(), IsStunnedName);
 		if (BoolProperty) BoolProperty->SetPropertyValue_InContainer(BossAnimInstance, true);
 	}
-	
+
 	if (IsValid(BrainComponent))
 	{
 		BrainComponent->StopLogic(TEXT("Boss Stunned"));
@@ -465,11 +494,11 @@ void ABossController::ExitStunState()
 	{
 		if (!BossAnimInstance->OnMontageEnded.IsAlreadyBound(this, &ABossController::OnEndStunMontageEnded))
 		{
-			BossAnimInstance->OnMontageEnded.AddDynamic(this, &ABossController::OnEndStunMontageEnded);	
+			BossAnimInstance->OnMontageEnded.AddDynamic(this, &ABossController::OnEndStunMontageEnded);
 		}
 	}
 	BossCharacter->PlayEndStunMontage();
-	
+
 	if (IsValid(BossAnimInstance))
 	{
 		static FName IsStunnedName(TEXT("bIsStunned"));
