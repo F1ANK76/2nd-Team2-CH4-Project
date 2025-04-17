@@ -7,94 +7,88 @@
 #include "../Player/BaseWitch.h"
 #include "../Widget/LevelWidget/CooperationWidget.h"
 #include "GameState/CooperationGameState.h"
+#include "BaseCamera.h"
+#include "KillZone.h"
 #include "CooperationGameMode.generated.h"
 
 
 UCLASS()
-class ORIGINALSINPRJ_API ACooperationGameMode : public AGameMode
+class ORIGINALSINPRJ_API ACooperationGameMode : public AGameMode, public IBattleEvent
 {
 	GENERATED_BODY()
 
     //GameMode Default Function
+public: //for test
+    UFUNCTION()
+    void HandleBuffSelection(AActor* SourceActor, int32 BuffIndex);
+
+    void ApplyBuffToPlayer(APlayerController* Controller, int32 BuffIndex, EBuffType buff);
+    
+    void RequestTurnOffBuffSelectUI();
+    
+    UFUNCTION()
+    void OnCharacterStateReceived(const FCharacterStateBuffer& State);
+
 public:
     ACooperationGameMode();
-
-    virtual void StartPlay() override; // BeginPlayº¸´Ù ¸ÕÀú È£Ãâ
-    virtual void BeginPlay() override; // °ÔÀÓÀ» ½ÃÀÛÇÒ ÁØºñ°¡ µÇ¸é È£Ãâ
+    virtual void StartPlay() override; // BeginPlayï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½
+    virtual void BeginPlay() override; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Øºï¿½ ï¿½Ç¸ï¿½ È£ï¿½ï¿½
 
     //Added GameMode Function
     //Control Game Function
     UFUNCTION(BlueprintCallable)
-    void StartGame(); //game ½ÃÀÛ Æ®¸®°Å
+    void StartGame(); //game ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
+
     void EndGame();
+
+
+    void RequestUpdateUI(int PlayerIndex)
+    {
+        CooperationGameState->UpdatePlayerUIInfo();
+        if (PlayerIndex == 0)
+        {
+            CooperationGameState->Player1DataChanged++;
+        }
+        
+        if (PlayerIndex == 1)
+        {
+            CooperationGameState->Player2DataChanged++;
+        }
+    }
+
     
 public:
     TObjectPtr<ACooperationGameState> CooperationGameState = nullptr;
 
-    int32 StageIndex = 1;
-
-    bool bIsStage1Cleared;
-    bool bIsStage2Cleared;
-    bool bIsStage3Cleared;
-
-    UFUNCTION(BlueprintCallable)
-    void ReadyStage1(); //Stage1 ¼¼ÆÃ Æ®¸®°Å
-
-    UFUNCTION(BlueprintCallable)
-    void ReadyStage2(); //Stage2 ¼¼ÆÃ Æ®¸®°Å
-
-    UFUNCTION(BlueprintCallable)
-    void ReadyStage3(); //Stage3 ¼¼ÆÃ Æ®¸®°Å
-
-    UFUNCTION(BlueprintCallable)
-    void StartStage1(); //Stage1 ½ÃÀÛ Æ®¸®°Å
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "KillZone")
+    TSubclassOf<AKillZone> ActorKillZone;
     
-    UFUNCTION(BlueprintCallable)
-    void StartStage2(); //Stage2 ½ÃÀÛ Æ®¸®°Å
-    
-    UFUNCTION(BlueprintCallable)
-    void StartStage3(); //Stage3 ½ÃÀÛ Æ®¸®°Å
-    
-    UFUNCTION(BlueprintCallable)
-    void EndStage1(); //Stage1 Á¾·á Æ®¸®°Å
-    
-    UFUNCTION(BlueprintCallable)
-    void EndStage2(); //Stage2 Á¾·á Æ®¸®°Å
-    
-    UFUNCTION(BlueprintCallable)
-    void EndStage3(); //Stage3 Á¾·á Æ®¸®°Å
-    
-    //½ºÅ×ÀÌÁö ½ÃÀÛ¸¶´Ù ÇÃ·¹ÀÌ¾î À§Ä¡ Á¤ÇØÁø °÷¿¡ Á¶Á¤ÇÏ±â
-    void SetPlayerLocation();
+    // killzone ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
+    void SpawnKillZone();
 
-    //°¢ Stage Á¾·á ÈÄ ¸Å²ô·´°Ô Àå¸éÀ» ÀüÈ¯ÇÏ±â À§ÇÑ ÇÔ¼ö ÇÊ¿ä
-    void MoveNextStage();
-
-    void RequestTurnOnBuffSelectUI();
-
-    void ApplyBuffToBothPlayer();
-
-    UFUNCTION(BlueprintCallable)
-    void HandleMonsterKilled(AController* Killer); //¸ó½ºÅÍ°¡ Á×À¸¸é ÀÌ°É È£Ãâ
-    
-    UFUNCTION(BlueprintCallable)
-    void HandleEnemyKilled(AController* Killer); //¸ó½ºÅÍ°¡ Á×À¸¸é ÀÌ°É È£Ãâ
-
-    UPROPERTY(EditDefaultsOnly, Category = "Spawn")
-    TSubclassOf<ABaseWitch> DefaultCharacterClass;
-
-    UPROPERTY(EditDefaultsOnly, Category = "UI")
-    TSubclassOf<UCooperationWidget> CooperationWidget;
-
-
-    // »ý¼ºµÈ Ä³¸¯ÅÍ¸¦ °ü¸®ÇÒ ¹è¿­
-    UPROPERTY()
+    UPROPERTY(BlueprintReadWrite)
     TArray<ABaseWitch*> SpawnedCharacters;
+    
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½è¿­
+    TArray<AActor*> ActivePlayers;
+    TArray<AActor*> AlivePlayers;
 
-    // °ÔÀÓ¸ðµå Å¬·¡½º¿¡ ¼±¾ð
+    void ResetAlivePlayers();
+
+
+
+    // return Current Activated Players
+    TArray<AActor*> GetActivePlayers() const
+    {
+        return ActivePlayers;
+    }
+
+    int CurrentPlayerCount = 0;
+
+
+    // ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Controller")
     TSubclassOf<APlayerController> NewPlayerControllerClass;
-
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> PlayerSpawnLocations;
@@ -102,10 +96,125 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> PlayerSettingLocations;
 
-    void CheckUntilAllPlayerSelectBuff(); // ¸ðµç ÇÃ·¹ÀÌ¾î°¡ ¹öÇÁ¸¦ ¼±ÅÃÇß´ÂÁö º¸°í ´ë±âÇÏ´Â ÇÔ¼ö.
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+    TArray<FVector> PlayerResultLocations;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+    TArray<FVector>RespawnLocation;
 
 
-    // Ä³¸¯ÅÍ »ý¼º ÇÔ¼ö
+    UPROPERTY(EditDefaultsOnly, Category = "Camera")
+    TSubclassOf<ABaseCamera> BaseCamera;
+
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½è¿­
+    UPROPERTY()
+    TArray<ABaseCamera*> SpawnedBaseCamera;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BossCamera")
+    TArray<FVector> CameraSpawnLocations;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BossCamera")
+    TArray<FVector> BossStageCameraLocations;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BossCamera")
+    TArray<float> BossStageCameraDistance;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BossCamera")
+    TArray<FRotator> BossStageCameraAngle;
+
+    //Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
+    void SpawnCamera();
+
+    void AttachPlayerToCamera(ACharacter* Player, ABaseCamera* Camera);
+
+    UPROPERTY(BlueprintReadWrite)
+    int32 StageIndex = 1;
+
+    int Player1ColorIndex = 0;
+    int Player2ColorIndex = 1;
+
+    void SetPlayerColorIndex();
+
+    UFUNCTION(BlueprintCallable)
+    int GetPlayerColorIndex(ACharacter* PlayerChar);
+
+    int GetPlayerColorIndex(AController* PlayController);
+
+    bool bIsStage1Cleared = false;
+    bool bIsStage2Cleared = false;
+    bool bIsStage3Cleared = false;
+
+    UFUNCTION(BlueprintCallable)
+    void ReadyStage1(); //Stage1 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
+
+    UFUNCTION(BlueprintCallable)
+    void ReadyStage2(); //Stage2 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
+
+    UFUNCTION(BlueprintCallable)
+    void ReadyStage3(); //Stage3 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
+
+    UFUNCTION(BlueprintCallable)
+    void StartStage1(); //Stage1 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
+    
+    UFUNCTION(BlueprintCallable)
+    void StartStage2(); //Stage2 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
+    
+    UFUNCTION(BlueprintCallable)
+    void StartStage3(); //Stage3 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
+    
+    UFUNCTION(BlueprintCallable)
+    void EndStage1(); //Stage1 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
+    
+    UFUNCTION(BlueprintCallable)
+    void EndStage2(); //Stage2 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
+    
+    UFUNCTION(BlueprintCallable)
+    void EndStage3(); //Stage3 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
+    
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Û¸ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½
+    void SetPlayerLocation();
+
+    //ï¿½ï¿½ Stage ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Å²ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ ï¿½Ê¿ï¿½
+    void MoveNextStage();
+
+    void RequestTurnOnBuffSelectUI();
+
+    void ApplyBuffToBothPlayer();
+
+    void PlayerDie(AActor* DeadPlayer, AActor* Killer);
+    void PlayerFallDie(AActor* DeadPlayer, AActor* Killer);
+
+    void Respawn(AActor* DeadActor);
+
+    UFUNCTION(BlueprintCallable)
+    void HandleMonsterKilled(AActor* DeadMonster, AActor* Killer); //ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì°ï¿½ È£ï¿½ï¿½
+    
+    UFUNCTION(BlueprintCallable)
+    void HandleEnemyKilled(AActor* DeadMonster, AActor* Killer); //ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì°ï¿½ È£ï¿½ï¿½
+
+    UFUNCTION(BlueprintCallable)
+    void HandlePlayerKilled(AActor* DeadPlayer, AActor* Killer); //ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì°ï¿½ È£ï¿½ï¿½
+
+    //ï¿½ï¿½ï¿½ï¿½Ã³ï¿½ï¿½
+
+    UFUNCTION()
+    void FallDie(AActor* Character);
+
+
+    UPROPERTY(EditDefaultsOnly, Category = "Spawn")
+    TSubclassOf<ABaseWitch> DefaultCharacterClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "UI")
+    TSubclassOf<UCooperationWidget> CooperationWidget;
+
+    bool bIsClear = true;
+
+    void RequestOpenResultUI();
+
+    void CheckUntilAllPlayerSelectBuff(); // ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½.
+
+
+    // Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
     void SpawnPlayers();
 
     void PossessCharacter(APlayerController* PC, APawn* PawnToPossess);
@@ -114,19 +223,24 @@ public:
 
     TSubclassOf<APlayerController> PlayerControllerClass;
 
-    void SetPlayerUnReady(ACharacter* PlayerChar);
+    void SetPlayerUnReady();
+    void SetPlayerUnReady(AActor* actor);
 
-    void SetPlayerReady(ACharacter* PlayerChar);
+    void SetPlayerReady();
 
 
     // Stage1
-    //¸ó½ºÅÍ ½ºÆ÷³Ê °®°í ÀÖ±â
+    //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö±ï¿½
     //UPROPERTY(BlueprintReadWrite, Category = "Spawn")
     //TSubclassOf<AMonsterSpawner> MonsterSpawner;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> MonsterSpawnLocations;
 
-    TMap<FVector, AActor*> ActiveMonsters;
+    TArray<AActor*> ActiveMonsters;
+
+
+
 
     void SpawnMonsters();
 
@@ -136,9 +250,18 @@ public:
     UPROPERTY(EditAnywhere, Category = "Spawning")
     TSubclassOf<AActor> MonsterBlueprintClass;
 
+    UPROPERTY(EditAnywhere, Category = "StageClearTrigger")
+    TArray<UObject*> Stage1ClearTriggerObject;
+
+    UFUNCTION(BlueprintCallable)
+    void TriggerStage1Clear(UObject* Object);
+
+    bool Stage1ClearTrigger1 = false;
+    bool Stage1ClearTrigger2 = false;
+
 
     // Stage2
-    //Enemy ½ºÆ÷³Ê °®°í ÀÖ±â
+    //Enemy ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö±ï¿½
     //UPROPERTY(BlueprintReadWrite, Category = "Spawn")
     //TSubclassOf<AEnemySpawner> EnemySpawner;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
@@ -147,7 +270,8 @@ public:
     UPROPERTY(EditAnywhere, Category = "Spawning")
     TSubclassOf<AActor> EnemyBlueprintClass;
 
-    TMap<FVector, AActor*> ActiveEnemies;
+    UPROPERTY(BlueprintReadWrite)
+    TArray<AActor*> ActiveEnemies;
 
     void SpawnEnemies();
 
@@ -158,12 +282,59 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
     TArray<FVector> BossSpawnLocations;
 
+    UPROPERTY(EditAnywhere, Category = "Spawning")
+    TSubclassOf<AActor> BossBlueprintClass;
+
+    void SpawnBossMonsters();
+
+
+    UPROPERTY(BlueprintReadWrite)
+    TArray<AActor*> ActiveBossMonster;
+
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ 0ï¿½Ì¸ï¿½ -> end battle È£ï¿½ï¿½ -> ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ -> ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ê¿ï¿½ï¿½ï¿½. -> ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½ ï¿½×´ï¿½ï¿½....
+
+    TArray<AActor*> StartBattle(TArray<AActor*> Players);
+
+
+
+    //ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ìµï¿½(Ä³ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½Ì¼ï¿½)
+    UFUNCTION(BlueprintCallable)
+    void BossSetPlayerLocation(ACharacter* PlayerChar);
+
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ForceMove")
+    TArray<FVector> BossHijackingLocation;
+
+    FVector PlayerHijackedLocation = FVector::ZeroVector;
+
+    UFUNCTION(BlueprintCallable)
+    void BossReturnPlayerLocation(ACharacter* PlayerChar);
+    
+        
+        //ï¿½Ç´Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯?
+    UFUNCTION(BlueprintCallable)
+    void SpawnGhostBoss();
+
+    UFUNCTION(BlueprintCallable)
+    void HandleBossMonsterKilled(AActor* Killer);
+
+    UFUNCTION()
+    void TravelLevel();
+
 
 
 
 protected:
+    //UFUNCTION(NetMulticast, Reliable)
     void InitPlayerUI();
 
-    //¸ÖÆ¼ Àü¿ë
+    //ï¿½ï¿½Æ¼ ï¿½ï¿½ï¿½ï¿½
     virtual void PostSeamlessTravel() override;
+
+
+public:
+    virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;
+    virtual void TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation) override;
+    virtual void OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation) override;
+    virtual void OnDeathMonster(AActor* Monster, const FVector& DeathLocation) override;
 };

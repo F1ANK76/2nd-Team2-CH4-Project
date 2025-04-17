@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "RushBossClone.generated.h"
 
+class USphereComponent;
 class UProjectileMovementComponent;
 
 UCLASS()
@@ -22,24 +23,43 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 	virtual void OnPooledObjectSpawn_Implementation() override;
 	virtual void OnPooledObjectReset_Implementation() override;
-	//virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Components")
-	UProjectileMovementComponent* ProjectileMovementComponent;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
-	float ZOffset;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
-	float AcceptableDistance;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
-	float RushSpeed;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
-	float AttackDuration;
-	// UPROPERTY(Replicated)
-	// FVector ReplicatedVelocity;
+	USphereComponent* SphereComponent = nullptr;
 
+	UPROPERTY(VisibleAnywhere)
+	class USphereComponent* DamageArea;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
+	float Damage = 15.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
+	float ZOffset = 100.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
+	float AcceptableDistance = 300.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
+	float RushSpeed = 12000.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
+	float AttackDuration = 2.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RushBossClone | Property")
+	float LifeTime = 5.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* ExplodeMontage;
+	
+	UFUNCTION()
+	void MulticastPlayExplodeMontage();
+	
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetActive(bool bIsActive);
+
+	UFUNCTION()
+	void OnBeginOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult);
 
 	void InitializeClone(const FVector& InTargetLocation);
 	void CheckArrival();
@@ -47,11 +67,18 @@ protected:
 	void FinishAttack();
 	void SetFacingDirection();
 
+	//애니메이션
+	void PlayExplodeMontage();
+
 private:
 	FVector TargetLocation;
 	FVector TargetDirection;
-	bool bIsRushing;
-	bool bHasArrived;
+	bool bIsRushing = false;
+	bool bHasArrived = false;
 	bool bIsActivate;
+	FTimerHandle LifeTimeTimerHandle;
 	FTimerHandle DisappearTimerHandle;
+
+	UFUNCTION()
+	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 };

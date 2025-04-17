@@ -9,42 +9,25 @@
 void UGameSettingWidget::NativeConstruct()
 {
     Super::NativeConstruct();
-    if (FarmingModeCheckBox) FarmingModeCheckBox->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnFarmingCheckBoxChanged);
-    if (BuffModeCheckBox) BuffModeCheckBox->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnBuffCheckBoxChanged);
-    if (LifePointsModeCheckBox) LifePointsModeCheckBox->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnLifePointCheckBoxChanged);
-    if (TimeLimitModeCheckBox) TimeLimitModeCheckBox->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnTimeLimitCheckBoxChanged);
 
+    if (CheckBox1) CheckBox1->SetIsChecked(true);
+}
+
+void UGameSettingWidget::InitWidget(UUISubsystem* uiSubsystem)
+{
     if (FarmingModeCheckBox) FarmingModeCheckBox->OnCheckStateChanged.AddDynamic(this, &UGameSettingWidget::OnFarmingCheckBoxChanged);
     if (BuffModeCheckBox) BuffModeCheckBox->OnCheckStateChanged.AddDynamic(this, &UGameSettingWidget::OnBuffCheckBoxChanged);
     if (LifePointsModeCheckBox) LifePointsModeCheckBox->OnCheckStateChanged.AddDynamic(this, &UGameSettingWidget::OnLifePointCheckBoxChanged);
     if (TimeLimitModeCheckBox) TimeLimitModeCheckBox->OnCheckStateChanged.AddDynamic(this, &UGameSettingWidget::OnTimeLimitCheckBoxChanged);
 
-
-
-
-    if (LifePointsIncreaseButton) LifePointsIncreaseButton->OnClicked.RemoveDynamic(this, &UGameSettingWidget::OnClickedIncreaseLifePoints);
-    if (LifePointsDecreaseButton) LifePointsDecreaseButton->OnClicked.RemoveDynamic(this, &UGameSettingWidget::OnClickedDecreaseLifePoints);
-
     if (LifePointsIncreaseButton) LifePointsIncreaseButton->OnClicked.AddDynamic(this, &UGameSettingWidget::OnClickedIncreaseLifePoints);
     if (LifePointsDecreaseButton) LifePointsDecreaseButton->OnClicked.AddDynamic(this, &UGameSettingWidget::OnClickedDecreaseLifePoints);
-
-
-
-
-
-    if (CheckBox1) CheckBox1->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnCheckBox1Changed);
-    if (CheckBox2) CheckBox2->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnCheckBox2Changed);
-    if (CheckBox3) CheckBox3->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnCheckBox3Changed);
-    if (CheckBox4) CheckBox4->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnCheckBox4Changed);
-    if (CheckBox5) CheckBox5->OnCheckStateChanged.RemoveDynamic(this, &UGameSettingWidget::OnCheckBox5Changed);
 
     if (CheckBox1) CheckBox1->OnCheckStateChanged.AddDynamic(this, &UGameSettingWidget::OnCheckBox1Changed);
     if (CheckBox2) CheckBox2->OnCheckStateChanged.AddDynamic(this, &UGameSettingWidget::OnCheckBox2Changed);
     if (CheckBox3) CheckBox3->OnCheckStateChanged.AddDynamic(this, &UGameSettingWidget::OnCheckBox3Changed);
     if (CheckBox4) CheckBox4->OnCheckStateChanged.AddDynamic(this, &UGameSettingWidget::OnCheckBox4Changed);
     if (CheckBox5) CheckBox5->OnCheckStateChanged.AddDynamic(this, &UGameSettingWidget::OnCheckBox5Changed);
-
-    if (CheckBox1) CheckBox1->SetIsChecked(true);
 }
 
 void UGameSettingWidget::UncheckAllExcept(UCheckBox* CheckedBox)
@@ -127,13 +110,13 @@ void UGameSettingWidget::OnClickedDecreaseLifePoints()
 
 void UGameSettingWidget::UpdateLifePoints()
 {
-    // LifePoints ÅØ½ºÆ® ºí·Ï¿¡ °ª Àû¿ë
+    // LifePoints ï¿½Ø½ï¿½Æ® ï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (LifePoints)
     {
         LifePoints->SetText(FText::AsNumber(LifePoint));
     }
 
-    // TODO: °ÔÀÓ¸ðµå³ª ´Ù¸¥ »óÀ§ ½Ã½ºÅÛ °ü¸®ÀÚ¿¡ Àü´Þ
+    // TODO: ï¿½ï¿½ï¿½Ó¸ï¿½å³ª ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ú¿ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 
@@ -142,19 +125,19 @@ void UGameSettingWidget::OnLifePointCheckBoxChanged(bool bIsChecked)
     bIsLifePointModeChecked = bIsChecked;
     UE_LOG(LogTemp, Warning, TEXT("bIsLifePointModeChecked: %s"), bIsLifePointModeChecked ? TEXT("true") : TEXT("false"));
 
-    // TODO: °ÔÀÓ¸ðµå³ª ´Ù¸¥ »óÀ§ ½Ã½ºÅÛ °ü¸®ÀÚ¿¡ Àü´Þ
+    // TODO: ï¿½ï¿½ï¿½Ó¸ï¿½å³ª ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ú¿ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 void UGameSettingWidget::OnFarmingCheckBoxChanged(bool bIsChecked)
 {
     bIsFarmingModeChecked = bIsChecked;
-    // TODO: °ÔÀÓ¸ðµå³ª ´Ù¸¥ »óÀ§ ½Ã½ºÅÛ °ü¸®ÀÚ¿¡ Àü´Þ
+    // TODO: ï¿½ï¿½ï¿½Ó¸ï¿½å³ª ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ú¿ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 void UGameSettingWidget::OnBuffCheckBoxChanged(bool bIsChecked)
 {
     bIsBuffModeChecked = bIsChecked;
-    // TODO: °ÔÀÓ¸ðµå³ª ´Ù¸¥ »óÀ§ ½Ã½ºÅÛ °ü¸®ÀÚ¿¡ Àü´Þ
+    // TODO: ï¿½ï¿½ï¿½Ó¸ï¿½å³ª ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ú¿ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 void UGameSettingWidget::OnTimeLimitCheckBoxChanged(bool bIsChecked)
@@ -162,7 +145,7 @@ void UGameSettingWidget::OnTimeLimitCheckBoxChanged(bool bIsChecked)
     bIsTimeLimitModeChecked = bIsChecked;
     if (bIsChecked)
     {
-        CheckBox1->SetIsEnabled(true);  // È°¼ºÈ­
+        CheckBox1->SetIsEnabled(true);  // È°ï¿½ï¿½È­
         CheckBox2->SetIsEnabled(true);
         CheckBox3->SetIsEnabled(true);
         CheckBox4->SetIsEnabled(true);
@@ -172,7 +155,7 @@ void UGameSettingWidget::OnTimeLimitCheckBoxChanged(bool bIsChecked)
     else
     {
         UncheckAllExcept(nullptr);
-        CheckBox1->SetIsEnabled(false); // ºñÈ°¼ºÈ­
+        CheckBox1->SetIsEnabled(false); // ï¿½ï¿½È°ï¿½ï¿½È­
         CheckBox2->SetIsEnabled(false);
         CheckBox3->SetIsEnabled(false);
         CheckBox4->SetIsEnabled(false);

@@ -5,34 +5,134 @@
 #include "../SubWidget/CharacterSelectTileWidget.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/Button.h"
+#include "../GameInstance/UISubsystem.h"
+#include "OriginalSinPrj/GameInstance/DataSubsystem.h"
+#include "OriginalSinPrj/GameInstance/Struct/CharacterTypeData.h"
+#include "OriginalSinPrj/GameInstance/Struct/CharacterDataStruct.h"
+#include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
 
 
-//initWidgetÀÌ ½ÇÇàµÇÁö ¾Ê¾Æ ¸¸µç ÀÓ½Ã ÇÔ¼ö...
-void UCharacterSelectWidget::NativeConstruct()
+
+//initWidgetï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ó½ï¿½ ï¿½Ô¼ï¿½...
+void UCharacterSelectWidget::InitWidget(UUISubsystem* uiHandle)
 {
-    Super::NativeConstruct();
+    Super::InitWidget(uiHandle);
 
+    InitDelegate();
+    InitCharacterTiles();
+    UICloseButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedClose);
 
-    // ÀÚ½Ä À§Á¬µé Áß UMapSelectTileWidget¸¸ ¹ÙÀÎµù
+    CheckValidOfGameInstnace();
+}
+
+void UCharacterSelectWidget::OnTileClickedFromTile(ECharacterType SelectedType)
+{
+    checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
+
+    ELevelType CurrentLevel = UIHandle->GetCurrentLevelType();
+
+    if (CurrentLevel == ELevelType::TitleLevel)
+    {
+        OnClickedCloseWidget(EAddWidgetType::CharacterSelectWidget);
+        OnClickedOpenWidget(EAddWidgetType::MapSelectWidget);
+    }
+    
+    if (CheckValidOfGameInstnace())
+    {
+        GameInstance->SetSelectedCharacterType(SelectedType);
+    }
+    //TODO : Character Type Send To GameInstance
+    
+    // ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: UI ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
+    //ï¿½ï¿½ï¿½Ó¸ï¿½å¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½
+}
+
+void UCharacterSelectWidget::OnClickedClose()
+{
+    checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
+
+    //OnClickedCloseWidget(EAddWidgetType::CharacterSelectWidget);
+
+    ELevelType CurrentLevel = UIHandle->GetCurrentLevelType();
+
+    if (CurrentLevel == ELevelType::TitleLevel)
+    {
+        OnClickedCloseWidget(EAddWidgetType::CharacterSelectWidget);
+        UIHandle->SetVisibilityWidget(true);
+    }
+    else
+    {
+        SetVisibility(ESlateVisibility::Collapsed);
+    }
+}
+
+void UCharacterSelectWidget::InitDelegate()
+{
     TArray<UWidget*> FoundWidgets;
     WidgetTree->GetAllWidgets(FoundWidgets);
 
     for (UWidget* Widget : FoundWidgets)
     {
-        UCharacterSelectTileWidget* Tile = Cast<UCharacterSelectTileWidget>(Widget);
-        if (Tile)
+        if (!IsValid(Widget))
         {
+            continue;
+        }
+
+        UCharacterSelectTileWidget* Tile = Cast<UCharacterSelectTileWidget>(Widget);
+
+        if (IsValid(Tile))
+        {
+            Tiles.Add(Tile);
+            Tile->InitWidget(UIHandle);
             Tile->OnCharacterSelectTileClicked.AddDynamic(this, &UCharacterSelectWidget::OnTileClickedFromTile);
+
         }
     }
 }
 
-
-
-
-void UCharacterSelectWidget::OnTileClickedFromTile(int32 TileIndex)
+void UCharacterSelectWidget::InitCharacterTiles()
 {
-    UE_LOG(LogTemp, Log, TEXT("Tile with index %d was clicked!"), TileIndex);
-    // ¼±ÅÃ Ã³¸® ·ÎÁ÷: UI °­Á¶, º¯¼ö ÀúÀå µî
-    //°ÔÀÓ¸ðµå¿¡ Àü´ÞÇÏ±â
+    if (!IsValid(GetGameInstance()))
+    {
+        return;
+    }
+
+    UDataSubsystem* DataSubsystem = GetGameInstance()->GetSubsystem<UDataSubsystem>();
+
+    if (!IsValid(DataSubsystem))
+    {
+        return;
+    }
+
+    for (int32 i = 0; i < Tiles.Num(); i++)
+    {
+        ECharacterType TargetType = (ECharacterType)(i % DataSubsystem->GetCharacterTypeSize());
+
+        const FCharacterDataStruct* TargetData = DataSubsystem->GetCharacterDataByType(TargetType);
+
+        Tiles[i]->SetCharacterType(TargetType);
+        Tiles[i]->SetCharacterImage(TargetData->PortraitImage.LoadSynchronous());
+    }
+}
+
+bool UCharacterSelectWidget::CheckValidOfGameInstnace()
+{
+    if (IsValid(GameInstance))
+    {
+        return true;
+    }
+
+    if (!IsValid(GetGameInstance()))
+    {
+        return false;
+    }
+
+    GameInstance = GetGameInstance<UOriginalSinPrjGameInstance>();
+
+    if (!IsValid(GameInstance))
+    {
+        return false;
+    }
+
+    return true;
 }

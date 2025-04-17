@@ -15,7 +15,8 @@ enum class ELevelType : uint8
 	CooperationLevel,
 	SingleLevel,
 	TrainingLevel,
-	FarmingLevel
+	FarmingLevel,
+	MultiLobbyLevel
 };
 
 UENUM(BlueprintType)
@@ -33,7 +34,7 @@ enum class EAddWidgetType : uint8
 UENUM(BlueprintType)
 enum class ESfxSoundType : uint8
 {
-	UI,
+	UI = 0,
 	Monster,
 	Character,
 	Boss
@@ -42,7 +43,8 @@ enum class ESfxSoundType : uint8
 UENUM(BlueprintType)
 enum class ELevelSoundType : uint8
 {
-	TitleSound = 0,
+	IntroSound = 0,
+	TitleSound,
 	MatchSound,
 	LobbySound,
 	MultiSound,
@@ -50,6 +52,15 @@ enum class ELevelSoundType : uint8
 	SingleSound,
 	TrainingSound,
 	FarmingSound
+};
+
+UENUM(BlueprintType)
+enum class EUISfxSoundType : uint8
+{
+	Click = 0,
+	Open,
+	Close,
+	Horver
 };
 
 UENUM(BlueprintType)
@@ -62,8 +73,25 @@ enum class EMonsterSoundType : uint8
 UENUM(BlueprintType)
 enum class ECharacterSoundType : uint8
 {
-	Attack = 0,
-	Death
+	None = 0,
+	HandEffect,
+	StaffEffect,
+	WandEffect,
+	BookEffect,
+	Hitted,
+	Guard,
+	Death,
+	FlyFire,
+	FlyIce,
+	FlyPoison,
+	FlyLigtning,
+	OnExplosion,
+	OnFire,
+	OnIce,
+	OnPoison,
+	OnThunder,
+	OnWind,
+	OnGround
 };
 
 UENUM(BlueprintType)
@@ -71,6 +99,15 @@ enum class EBossSoundType : uint8
 {
 	Attack = 0,
 	Death
+};
+
+UENUM(BlueprintType)
+enum class EMapType : uint8
+{
+	Map1 = 0,
+	Map2,
+	Map3,
+	Map4
 };
 
 UENUM(BlueprintType)

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Player/Abilies/BaseWitchAbility.h"
 #include "Player/Struct/ProjectileDataBuffer.h"
+#include "OriginalSinPrj/GameInstance/EnumSet.h"
 #include "AttackAbility.generated.h"
 
 class ABaseProjectile;
@@ -21,10 +22,10 @@ public:
 protected:
 	virtual bool CheckExcuteable(FAbilityDataBuffer& Buffer) override;
 
-	virtual void ExcuteSkillAttack(const FAbilityDataBuffer& Buffer);
+	virtual void ExcuteSkillAttack(FAbilityDataBuffer& Buffer);
 	virtual void UndoSkillAttack(const FAbilityDataBuffer& Buffer);
 
-	void ExcuteAttackByType(const FAbilityDataBuffer& Buffer);
+	void ExcuteAttackByType(FAbilityDataBuffer& Buffer);
 	void UndoAttackByType(const FAbilityDataBuffer& Buffer);
 
 	void ExcuteMelleAttack(const FAbilityDataBuffer& Buffer);
@@ -39,12 +40,17 @@ protected:
 	void CheckProjectilePool();
 	void SpawnProjectileObj();
 
+	void CheckIsPlayWitchEffect(ABaseWitch* Parent, bool bIsStart);
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Attack")
 	EAttackType AttackType = EAttackType::Melle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Attack")
 	TSubclassOf<ABaseProjectile> ProjectileClass = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Attack")
+	bool bIsPlayWitchEffect = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack | Melle")
 	EEffectVisibleType MelleType = EEffectVisibleType::Right;

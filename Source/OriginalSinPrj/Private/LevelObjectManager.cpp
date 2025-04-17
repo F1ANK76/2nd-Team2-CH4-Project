@@ -1,6 +1,7 @@
 ﻿#include "LevelObjectManager.h"
 #include "LevelObject/BasePlatform.h"
 #include "DeathZone.h"
+#include "GameMode/MultiBattleGameMode.h"
 
 ALevelObjectManager::ALevelObjectManager()
 	: PoolSize(12)
@@ -105,4 +106,14 @@ void ALevelObjectManager::SpawnDeathZone()
 
 		DeathZoneInstance->OnMyOverlapEvent.AddUObject(this, &ALevelObjectManager::SpawnAndDestroyObject);
 	}
+}
+
+AActor* ALevelObjectManager::GetRespawnPlatform()
+{
+	if (PooledObjects.IsValidIndex(PoolIndex - 2))
+	{
+		return PooledObjects[PoolIndex - 2];
+	}
+
+	return nullptr;
 }

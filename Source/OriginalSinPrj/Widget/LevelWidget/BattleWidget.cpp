@@ -5,32 +5,36 @@
 #include "../AddedWidget/PlayerStateWidget.h"
 #include "Components/TextBlock.h"
 
+
 void UBattleWidget::NativeConstruct()
 {
-    DeactiveFarmingModeWidget();
-    DeactiveTimeLimitModeWidget();
+    Super::NativeConstruct();
+    Player1StateUI->SetVisibility(ESlateVisibility::Collapsed);
+    Player2StateUI->SetVisibility(ESlateVisibility::Collapsed);
+    TimeLimitModeTimer->SetVisibility(ESlateVisibility::Collapsed);
+    FarmingModeTimer->SetVisibility(ESlateVisibility::Collapsed);
 }
 
-void UBattleWidget::InitPlayerUI(FPlayerData Player1, FPlayerData Player2)
+void UBattleWidget::InitPlayerUI(FPlayerData* Player1, FPlayerData* Player2)
 {
-    Player1StateUI->InitPlayerState(Player1);
-    Player2StateUI->InitPlayerState(Player2);
+    Player1StateUI->InitPlayerState(*Player1);
+    Player2StateUI->InitPlayerState(*Player2);
 }
 
-//GameMode È¤Àº SubsystemÂÊ¿¡¼­ ¾÷µ¥ÀÌÆ® ÇØÁÖ¸é, UIÀÇ °ªÀ» ¹Ù²Ù´Â ÇÔ¼ö.
-void UBattleWidget::UpdatePlayerUI(FPlayerData Player1, FPlayerData Player2)
+//GameMode È¤ï¿½ï¿½ Subsystemï¿½Ê¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½Ö¸ï¿½, UIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²Ù´ï¿½ ï¿½Ô¼ï¿½.
+void UBattleWidget::UpdatePlayerUI(FPlayerData* Player1, FPlayerData* Player2)
 {
-    Player1StateUI->UpdateStatus(Player1);
-    Player2StateUI->UpdateStatus(Player2);
+    Player1StateUI->UpdateStatus(*Player1);
+    Player2StateUI->UpdateStatus(*Player2);
 }
 
 
 
 void UBattleWidget::UpdateFarmingModeTimerUI(float time)
 {
-    float RoundedTime = FMath::RoundToFloat(time * 100) / 100.f; // ¼Ò¼öÁ¡ µÑÂ° ÀÚ¸®±îÁö ¹Ý¿Ã¸²
+    float RoundedTime = FMath::RoundToFloat(time * 100) / 100.f;
     int32 Seconds = FMath::FloorToInt(RoundedTime);
-    int32 Decimals = FMath::RoundToInt((RoundedTime - Seconds) * 100); // ¼Ò¼öÁ¡ ¾Æ·¡ µÑÂ° ÀÚ¸®
+    int32 Decimals = FMath::RoundToInt((RoundedTime - Seconds) * 100);
 
     FString TimeString = FString::Printf(TEXT("%d:%02d"), Seconds, Decimals);
     FarmingModeTimer->SetText(FText::FromString(TimeString));
@@ -62,4 +66,21 @@ void UBattleWidget::DeactiveFarmingModeWidget()
 void UBattleWidget::DeactiveTimeLimitModeWidget()
 {
     TimeLimitModeTimer->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+
+void UBattleWidget::ActivePlayerWidget()
+{
+    Player1StateUI->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UBattleWidget::ActiveEnemyWidget()
+{
+    Player2StateUI->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UBattleWidget::DeactiveEnemyWidget()
+{
+    Player1StateUI->SetVisibility(ESlateVisibility::Visible);
+    Player2StateUI->SetVisibility(ESlateVisibility::Collapsed);
 }

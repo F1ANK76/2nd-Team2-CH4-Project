@@ -7,206 +7,355 @@
 #include "Player/BaseWitch.h"
 #include "GameFramework/PlayerController.h"
 #include "Player/Controller/WitchController.h"
-
+#include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
+#include "OriginalSinPrj/GameInstance/UISubsystem.h"
+#include "Player/BuffComponent.h"
 
 ACooperationGameMode::ACooperationGameMode()
 {
-    bUseSeamlessTravel = true; // Seamless Travel È°¼ºÈ­
+    bUseSeamlessTravel = true; // Seamless Travel È°ï¿½ï¿½È­
     PlayerControllerClass = AWitchController::StaticClass();
 
 
     bIsStage1Cleared = false;
     bIsStage2Cleared = false;
     bIsStage3Cleared = false;
+    Stage1ClearTrigger1 = false;
+    Stage1ClearTrigger2 = false;
+    StageIndex = 0;
+
+    //GameInstance = Cast<UOriginalSinPrjGameInstance>(GetGameInstance());
+
 }
 
 void ACooperationGameMode::StartPlay()
 {
     Super::StartPlay();
-    //¹¹ ÀÌ·±Àú·± Ã³¸®¸¦ ÇÏ°í....
+    //ï¿½ï¿½ ï¿½Ì·ï¿½ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½ï¿½ ï¿½Ï°ï¿½....
 }
 
 void ACooperationGameMode::BeginPlay()
 {
     Super::BeginPlay();
     UE_LOG(LogTemp, Warning, TEXT("GameMode beginPlay"));
+
+    //Get GameState
     CooperationGameState = GetGameState<ACooperationGameState>();
 
-    StageIndex = 1;
+    //Initial Stage index is 0;
+    StageIndex = 0;
 
+    SpawnCamera();
+
+    //Open Player UI;
+    //InitPlayerUI();
     InitPlayerUI();
+    SpawnKillZone();
+    //Game Start Condition -> Start with a timer temporarily
+
+
     FTimerHandle TimerHandle;
     GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
         {
             StartGame();
         }), 5.0f, false);
+
+
 }
 
 
-//ÇÃ·¹ÀÌ¾î ÄÁÆ®·Ñ·¯ -> ÀÎ½ºÅÏ½º¿¡ ´ã¾ÆµÎ°í, ÇÊ¿äÇÒ ¶§ »ý¼º. UISubSystemÀÌ È£ÃâÇØ¼­ À§Á¬ ¸¸µé°í -> UPdate ÇÔ¼ö È£ÃâÀº °ÔÀÓ¸ðµå
+void ACooperationGameMode::SetPlayerColorIndex()
+{
+    Player1ColorIndex = 0; // È¤ï¿½ï¿½ ColorIndex::Red ... ColorIndex::White....
+    Player2ColorIndex = 1;
+}
+
+int ACooperationGameMode::GetPlayerColorIndex(ACharacter* PlayerChar)
+{
+    if (!IsValid(PlayerChar)) return -1;
+    AWitchController* CharacterController = Cast<AWitchController>(PlayerChar->GetController());
+    PlayerChar->DisableInput(CharacterController);
+
+    if (PlayerChar == SpawnedCharacters[0])
+    {
+        return Player1ColorIndex;
+    }
+    else if (PlayerChar == SpawnedCharacters[1])
+    {
+        return Player2ColorIndex;
+    }
+
+    //ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Æ´Ñµï¿½, Ä³ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´Ù°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ -1 ï¿½ï¿½È¯.
+    return -1;
+}
+
+int ACooperationGameMode::GetPlayerColorIndex(AController* PlayController)
+{
+    if (!IsValid(PlayController)) return -1;
+
+    for (int i = 0; i < SpawnedCharacters.Num(); i++)
+    {
+        AWitchController* CharacterController = Cast<AWitchController>(SpawnedCharacters[i]->GetController());
+        if (CharacterController == PlayController)
+        {
+            return i;
+        }
+    }
+    //ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Æ´Ñµï¿½, Ä³ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´Ù°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ -1 ï¿½ï¿½È¯.
+    return -1;
+}
 
 
 void ACooperationGameMode::StartGame()
 {
-    //·ÎµùµÇ°í ½ºÅ×ÀÌÁö¸¦ º»°ÝÀûÀ¸·Î ½ÃÀÛÇÏ±â Àü Ã³¸®ÇÒ ÇÔ¼ö...
-    //°ÔÀÓ ÁØºñ, ½ÃÀÛ UI¸¦ ¶ç¿ì°í...
+    SpawnedCharacters[0]->OnChangedState.AddDynamic(this, &ACooperationGameMode::OnCharacterStateReceived);
+    SpawnedCharacters[1]->OnChangedState.AddDynamic(this, &ACooperationGameMode::OnCharacterStateReceived);
+    //Camera Settings
+    AttachPlayerToCamera(SpawnedCharacters[0], SpawnedBaseCamera[0]);
+    AttachPlayerToCamera(SpawnedCharacters[1], SpawnedBaseCamera[0]);
+    
+    CooperationGameState->InitPlayerInfo();
+    CooperationGameState->PlayerDataChanged++;
+    //Functions to be processed before loading and starting the stage
+    //Prepare the game, display the start UI...
 
-    if (IsValid(CooperationGameState))
-    {
+    //Player Index Assignment
+    SetPlayerColorIndex();
 
-    }
+    //Set Stage index -> 1
+    StageIndex = 1;
+    CooperationGameState->CurrentStageIndex = StageIndex;
+    //CooperationUI Turn on Stage1 UI
+    //->ActiveStage1Widget();
 
-
-    //Å¸ÀÌ¸Ó ÀÛµ¿ ½ÃÅ°°í...
-    if (IsValid(CooperationGameState))
-    {
-
-    }
-
-
-
-
+    CooperationGameState->TurnOnStage1Widget();
+    //Move Stage -> Prepare Stage 1 
     MoveNextStage();
 }
+
 
 void ACooperationGameMode::EndGame()
 {
-    
 
-    //result Page Open
+    //ï¿½Ï´ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½Ô·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ß±ï¿½.
+    SetPlayerUnReady();
+
+    CooperationGameState->TurnOffStage3Widget();
+
+    SpawnedCharacters[0]->SetActorLocation(PlayerResultLocations[0]);
+    SpawnedCharacters[1]->SetActorLocation(PlayerResultLocations[1]);
+
+    RequestOpenResultUI();
+    if (bIsClear == true) // GameClear
+    {
+
+    }
+    else
+    {
+
+    }
+    UE_LOG(LogTemp, Warning, TEXT("Game End "));
 }
 
-//Stage1 ÁØºñ Æ®¸®°Å
+void ACooperationGameMode::TravelLevel()
+{
+    UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance());
+    if (MyGI)
+    {
+        // ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+        MyGI->RequestOpenLevelByType(ELevelType::TitleLevel, false);
+    }
+    //ï¿½ï¿½ï¿½ï¿½ï¿½Î½ï¿½ï¿½Ï½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Þ¶ï¿½ï¿½ È£ï¿½ï¿½ï¿½Ï±ï¿½.
+}
+
+
+void ACooperationGameMode::RequestOpenResultUI()
+{
+    CooperationGameState->CurrentStageIndex = 4;
+    CooperationGameState->TurnOnResultWidget();
+}
+
+//Stage1 ï¿½Øºï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
 void ACooperationGameMode::ReadyStage1()
 {
-    SetPlayerUnReady(SpawnedCharacters[0]);
-    SetPlayerUnReady(SpawnedCharacters[1]);
-    //¸ó½ºÅÍ ¼ÒÈ¯ÇÏ¸é¼­,
+    //Prepare Stage 1
+
+    UE_LOG(LogTemp, Warning, TEXT("Ready Stage1"));
+    ResetAlivePlayers();
+    //Turn off Player Input
+
+    SetPlayerUnReady();
+
+    //Spawn Monster
     SpawnMonsters();
+
+    //Set to player position for stage 1
     SetPlayerLocation();
-    //°ÔÀÓ¸ðµå 
-    //¸ó½ºÅÍ ¸ø¿òÁ÷ÀÌ°Ô Àá½Ã ¼¼ÆÃ°ª Á¶Á¤.
-
-    // Ä³¸¯ÅÍµµ ¸ø¿òÁ÷ÀÌ°Ô µ¿°á ½ÃÄÑ³õ°í.
-
-    //CooperationUI Stage1·Î ¹Ù²Ù±â
-    //->ActiveStage1Widget();
-
-    //Game Start UI Open±îÁö ´ë±â
-    //Game Start UI ³¡³ª¸é
 
 
+    //Game Start UI Open
+    //When Game Start UI ...
 
-    //¿©±ä ¹Ù·Î ½ÃÀÛ... ¹öÇÁ ¼±ÅÃ ¾øÀ½!
-    //¸ó½ºÅÍ, Ä³¸¯ÅÍ ¿òÁ÷ÀÓ µ¿°áµÇ¾îÀÖ´Â °Í Ç®¸é¼­ ½ÃÀÛ.
+    //Start Stage1
     StartStage1();
 }
 
-//Stage2 ÁØºñ Æ®¸®°Å
+//Stage2 ï¿½Øºï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
 void ACooperationGameMode::ReadyStage2()
 {
-    SetPlayerUnReady(SpawnedCharacters[0]);
-    SetPlayerUnReady(SpawnedCharacters[1]);
+    UE_LOG(LogTemp, Warning, TEXT("Ready Stage2"));
 
-    SpawnEnemies();
+    ResetAlivePlayers();
     SetPlayerLocation();
-    //¸ó½ºÅÍ ¸ø¿òÁ÷ÀÌ°Ô Àá½Ã ¼¼ÆÃ°ª Á¶Á¤.
+    //Enemy AI Spawn
 
-    // Ä³¸¯ÅÍµµ ¸ø¿òÁ÷ÀÌ°Ô µ¿°á ½ÃÄÑ³õ°í.
+    // Character Input Block
+    SetPlayerUnReady();
 
-    //Game Start UI Open±îÁö ´ë±â
-    //Game Start UI ³¡³ª¸é
-
-
-    //CooperationUI Stage2·Î ¹Ù²Ù±â
-    //->ActiveStage2Widget();
-
-    //¸ó½ºÅÍ, Ä³¸¯ÅÍ ¿òÁ÷ÀÓ µ¿°áµÇ¾îÀÖ´Â °Í Ç®±â.
+    //Game Start UI Openï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+    //When Game Start UI Ended...
 
 
-    // ¹öÇÁ ¿Ï·á µÇ¾ú´ÂÁö È®ÀÎÇÏ±â
+    //CooperationUI Stage2ï¿½ï¿½ ï¿½Ù²Ù±ï¿½
+    //CooperationWidget->ActiveStage2Widget();
+    CooperationGameState->TurnOnStage2Widget();
+
+
+    
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½ ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Ï±ï¿½
     CheckUntilAllPlayerSelectBuff();
 
 }
 
-//Stage3 ÁØºñ Æ®¸®°Å
+//Stage3 ï¿½Øºï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
 void ACooperationGameMode::ReadyStage3()
 {
-    SetPlayerUnReady(SpawnedCharacters[0]);
-    SetPlayerUnReady(SpawnedCharacters[1]);
+    UE_LOG(LogTemp, Warning, TEXT("Ready Stage3"));
+    ResetAlivePlayers();
+
+    SetPlayerUnReady();
 
     SetPlayerLocation();
+    SpawnBossMonsters();
 
-    //º¸½º ¸ø ¿òÁ÷ÀÌ°Ô Àá½Ã ¼¼ÆÃ°ª Á¶Á¤.
+    //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ì°ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½.
 
-    // Ä³¸¯ÅÍµµ ¸ø¿òÁ÷ÀÌ°Ô µ¿°á ½ÃÄÑ³õ°í.
+    // Ä³ï¿½ï¿½ï¿½Íµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ñ³ï¿½ï¿½ï¿½.
 
-    //Game Start UI Open±îÁö ´ë±â
-    //Game Start UI ³¡³ª¸é
+    //Game Start UI Openï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+    //Game Start UI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     // 
     // 
-    //CooperationUI Stage3·Î ¹Ù²Ù±â
-    //->ActiveStage3Widget();
+    //CooperationUI Stage3ï¿½ï¿½ ï¿½Ù²Ù±ï¿½
+    CooperationGameState->TurnOnStage3Widget();
+
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
+        {
+            // ï¿½ï¿½ï¿½â¼­ UISubsystem ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½!
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->ActiveStage3Widget();
+        }
+    }
 
 
 
+    CooperationGameState->SetStage3CameraTransform();
+
+    AttachPlayerToCamera(SpawnedCharacters[0], SpawnedBaseCamera[0]);
+    AttachPlayerToCamera(SpawnedCharacters[1], SpawnedBaseCamera[1]);
+    //Test Code
+    //ï¿½Ó½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+
+
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½ ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Ï±ï¿½
     CheckUntilAllPlayerSelectBuff();
 }
 
-//Stage1 ½ÃÀÛ Æ®¸®°Å
+//Stage1 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
 void ACooperationGameMode::StartStage1()
 {
-    SetPlayerReady(SpawnedCharacters[0]);
-    SetPlayerReady(SpawnedCharacters[1]);
+    UE_LOG(LogTemp, Warning, TEXT("Start Stage1"));
 
-    //¸ó½ºÅÍ ¿òÁ÷ÀÓ µ¿°áµµ ÇØÁ¦
+    //Turn On Player Input
+    SetPlayerReady();
+    CooperationGameState->bIsStage1Started = true;
+    //Monster Movement...
 }
-//Stage2 ½ÃÀÛ Æ®¸®°Å
+
+//Stage2 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
 void ACooperationGameMode::StartStage2()
 {
-    SetPlayerReady(SpawnedCharacters[0]);
-    SetPlayerReady(SpawnedCharacters[1]);
+    UE_LOG(LogTemp, Warning, TEXT("Start Stage2"));
+    SpawnEnemies();
+    //Turn On Player Input
+    SetPlayerReady();
+    CooperationGameState->bIsStage2Started = true;
+    //ï¿½ï¿½ï¿½ï¿½, Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ Ç®ï¿½ï¿½. Enemy Movement UnBlock
 
-    //Àû AI ¿òÁ÷ÀÓ µ¿°áµµ ÇØÁ¦
+    //
 }
-//Stage3 ½ÃÀÛ Æ®¸®°Å
+
+//Stage3 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
 void ACooperationGameMode::StartStage3()
 {
-    SetPlayerReady(SpawnedCharacters[0]);
-    SetPlayerReady(SpawnedCharacters[1]);
-    
-    //º¸½º ¸ó½ºÅÍ È°µ¿ °³½Ã
+    UE_LOG(LogTemp, Warning, TEXT("Start Stage3"));
 
+    //Turn On Player Input
+    SetPlayerReady();
+
+    StartBattle(ActivePlayers);
     if (IsValid(CooperationGameState))
     {
-        //CooperationGameState->TurnOnTimer();
+        UE_LOG(LogTemp, Warning, TEXT("GameState is valid"));
+        CooperationGameState->SetActorTickEnabled(true);
+        CooperationGameState->TurnOnTimer();
     }
+
 }
-//Stage1 Á¾·á Æ®¸®°Å
+
+//Stage1 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
 void ACooperationGameMode::EndStage1()
 {
+    UE_LOG(LogTemp, Warning, TEXT("End Stage1"));
     StageIndex++;
+    CooperationGameState->CurrentStageIndex = StageIndex;
+    CooperationGameState->bIsStage1Started = false;
     RequestTurnOnBuffSelectUI();
-
     MoveNextStage();
-
 }
 
-//Stage2 Á¾·á Æ®¸®°Å
+//Stage2 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
 void ACooperationGameMode::EndStage2()
 {
+    UE_LOG(LogTemp, Warning, TEXT("End Stage2"));
     StageIndex++;
+    CooperationGameState->CurrentStageIndex = StageIndex;
+    CooperationGameState->bIsStage2Started = false;
     RequestTurnOnBuffSelectUI();
 
     MoveNextStage();
 
 }
-//Stage3 Á¾·á Æ®¸®°Å
+//Stage3 ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½
 void ACooperationGameMode::EndStage3()
 {
+    UE_LOG(LogTemp, Warning, TEXT("End Stage3"));
+    CooperationGameState->TurnOffTimer();
+
+    SetPlayerUnReady();
+    bIsClear = true;
+    CooperationGameState->bIsStage3Started = false;
 
 
-    EndGame();
+
+    FTimerHandle EndGameTimerHandle;
+    GetWorldTimerManager().SetTimer(EndGameTimerHandle, FTimerDelegate::CreateLambda([this]()
+        {
+            EndGame();
+        }), 3.0f, false);
+
+
 }
 
 void ACooperationGameMode::SetPlayerLocation()
@@ -234,7 +383,27 @@ void ACooperationGameMode::SetPlayerLocation()
     }
 }
 
-    
+void ACooperationGameMode::ResetAlivePlayers()
+{
+    CurrentPlayerCount = 2;
+    if (HasAuthority())
+    {
+        AlivePlayers.Empty(); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
+        for (AActor* Player : ActivePlayers)
+        {
+
+            if (Player) // null Ã¼Å© ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+            {
+                AlivePlayers.Add(Player);
+            }
+        }
+    }
+}
+
+
+    //set color mode
+    //set player level
+
 void ACooperationGameMode::MoveNextStage()
 {
     switch (StageIndex)
@@ -244,45 +413,48 @@ void ACooperationGameMode::MoveNextStage()
         ReadyStage1();
         break;
     case 2:
-        //¸ðµç ÇÃ·¹ÀÌ¾î°¡ ¹öÇÁ¸¦ ¼±ÅÃÇß´ÂÁö Ã¼Å© µÇ¾î¾ß ¹Ø¿¡°¡ ÁøÇàµÇ¾î¾ßÇÔ
+        //ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½ Ã¼Å© ï¿½Ç¾ï¿½ï¿½ ï¿½Ø¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½
         ReadyStage2();
         break;
     case 3:
-        //¸ðµç ÇÃ·¹ÀÌ¾î°¡ ¹öÇÁ¸¦ ¼±ÅÃÇß´ÂÁö Ã¼Å© µÇ¾î¾ß ¹Ø¿¡°¡ ÁøÇàµÇ¾î¾ßÇÔ
+        //ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½ Ã¼Å© ï¿½Ç¾ï¿½ï¿½ ï¿½Ø¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½
         ReadyStage3();
         break;
     default:
 
         break;
     }
-}//°¢ Stage Á¾·á ÈÄ ¸Å²ô·´°Ô Àå¸éÀ» ÀüÈ¯ÇÏ±â À§ÇÑ ÇÔ¼ö ÇÊ¿ä
-
-
+}//ï¿½ï¿½ Stage ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Å²ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ ï¿½Ê¿ï¿½
 
 
 void ACooperationGameMode::RequestTurnOnBuffSelectUI()
 {
-    //°ÔÀÓ ½ºÅ×ÀÌÆ® º¸°í Á» ¿­¾î´Þ¶ó°í ¿äÃ»ÇÏ±â
-    if (IsValid(CooperationGameState))
-    {
-        CooperationGameState->RequestPlayerToOpenBuffUI();
-    }
+    CooperationGameState->CreateBuffSelectUI();
+}
+
+void ACooperationGameMode::RequestTurnOffBuffSelectUI()
+{
+    CooperationGameState->SelectBuffPlayer++;
+    CooperationGameState->CloseBuffSelectUI();
 }
     
 void ACooperationGameMode::ApplyBuffToBothPlayer()
 {
-    //¹öÇÁ µÎ°³ °ñ¶úÀ¸¸é ½ºÅÈ Àû¿ëÇÏ¶ó°í ¿äÃ».
+    //ï¿½ï¿½ï¿½ï¿½ ï¿½Î°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¶ï¿½ï¿½ ï¿½ï¿½Ã».
     if (IsValid(CooperationGameState))
     {
         CooperationGameState->ApplyBuffStat();
     }
+    RequestTurnOffBuffSelectUI();
 }
 
 void ACooperationGameMode::CheckUntilAllPlayerSelectBuff()
 {
+    //UE_LOG(LogTemp, Warning, TEXT("Check All Player Selects Buff: %d"), CooperationGameState->bIsPlayerBuffSelect);
+
     if (!IsValid(CooperationGameState)) return;
 
-    if (CooperationGameState->bPlayer1SelectedBuff && CooperationGameState->bPlayer2SelectedBuff)
+    if (CooperationGameState->bIsPlayerBuffSelect >= 2)
     {
         UE_LOG(LogTemp, Log, TEXT("All Player has Selected Buffs! Move Next Stage."));
         switch (StageIndex)
@@ -301,38 +473,106 @@ void ACooperationGameMode::CheckUntilAllPlayerSelectBuff()
     {
         GetWorldTimerManager().SetTimerForNextTick(this, &ACooperationGameMode::CheckUntilAllPlayerSelectBuff);
     }
+
 }
 
-
-
-void ACooperationGameMode::SetPlayerUnReady(ACharacter* PlayerChar)
+//Å¬ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½Å°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+void ACooperationGameMode::TriggerStage1Clear(UObject* Object)
 {
-    if (!PlayerChar) return;
-
-    APlayerController* PC = Cast<APlayerController>(PlayerChar->GetController());
-    if (AWitchController* MyPC = Cast<AWitchController>(PC))
+    if (Object == Stage1ClearTriggerObject[0])
     {
-        //MyPC->bCanControl = false;
+        Stage1ClearTrigger1 = true;
+    }
+    else if (Object == Stage1ClearTriggerObject[1])
+    {
+        Stage1ClearTrigger2 = true;
+    }
+
+    if (Stage1ClearTrigger1 && Stage1ClearTrigger2)
+    {
+        EndStage1();
     }
 }
 
-void ACooperationGameMode::SetPlayerReady(ACharacter* PlayerChar)
+void ACooperationGameMode::SetPlayerUnReady()
 {
-    if (!PlayerChar) return;
+    CooperationGameState->SetPlayerMove(false);
+    UWorld* WorldContext = GetWorld();
 
-    APlayerController* PC = Cast<APlayerController>(PlayerChar->GetController());
-    if (AWitchController* MyPC = Cast<AWitchController>(PC))
+    for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
     {
-        //MyPC->bCanControl = true;
-        //GetPawn()->DisableInput(this); ÀÌ¶ó´Â ±â´ÉÀÌ ÀÖ´Ù°í ÇÕ´Ï´Ù....
+        APlayerController* PC = It->Get();
+        if (PC && PC->GetPawn())
+        {
+            FString ControllerName = PC->GetName();
+            FString PawnName = PC->GetPawn()->GetName();
+
+            UE_LOG(LogTemp, Warning, TEXT("Disabling input for PlayerController: %s, Pawn: %s"), *ControllerName, *PawnName);
+
+            PC->GetPawn()->DisableInput(PC);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("PlayerController or Pawn is null (PC: %s)"), PC ? *PC->GetName() : TEXT("nullptr"));
+        }
     }
 }
 
 
+void ACooperationGameMode::SetPlayerUnReady(AActor* actor)
+{
+    CooperationGameState->SetPlayerMove(false);
+    UWorld* WorldContext = GetWorld();
 
+    for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+    {
+        APlayerController* PC = It->Get();
+        if (PC && (PC->GetPawn() == actor))
+        {
+            PC->GetPawn()->DisableInput(PC);
+        }
+    }
+}
 
+void ACooperationGameMode::SetPlayerReady()
+{
+    CooperationGameState->SetPlayerMove(true);
+    
+    UWorld* WorldContext = GetWorld();
+
+    for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+    {
+        APlayerController* PC = It->Get();
+        if (PC && PC->GetPawn())
+        {
+            PC->GetPawn()->EnableInput(PC);
+        }
+    }
+}
 
 void ACooperationGameMode::SpawnEnemies()
+{
+    UWorld* World = GetWorld();
+    if (!World || !EnemyBlueprintClass || EnemySpawnLocations.Num() == 0) return;
+
+    for (const FVector& SpawnLocation : EnemySpawnLocations)
+    {
+        FRotator SpawnRotation = FRotator::ZeroRotator;
+
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+        AActor* SpawnedEnemy = World->SpawnActor<AActor>(EnemyBlueprintClass, SpawnLocation, SpawnRotation, SpawnParams);
+        if (SpawnedEnemy)
+        {
+            ActiveEnemies.Add(SpawnedEnemy);
+            CurrentEnemyCount++;
+        }
+    }
+}
+
+//ï¿½Ê±ï¿½ Nï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
+void ACooperationGameMode::SpawnMonsters()
 {
     UWorld* World = GetWorld();
     if (!World || !MonsterBlueprintClass || MonsterSpawnLocations.Num() == 0) return;
@@ -347,84 +587,222 @@ void ACooperationGameMode::SpawnEnemies()
         AActor* SpawnedMonster = World->SpawnActor<AActor>(MonsterBlueprintClass, SpawnLocation, SpawnRotation, SpawnParams);
         if (SpawnedMonster)
         {
-            ActiveMonsters.Add(SpawnLocation, SpawnedMonster);
+            ActiveMonsters.Add(SpawnedMonster);
             CurrentMonsterCount++;
         }
     }
 }
 
-
-
-//ÃÊ±â N¸¶¸® ¼ÒÈ¯
-void ACooperationGameMode::SpawnMonsters()
+//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
+void ACooperationGameMode::SpawnBossMonsters()
 {
     UWorld* World = GetWorld();
-    if (!World || !EnemyBlueprintClass || EnemySpawnLocations.Num() == 0) return;
+    if (!World || !BossBlueprintClass || BossSpawnLocations.Num() == 0) return;
 
-    for (const FVector& SpawnLocation : MonsterSpawnLocations)
+    for (const FVector& SpawnLocation : BossSpawnLocations)
     {
         FRotator SpawnRotation = FRotator::ZeroRotator;
 
         FActorSpawnParameters SpawnParams;
         SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-        AActor* SpawnedMonster = World->SpawnActor<AActor>(EnemyBlueprintClass, SpawnLocation, SpawnRotation, SpawnParams);
+        AActor* SpawnedMonster = World->SpawnActor<AActor>(BossBlueprintClass, SpawnLocation, SpawnRotation, SpawnParams);
         if (SpawnedMonster)
         {
-            ActiveEnemies.Add(SpawnLocation, SpawnedMonster);
-            CurrentEnemyCount++;
+            ActiveBossMonster.Add(SpawnedMonster);
         }
     }
 }
 
-//¸ó½ºÅÍ°¡ Á×À» ¶§ ´©±¸ÇÑÅ× Á×¾ú´ÂÁö Á¤º¸¸¦ ³Ñ±â¸ç °ÔÀÓ¸ðµå¿¡ ¾Ë·ÁÁÖ¸é È£ÃâµÇ´Â ÇÔ¼ö.
-void ACooperationGameMode::HandleMonsterKilled(AController* Killer)
+void ACooperationGameMode::HandlePlayerKilled(AActor* DeadPlayer, AActor* Killer)
 {
-    
+
+    UE_LOG(LogTemp, Warning, TEXT("HandlePlayerKilled Event Begin"));
+    UE_LOG(LogTemp, Warning, TEXT("ActivePlayers Size: %d"), ActivePlayers.Num());
+    UE_LOG(LogTemp, Warning, TEXT("AlivePlayers Size: %d"), AlivePlayers.Num());
+    if (CurrentPlayerCount > 1)
+    {
+        if (!IsValid(DeadPlayer))
+        {
+            UE_LOG(LogTemp, Warning, TEXT("DeadPlayer Is invalid"));
+        }
+
+        if (DeadPlayer == AlivePlayers[0])
+        {
+            UE_LOG(LogTemp, Warning, TEXT("PlayerWitch1 Die"));
+            AlivePlayers.Remove(DeadPlayer);
+        }
+        else if (DeadPlayer == AlivePlayers[1])
+        {
+            UE_LOG(LogTemp, Warning, TEXT("PlayerWitch2 Die"));
+            AlivePlayers.Remove(DeadPlayer);
+        }
+    }
+    else if (CurrentPlayerCount > 0)
+    {
+        if (DeadPlayer == AlivePlayers[0])
+        {
+            UE_LOG(LogTemp, Warning, TEXT("PlayerWitch1 Die"));
+            AlivePlayers.Remove(DeadPlayer);
+        }
+    }
+    else
+    {
+
+    }
+    CurrentPlayerCount--;
+
+    if (CurrentPlayerCount <= 0)
+    {
+        bIsClear = false;
+        SetPlayerUnReady();
+
+        FTimerHandle DefeatHandle;
+        GetWorldTimerManager().SetTimer(DefeatHandle, FTimerDelegate::CreateLambda([this]()
+        {
+            EndGame();
+        }), 5.0f, false);
+    }
 }
 
-//Àû AI°¡ Á×À» ¶§ ´©±¸ÇÑÅ× Á×¾ú´ÂÁö Á¤º¸¸¦ ³Ñ±â¸ç °ÔÀÓ¸ðµå¿¡ ¾Ë·ÁÁÖ¸é È£ÃâµÇ´Â ÇÔ¼ö.
-void ACooperationGameMode::HandleEnemyKilled(AController* Killer)
+
+void ACooperationGameMode::PlayerFallDie(AActor* DeadPlayer, AActor* Killer)
 {
-    //Á¶°ÇÀº Á¦´ë·Î ÁöÁ¤ÇØ¾ßÇÒµí
-    CurrentEnemyCount--;
-    if (CurrentEnemyCount <= 0)
+    ABaseWitch* Witch = Cast<ABaseWitch>(DeadPlayer);
+
+    CooperationGameState->PlayerInfos[Witch].LifePoint--;
+    //test Code
+    if (IsValid(Witch))
     {
-        EndStage2();
+        UE_LOG(LogTemp, Warning, TEXT("PlayerWitch Die"));
+        if (CooperationGameState->PlayerInfos[Witch].LifePoint < 0)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("PlayerWitch kill"));
+            HandlePlayerKilled(DeadPlayer, Killer);
+            Witch->ResetCharacterState();
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("PlayerWitch respawn"));
+            Respawn(Witch);
+            Witch->ResetCharacterState();
+        }
     }
 }
 
 
 
+void ACooperationGameMode::PlayerDie(AActor* DeadPlayer, AActor* Killer)
+{    
+    UE_LOG(LogTemp, Warning, TEXT("PlayerDie Event Begin"));
+    ABaseWitch* Witch = Cast<ABaseWitch>(DeadPlayer);
+    //test Code
+    CooperationGameState->PlayerInfos[Witch].LifePoint--;
+
+    if (IsValid(Witch))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Witch IsValid"));
+        if (CooperationGameState->PlayerInfos[Witch].LifePoint < 0)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("LifePoint < 0"));
+            Witch->ResetCharacterState();
+            HandlePlayerKilled(DeadPlayer, Killer);
+        }
+        else
+        {
+
+            Witch->ResetCharacterState();
+            Respawn(DeadPlayer);
+        }
+    }
+}
+
+
+void ACooperationGameMode::Respawn(AActor* DeadPlayer)
+{
+    UE_LOG(LogTemp, Warning, TEXT("PlayerWitch respawn"));
+    DeadPlayer->SetActorLocation(RespawnLocation[0]);    
+    //DeadPlayer ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­?
+}
+
+
+//ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×¾ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ±ï¿½ï¿½ ï¿½ï¿½ï¿½Ó¸ï¿½å¿¡ ï¿½Ë·ï¿½ï¿½Ö¸ï¿½ È£ï¿½ï¿½Ç´ï¿½ ï¿½Ô¼ï¿½.
+void ACooperationGameMode::HandleMonsterKilled(AActor* DeadMonster, AActor* Killer)
+{
+    CurrentMonsterCount--;
+
+    ActiveMonsters.Remove(DeadMonster); // ï¿½Ë¾Æ¼ï¿½ ï¿½ï¿½ï¿½Î¿ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+
+    if (CurrentMonsterCount <= 0)
+    {
+        EndStage1();
+    }
+}
+
+
+
+
+//ï¿½ï¿½ AIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×¾ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ±ï¿½ï¿½ ï¿½ï¿½ï¿½Ó¸ï¿½å¿¡ ï¿½Ë·ï¿½ï¿½Ö¸ï¿½ È£ï¿½ï¿½Ç´ï¿½ ï¿½Ô¼ï¿½.
+void ACooperationGameMode::HandleEnemyKilled(AActor* DeadMonster, AActor* Killer)
+{
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¾ï¿½ï¿½Òµï¿½
+    CurrentEnemyCount--;
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ ActiveMonsters ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    ActiveEnemies.Remove(DeadMonster); // ï¿½Ë¾Æ¼ï¿½ ï¿½ï¿½ï¿½Î¿ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    
+    if (CurrentEnemyCount <= 0)
+    {
+        EndStage2();
+    }   
+}
+
+//ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×¾ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ±ï¿½ï¿½ ï¿½ï¿½ï¿½Ó¸ï¿½å¿¡ ï¿½Ë·ï¿½ï¿½Ö¸ï¿½ È£ï¿½ï¿½Ç´ï¿½ ï¿½Ô¼ï¿½.
+void ACooperationGameMode::HandleBossMonsterKilled(AActor* Killer)
+{
+    EndStage3();
+}
+
+
+
+//ï¿½ï¿½ï¿½ç¸¦ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½î¶»ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½. ï¿½Ì°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ Ã³ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½.
+void ACooperationGameMode::FallDie(AActor* Character)
+{
+    //ï¿½ï¿½ï¿½ç¸¦ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½î¶»ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½. ï¿½Ì°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ Ã³ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½.
+    
+}
+
 void ACooperationGameMode::PostSeamlessTravel()
 {
     UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Called"));
-    Super::PostSeamlessTravel();  // ±âº» SeamlessTravel Ã³¸®
+    Super::PostSeamlessTravel();  // ï¿½âº» SeamlessTravel Ã³ï¿½ï¿½
 
-    //¸ÖÆ¼ÇÃ·¹ÀÌ ·ÎÁ÷
+    //ï¿½ï¿½Æ¼ï¿½Ã·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     SpawnPlayers();
     int index = 0;
-    // Å¬¶óÀÌ¾ðÆ®ÀÇ ÄÁÆ®·Ñ·¯¿Í Ä³¸¯ÅÍ¸¦ ¸ÅÄª½ÃÅ´
+    // Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½Äªï¿½ï¿½Å´
 
     for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
     {
-        APlayerController* PC = Cast<APlayerController>(*It);
+        AWitchController* PC = Cast<AWitchController>(*It);
         if (PC)
         {
             UE_LOG(LogTemp, Warning, TEXT("Controller Detected: %s"), *GetNameSafe(PC));
-            // ¼­¹ö¿¡¼­ Å¬¶óÀÌ¾ðÆ®ÀÇ PawnÀ» È®ÀÎÇÏ°í Possess Ã³¸®
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®ï¿½ï¿½ Pawnï¿½ï¿½ È®ï¿½ï¿½ï¿½Ï°ï¿½ Possess Ã³ï¿½ï¿½
             FTimerHandle TimerHandle;
             GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this, PC, index]()
                 {
                     HandleClientPossession(PC, index);
-                }), 1.0f, false);
+                }), 3.0f, false);
             index++;
+        }
+        if (IsValid(PC))
+        {
+            PC->ResponseShowLevelWidget();
         }
     }
 
     UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Done"));
 }
-
 
 void ACooperationGameMode::HandleClientPossession(APlayerController* PC, int index)
 {
@@ -435,15 +813,15 @@ void ACooperationGameMode::HandleClientPossession(APlayerController* PC, int ind
 
         if (PawnToPossess && IsValid(PawnToPossess))
         {
-            // ±âÁ¸ ÄÁÆ®·Ñ·¯°¡ ÀÖÀ¸¸é UnPossess Ã³¸®
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UnPossess Ã³ï¿½ï¿½
             APlayerController* OldPC = PawnToPossess->GetController<APlayerController>();
             if (OldPC)
             {
-                OldPC->UnPossess();  // ±âÁ¸ ÄÁÆ®·Ñ·¯¿¡¼­ PawnÀ» ÇØÁ¦
+                OldPC->UnPossess();  // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ï¿½ï¿½ï¿½ï¿½ Pawnï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             }
-            // »õ·Î¿î ÄÁÆ®·Ñ·¯°¡ ÇØ´ç PawnÀ» PossessÇÏµµ·Ï Ã³¸®
+            // ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ï¿½ï¿½ ï¿½Ø´ï¿½ Pawnï¿½ï¿½ Possessï¿½Ïµï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
             PC->Possess(PawnToPossess);
-            PC->ClientRestart(PawnToPossess); // Å¬¶óÂÊ¿¡ Á¦´ë·Î »óÅÂ Àû¿ë
+            PC->ClientRestart(PawnToPossess); // Å¬ï¿½ï¿½ï¿½Ê¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 
             UE_LOG(LogTemp, Warning, TEXT("Client Possessed Pawn: %s by %s"),
@@ -460,13 +838,13 @@ void ACooperationGameMode::HandleClientPossession(APlayerController* PC, int ind
     }
     UE_LOG(LogTemp, Warning, TEXT("Client Possess ended %s"), *GetNameSafe(PC));
     
-    //Game Stage¿¡¼­ ÇÊ¿äÇÑ ±â´ÉÀ» À§ÇØ °ÔÀÓ ½ºÅ×ÀÌÆ®¿¡ ÄÁÆ®·Ñ·¯ µî·ÏÇØµÎ±â
+    //Game Stageï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ ï¿½ï¿½ï¿½ï¿½ØµÎ±ï¿½
     CooperationGameState->RegisterInitialController(PC);
 }
 
 void ACooperationGameMode::SpawnPlayers()
 {
-    // Ä³¸¯ÅÍ Å¸ÀÔ Á¤ÀÇ (¿¹: ±âº» Ä³¸¯ÅÍ Å¬·¡½º)
+    // Ä³ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½: ï¿½âº» Ä³ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½)
     TArray<UClass*> CharacterClasses = { DefaultCharacterClass, DefaultCharacterClass };
 
     for (int32 i = 0; i < CharacterClasses.Num(); ++i)
@@ -475,35 +853,76 @@ void ACooperationGameMode::SpawnPlayers()
 
         if (HasAuthority() && IsValid(SpawnClass))
         {
-            // ÇÃ·¹ÀÌ¾î ½ÃÀÛ ÁöÁ¡ Ã£±â
-            AActor* StartActor = FindPlayerStart(nullptr);  // Æ¯Á¤ ÇÃ·¹ÀÌ¾îÀÇ ½ÃÀÛ ÁöÁ¡ Ã£±â
+            // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½
+            AActor* StartActor = FindPlayerStart(nullptr);  // Æ¯ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½
             if (!StartActor) continue;
 
             FVector StartPos = StartActor->GetActorLocation();
 
             FActorSpawnParameters SpawnParam;
-            SpawnParam.Owner = nullptr;  // ±âº»°ªÀ¸·Î ¼³Á¤
-            SpawnParam.Instigator = nullptr;  // ±âº»°ªÀ¸·Î ¼³Á¤
+            SpawnParam.Owner = nullptr;  // ï¿½âº»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+            SpawnParam.Instigator = nullptr;  // ï¿½âº»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
-            // Ä³¸¯ÅÍ »ý¼º
+            // Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             ABaseWitch* SpawnedCharacter = GetWorld()->SpawnActor<ABaseWitch>(SpawnClass, PlayerSpawnLocations[i], FRotator::ZeroRotator, SpawnParam);
 
             if (SpawnedCharacter)
             {
                 SpawnedCharacters.Add(SpawnedCharacter);
+                ActivePlayers.Add(SpawnedCharacter);
+                CurrentPlayerCount++;
+
+                SpawnedCharacter->SetHpMode(true);
+
                 UE_LOG(LogTemp, Warning, TEXT("Spawned Pawn: %s"), *GetNameSafe(SpawnedCharacter));
             }
         }
     }
 
-    // SpawnedCharacters ¹è¿­·Î »ý¼ºµÈ Ä³¸¯ÅÍµéÀ» È®ÀÎÇÒ ¼ö ÀÖ½À´Ï´Ù.
+    // SpawnedCharacters ï¿½è¿­ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½Íµï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö½ï¿½ï¿½Ï´ï¿½.
     for (ABaseWitch* Character : SpawnedCharacters)
     {
         UE_LOG(LogTemp, Warning, TEXT("Managed Character: %s"), *GetNameSafe(Character));
     }
+
+    AlivePlayers.Empty(); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
+    for (AActor* Player : ActivePlayers)
+    {
+        if (Player) // null Ã¼Å© ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+        {
+            AlivePlayers.Add(Player);
+        }
+    }
+
+}
+
+void ACooperationGameMode::SpawnKillZone()
+{
+    if (!ActorKillZone) return;  // UPROPERTYï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+
+    FVector SpawnLocation = FVector(0.f, 0.f, -500.f);  // ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½Ä¡
+    FRotator SpawnRotation = FRotator::ZeroRotator;
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Owner = this;
+
+    AKillZone* SpawnedKillZone = GetWorld()->SpawnActor<AKillZone>(ActorKillZone, SpawnLocation, SpawnRotation, SpawnParams);
+
+    if (SpawnedKillZone)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("KillZone ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½!"));
+    }
 }
 
 
+
+
+void ACooperationGameMode::OnCharacterStateReceived(const FCharacterStateBuffer& State)
+{   
+    if (CooperationGameState)
+    {
+        CooperationGameState->UpdatePlayerInfo(State);
+    }
+}
 
 void ACooperationGameMode::PossessCharacter(APlayerController* PC, APawn* PawnToPossess)
 {
@@ -513,18 +932,140 @@ void ACooperationGameMode::PossessCharacter(APlayerController* PC, APawn* PawnTo
     PC->Possess(PawnToPossess);
 
     UE_LOG(LogTemp, Warning, TEXT("Possessed Pawn: %s by Controller: %s"), *GetNameSafe(PawnToPossess), *GetNameSafe(PC));
+
+
 }
 
 
 void ACooperationGameMode::InitPlayerUI()
 {
-    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+    UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance());
+    if (MyGI)
     {
-        APlayerController* PlayerController = Cast<APlayerController>(*It);
-        if (PlayerController)
+        if (IsValid(MyGI))
         {
-            // ÄÁÆ®·Ñ·¯¿¡¼­ °ÔÀÓÀÎ½ºÅÍ½º¿¡´Ù°¡ UI ¶ç¿ì´Â ÇÔ¼ö È£ÃâÇÏ¶ó°í ¸í·É
-            //PlayerController->ShowUI(EAddWidgetType::CooperationWidget);
+            MyGI->ResponseShowWidget();
         }
     }
 }
+
+
+void ACooperationGameMode::BossSetPlayerLocation(ACharacter* PlayerChar)
+{
+    if (IsValid(PlayerChar))
+    {
+        //Camera Settings
+        AttachPlayerToCamera(PlayerChar, SpawnedBaseCamera[1]);
+        // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ò±ï¿½ ï¿½ï¿½ï¿½ï¿½...
+        PlayerHijackedLocation = PlayerChar->GetActorLocation();
+
+        PlayerChar->SetActorLocation(BossHijackingLocation[0]);
+    }
+}
+
+void ACooperationGameMode::BossReturnPlayerLocation(ACharacter* PlayerChar)
+{
+    if (IsValid(PlayerChar))
+    {
+        // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ò±ï¿½ ï¿½ï¿½ï¿½ï¿½...
+
+        //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½Çµï¿½ï¿½ï¿½ï¿½ï¿½
+        PlayerChar->SetActorLocation(PlayerHijackedLocation);
+        AttachPlayerToCamera(PlayerChar, SpawnedBaseCamera[0]);
+    }
+}
+
+
+TArray<AActor*> ACooperationGameMode::StartBattle(TArray<AActor*> Players)
+{
+    return Players;
+}
+
+
+
+
+//ï¿½ï¿½Ä¡ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½Ø³ï¿½ï¿½ï¿½?
+void ACooperationGameMode::SpawnGhostBoss()
+{
+
+}
+
+
+void ACooperationGameMode::SpawnCamera()
+{
+    UWorld* World = GetWorld();
+    if (!IsValid(World) || !IsValid(BaseCamera)) return;
+
+    for (const FVector& SpawnLocation : CameraSpawnLocations)
+    {
+        FRotator SpawnRotation = FRotator::ZeroRotator;
+
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+        ABaseCamera* SpawnedCamera = World->SpawnActor<ABaseCamera>(BaseCamera, SpawnLocation, SpawnRotation, SpawnParams);
+        if (SpawnedCamera)
+        {
+            SpawnedBaseCamera.Add(SpawnedCamera);
+        }
+    }
+}
+
+void ACooperationGameMode::AttachPlayerToCamera(ACharacter* Player, ABaseCamera* Camera)
+{
+    APlayerController* PlayerController = Cast<APlayerController>(Player->GetController());
+    if (PlayerController == nullptr) return;  // ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+
+    if (PlayerController)
+    {
+        Camera->ActivateCamera(PlayerController);
+    }
+
+}
+
+void ACooperationGameMode::HandleBuffSelection(AActor* SourceActor, int32 BuffIndex)
+{
+    UE_LOG(LogTemp, Log, TEXT("Received Buff Index %d from %s"), BuffIndex, *SourceActor->GetName());
+    CooperationGameState->bIsPlayerBuffSelect += BuffIndex;
+    // ï¿½ï¿½ï¿½â¼­ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
+}
+
+
+void ACooperationGameMode::ApplyBuffToPlayer(APlayerController* Controller, int32 BuffIndex, EBuffType buff)
+{
+    // ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î¿¡ ï¿½ï¿½ï¿½ï¿½ ï¿½Î¿ï¿½
+    Cast<ABaseWitch>(ActivePlayers[0])->ResponseSelectedBuff(buff);
+    Cast<ABaseWitch>(ActivePlayers[1])->ResponseSelectedBuff(buff);
+
+    CooperationGameState->SelectedBuff.Add(buff);
+
+    CooperationGameState->bIsPlayerBuffSelect++;
+}
+
+
+
+
+void ACooperationGameMode::ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation)
+{
+    CooperationGameState->ApplyDamage(Attacker, Damage, HitLocation);
+}
+
+void ACooperationGameMode::TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation)
+{
+    CooperationGameState->TakeDamage(Victim, Damage, HitLocation);
+}
+
+void ACooperationGameMode::OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation)
+{
+    UE_LOG(LogTemp, Warning, TEXT("OnDeathPlayer Event Begin"));
+    CooperationGameState->OnDeathPlayer(Player, DeathLocation);
+    PlayerDie(Player, nullptr);
+}
+
+void ACooperationGameMode::OnDeathMonster(AActor* Monster, const FVector& DeathLocation)
+{
+    CooperationGameState->OnDeathMonster(Monster, DeathLocation);
+}
+
+
+

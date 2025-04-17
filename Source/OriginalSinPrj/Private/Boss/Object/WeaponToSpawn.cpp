@@ -3,15 +3,17 @@
 
 #include "Boss/Object/WeaponToSpawn.h"
 
+#include "Engine/DamageEvents.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Player/BaseWitch.h"
 
 AWeaponToSpawn::AWeaponToSpawn()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	Damage = 50.0f;
+	Damage = 15.0f; //임시
 	LifeTimeOnGround = 2.0f;
 	bIsActivate = false;
 
@@ -102,10 +104,19 @@ void AWeaponToSpawn::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComponent
 {
 	if (!HasAuthority()) return;
 
-	//플레이어에 대한 추가적 로직 코드 필요함
-	if (IsValid(OtherActor))
+	if (IsValid(OtherActor) && OtherActor->IsA(ABaseWitch::StaticClass()))
 	{
-		//데미지 주는 로직 작성 필요
+		ABaseWitch* HitWitch = Cast<ABaseWitch>(OtherActor);
+		if (IsValid(HitWitch))
+		{
+			FDamageEvent DamageEvent;
+		
+			HitWitch->TakeDamage(
+				Damage,
+				DamageEvent,
+				GetInstigatorController(),
+				this);
+		}
 	}
 }
 

@@ -45,4 +45,8 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	virtual void DestroyGameSession() override;
+
+	virtual void PostSeamlessTravel() override;
+	virtual void BeginPlay() override;
+	virtual void StartMultiGame();
 };

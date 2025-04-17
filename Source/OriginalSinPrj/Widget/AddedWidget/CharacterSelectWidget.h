@@ -4,9 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "../BaseWidget.h"
+#include "Player/WitchTypes.h"
 #include "CharacterSelectWidget.generated.h"
 
 class UButton;
+class UCharacterSelectTileWidget;
+class UOriginalSinPrjGameInstance;
 
 UCLASS()
 class ORIGINALSINPRJ_API UCharacterSelectWidget : public UBaseWidget
@@ -14,14 +17,29 @@ class ORIGINALSINPRJ_API UCharacterSelectWidget : public UBaseWidget
 	GENERATED_BODY()
 	
 public:
-	virtual void NativeConstruct() override;
+	virtual void InitWidget(UUISubsystem* uiHandle) override;
 
-public:
+private:
 	UFUNCTION()
-	void OnTileClickedFromTile(int32 TileIndex); // Å¸ÀÏ¿¡¼­ ³¯¶ó¿À´Â ÀÌº¥Æ® Ã³¸®
+	void OnTileClickedFromTile(ECharacterType SelectedType); // Å¸ï¿½Ï¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ® Ã³ï¿½ï¿½
 
+	UFUNCTION()
+	void OnClickedClose();
 
-	
+	void InitDelegate();
+	void InitCharacterTiles();
+
+	bool CheckValidOfGameInstnace();
+
+private:
+	UPROPERTY(Meta = (BindWidget))
+	TObjectPtr<UButton> UICloseButton = nullptr;
+
+	UPROPERTY()
+	TArray<UCharacterSelectTileWidget*> Tiles;
+
+	UPROPERTY()
+	TObjectPtr<UOriginalSinPrjGameInstance> GameInstance = nullptr;
 	//UI Open animation
 	//UI close Animation
 };

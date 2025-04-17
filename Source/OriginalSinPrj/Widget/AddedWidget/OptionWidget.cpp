@@ -7,33 +7,20 @@
 
 #include "../GameInstance/AudioSubsystem.h"
 
-void UOptionWidget::NativeConstruct()
+void UOptionWidget::InitWidget(UUISubsystem* uiSubsystem)
 {
-    Super::NativeConstruct();
-	/*
-	OpenAnimation = OpenOptionAnim;
-	CloseAnimation = CloseOptionAnim;
-	*/
-	/*
-	MoveTitleButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedMoveTitle);
-	OpenKeySettingButton->OnClicked.AddDynamic(this, &ThisClass::OpenKeySetting);
-	QuitButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedQuitGame);
-	*/
-	CloseButton->OnClicked.RemoveDynamic(this, &ThisClass::OnClickedCloseOption);
-	BGMVolumeSlider->OnValueChanged.RemoveDynamic(this, &ThisClass::OnClickedBGMVolume);
-	EffectVolumeSlider->OnValueChanged.RemoveDynamic(this, &ThisClass::OnClickedEffectVolume);
+	Super::InitWidget(uiSubsystem);
 
 	CloseButton->OnClicked.AddDynamic(this, &ThisClass::OnClickedCloseOption);
 	BGMVolumeSlider->OnValueChanged.AddDynamic(this, &ThisClass::OnClickedBGMVolume);
 	EffectVolumeSlider->OnValueChanged.AddDynamic(this, &ThisClass::OnClickedEffectVolume);
 
-	//checkf(IsValid(UIHandle), TEXT("UIHandle is not valid"));
-
-	//BGMVolumSlider->SetValue(UIHandle->GetBGMVolumeByGameInstance());
-	//EffectVolumSlider->SetValue(UIHandle->GetEffectVolumeByGameInstance());
+	if (CheckValidOfAudioSubsystem())
+	{
+		BGMVolumeSlider->SetValue(AudioSubsystem->GetBgmVolume());
+		EffectVolumeSlider->SetValue(AudioSubsystem->GetEffectVolume());
+	}
 }
-
-
 
 void UOptionWidget::EndRemoveAnim()
 {
@@ -49,26 +36,27 @@ void UOptionWidget::OnClickedCloseOption()
 
 void UOptionWidget::OnClickedBGMVolume(float Value)
 {
-	//UISubsystemÀÌ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
-	//UISubsystem È¤Àº UIHandler¿¡ ÀÔ·Â¹ÞÀº Value·Î º¼·ý º¯°æ ¿äÃ».
+	//UISubsystemï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½ Ã¼Å©
+	//UISubsystem È¤ï¿½ï¿½ UIHandlerï¿½ï¿½ ï¿½Ô·Â¹ï¿½ï¿½ï¿½ Valueï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã».
 	
 	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 	//UIHandle->ClickedBGMVolume(Value);
 	//UIHandle->RequestPlayUISound(EUISoundType::Click);
 
-	if (UGameInstance* GameInstance = GetGameInstance())
+	if (CheckValidOfAudioSubsystem())
 	{
-		if (UAudioSubsystem* AudioSubsystem = GameInstance->GetSubsystem<UAudioSubsystem>())
-		{
-			AudioSubsystem->SetAndApplyMasterVolume(Value);
-		}
+		AudioSubsystem->SetBgmVolume(Value);
 	}
 }
 
 void UOptionWidget::OnClickedEffectVolume(float Value)
 {
-	//UISubsystemÀÌ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
-	//UISubsystem È¤Àº UIHandler¿¡ ÀÔ·Â¹ÞÀº Value·Î º¼·ý º¯°æ ¿äÃ».
+	if (CheckValidOfAudioSubsystem())
+	{
+		AudioSubsystem->SetEffectVolume(Value);
+	}
+	//UISubsystemï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½ Ã¼Å©
+	//UISubsystem È¤ï¿½ï¿½ UIHandlerï¿½ï¿½ ï¿½Ô·Â¹ï¿½ï¿½ï¿½ Valueï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã».
 
 	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 	//UIHandle->ClickedEffectVolume(Value);
@@ -78,4 +66,26 @@ void UOptionWidget::OnClickedEffectVolume(float Value)
 void UOptionWidget::OpenKeySetting()
 {
 
+}
+
+bool UOptionWidget::CheckValidOfAudioSubsystem()
+{
+	if (IsValid(AudioSubsystem))
+	{
+		return true;
+	}
+
+	if (!IsValid(GetGameInstance()))
+	{
+		return false;
+	}
+
+	AudioSubsystem = GetGameInstance()->GetSubsystem<UAudioSubsystem>();
+
+	if (!IsValid(AudioSubsystem))
+	{
+		return false;
+	}
+
+	return true;
 }

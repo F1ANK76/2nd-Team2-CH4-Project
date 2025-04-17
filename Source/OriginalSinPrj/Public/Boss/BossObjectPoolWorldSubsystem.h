@@ -7,6 +7,8 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "BossObjectPoolWorldSubsystem.generated.h"
 
+class ABossController;
+class ABossCharacter;
 class ADestructibleObject;
 class ARushBossClone;
 class ARangeAttackProjectile;
@@ -33,12 +35,18 @@ public:
 
 	template <typename T>
 	T* SpawnPooledActor(TSubclassOf<AActor> ClassToSpawn, const FVector& Location, const FRotator& Rotation);
+	void PreSpawnPooledActor(TSubclassOf<AActor> ClassToSpawn, const FVector& Location, const FRotator& Rotation, int32 NumberToSpawn);
 	void ReturnActorToPool(AActor* Actor);
 
 	ARangeAttackProjectile* SpawnRangeAttackProjectile(const FVector& Location, const FRotator& Rotation);
 	AWeaponToSpawn* SpawnWeaponToSpawn(const FVector& Location, const FRotator& Rotation);
 	ARushBossClone* SpawnRushBossClone(const FVector& Location, const FRotator& Rotation);
 	ADestructibleObject* SpawnDestructibleObject(const FVector& Location, const FRotator& Rotation);
+	ABossPlatform* SpawnBossPlatform(const FVector& Location, const FRotator& Rotation);
+	AIndexPatternProjectile* SpawnIndexPatternProjectile(const FVector& Location, const FRotator& Rotation);
+
+	TMap<TSubclassOf<AActor>, FActorPoolList> GetObjectPools() const { return ObjectPools; }
+	void SetBossReference(ABossCharacter* InBossCharacter);
 
 protected:
 	UPROPERTY()
@@ -46,7 +54,7 @@ protected:
 
 	UPROPERTY()
 	TMap<TSubclassOf<AActor>, FActorPoolList> ObjectPools;
-	//GC 방지
-	UPROPERTY()
-	TArray<TObjectPtr<AActor>> AllPooledActors;
+
+	UPROPERTY();
+	ABossCharacter* BossCharacter;
 };

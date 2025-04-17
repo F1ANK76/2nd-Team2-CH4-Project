@@ -1,6 +1,8 @@
 ﻿#include "DeathZone.h"
 #include "LevelObject/BasePlatform.h"
-
+#include "Player/BaseWitch.h"
+#include "GameMode/MultiBattleGameMode.h"
+#include "OriginalSinPrj/Public/SingleGameMode.h"
 #include "Net/UnrealNetwork.h"
 #include "Components/BoxComponent.h"
 
@@ -57,15 +59,54 @@ void ADeathZone::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 	{
 		if (ABasePlatform* Platform = Cast<ABasePlatform>(OtherActor))
 		{
-			TriggerOverlapEvent();
+			TriggerOverlapPlatformEvent();
+		}
+	}
+
+	if (OtherActor && (OtherActor != this))
+	{
+		if (ABaseWitch* Witch = Cast<ABaseWitch>(OtherActor))
+		{
+			Server_TriggerOverlapWitchEvent(Witch);
 		}
 	}
 
 	// 캐릭터 오버랩됐을 때 캐릭터 죽는 이벤트 작성 필요
 }
 
-void ADeathZone::TriggerOverlapEvent()
+void ADeathZone::TriggerOverlapPlatformEvent()
 {
 	UE_LOG(LogTemp, Warning, TEXT("플랫폼 오버랩 이벤트 발생"));
 	OnMyOverlapEvent.Broadcast();
+}
+
+void ADeathZone::Server_TriggerOverlapWitchEvent_Implementation(ABaseWitch* WitchActor)
+{
+	if (HasAuthority())
+	{
+		if (WitchActor->IsPlayerControlled())
+		{
+			if (AMultiBattleGameMode* MultiBattleGameMode = Cast<AMultiBattleGameMode>(GetWorld()->GetAuthGameMode()))
+			{
+				MultiBattleGameMode->OnDeathPlayer(WitchActor, WitchActor->GetActorLocation());
+				UE_LOG(LogTemp, Warning, TEXT("MultiBattleGameMode OnDeathPlayer"));
+			}
+			else if (ASingleGameMode* SingleGameMode = Cast<ASingleGameMode>(GetWorld()->GetAuthGameMode()))
+			{
+				SingleGameMode->OnDeathPlayer(WitchActor, WitchActor->GetActorLocation());
+			}
+		}
+		else
+		{
+			if (AMultiBattleGameMode* MultiBattleGameMode = Cast<AMultiBattleGameMode>(GetWorld()->GetAuthGameMode()))
+			{
+				MultiBattleGameMode->OnDeathMonster(WitchActor, WitchActor->GetActorLocation());
+				UE_LOG(LogTemp, Warning, TEXT("MultiBattleGameMode OnDeathMonster"));
+			}
+			else if (ASingleGameMode* SingleGameMode = Cast<ASingleGameMode>(GetWorld()->GetAuthGameMode()))
+			{
+				SingleGameMode->OnDeathMonster(WitchActor, WitchActor->GetActorLocation());
+			}
+		}
+	}
 }

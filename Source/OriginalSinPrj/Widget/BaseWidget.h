@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "OriginalSinPrj/GameInstance/EnumSet.h"
 #include "BaseWidget.generated.h"
 
 
@@ -18,19 +19,23 @@ class ORIGINALSINPRJ_API UBaseWidget : public UUserWidget
 
 protected:
     virtual void NativeConstruct() override;
+	void PlayUIEffectSound(EUISfxSoundType SoundType);
 	
 public:
 	virtual void InitWidget(UUISubsystem* uiHandle);
+
 	virtual void Action();
 	virtual void Update();
 	virtual void PlayUIOpenAnimation();
 	virtual void PlayUICloseAnimation();
 	virtual void PlayUIOpenAnimation(UWidgetAnimation* UIOpenAnimation);
 	virtual void PlayUICloseAnimation(UWidgetAnimation* UIcloseAnimation);
-	
+
 	virtual void PlayAddAnim();
 	virtual void PlayRemoveAnim();
 	//virtual void PlayRemoveAnim(bool bIsNext, ESceneType SceneType = ESceneType::Title);
+
+	void SetWidgetVisibility(bool bIsVisible); // test
 
 public:
 	UFUNCTION()
@@ -56,6 +61,9 @@ public:
 
 	UFUNCTION()
 	virtual void OnClickedMoveMultiMode();
+	
+	UFUNCTION()
+	virtual void OnClickedMoveMultiLobbyMode();
 
 	UFUNCTION()
 	virtual void OnClickedMoveTrainingMode();
@@ -69,8 +77,8 @@ public:
 	UFUNCTION()
 	virtual void OnClickedOptionButton();
 
-	virtual void OnClickedOpenWidget(const EWidgetType WidgetType);
-	virtual void OnClickedCloseWidget(const EWidgetType WidgetType);
+	virtual void OnClickedOpenWidget(const EAddWidgetType WidgetType);
+	virtual void OnClickedCloseWidget(const EAddWidgetType WidgetType);
 
 protected:
 	FWidgetAnimationDynamicEvent StartAddDelegate;

@@ -7,8 +7,12 @@
 #include "RangeAttackProjectile.h"
 #include "WeaponToSpawn.h"
 #include "RushBossClone.h"
+#include "BossPlatform.h"
+#include "IndexPatternProjectile.h"
 #include "Engine/DataAsset.h"
 #include "BossPoolObjectDataAsset.generated.h"
+
+class AIndexPatternProjectile;
 
 UCLASS(BlueprintType)
 class ORIGINALSINPRJ_API UBossPoolObjectDataAsset : public UDataAsset
@@ -22,9 +26,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "BossPoolObject")
 	TSubclassOf<AWeaponToSpawn> WeaponToSpawnClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "BossPoolObject");
+	UPROPERTY(EditDefaultsOnly, Category = "BossPoolObject")
 	TSubclassOf<ARushBossClone> RushBossCloneClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "BossPoolObject");
+	UPROPERTY(EditDefaultsOnly, Category = "BossPoolObject")
 	TSubclassOf<ADestructibleObject> DestructibleObjectClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "BossPoolObject")
+	TSubclassOf<ABossPlatform> BossPlatformClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "BossPoolObject")
+	TSubclassOf<AIndexPatternProjectile> IndexPatternProjectileClass;
 };

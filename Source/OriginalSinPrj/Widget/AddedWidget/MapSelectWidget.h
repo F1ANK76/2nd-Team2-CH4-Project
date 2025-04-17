@@ -14,15 +14,18 @@ class ORIGINALSINPRJ_API UMapSelectWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 
-protected:
-	virtual void NativeConstruct() override;
-
 public:
+	virtual void InitWidget(UUISubsystem* uiSubsystem) override;
+
+private:
 	UFUNCTION()
-	void OnTileClickedFromTile(int32 TileIndex); // Å¸ÀÏ¿¡¼­ ³¯¶ó¿À´Â ÀÌº¥Æ® Ã³¸®
+	void OnTileClickedFromTile(int32 TileIndex); // Å¸ï¿½Ï¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ® Ã³ï¿½ï¿½
 	
+	UFUNCTION()
+	void OnClickedBack();
 	//Open UI animation
 	//close UI animation
 
-private:
+	UPROPERTY(Meta = (BindWidget))
+	TObjectPtr<UButton> UICloseButton = nullptr;
 };

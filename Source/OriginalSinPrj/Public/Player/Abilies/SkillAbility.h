@@ -16,7 +16,7 @@ class ORIGINALSINPRJ_API ASkillAbility : public AAttackAbility
 public:
 	ASkillAbility();
 	/*virtual bool ExcuteAbility(FAbilityDataBuffer& Buffer) override;*/
-	virtual void ExcuteSkillAttack(const FAbilityDataBuffer& Buffer);
+	virtual void ExcuteSkillAttack(FAbilityDataBuffer& Buffer);
 	virtual void UndoSkillAttack(const FAbilityDataBuffer& Buffer);
 
 protected:
@@ -43,7 +43,7 @@ public:
 	EPivotType EffectPivot = EPivotType::Body;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-	int32 ConsumeMana = 1;
+	float ConsumeMana = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	int32 SpawnCount = 1;

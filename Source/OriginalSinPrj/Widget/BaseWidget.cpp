@@ -2,6 +2,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Animation/WidgetAnimation.h"
 #include "../GameInstance/UISubsystem.h"
+#include "OriginalSinPrj/GameInstance/AudioSubsystem.h"
 
 void UBaseWidget::NativeConstruct()
 {
@@ -22,15 +23,31 @@ void UBaseWidget::NativeConstruct()
 	*/
 }
 
+void UBaseWidget::PlayUIEffectSound(EUISfxSoundType SoundType)
+{
+	if (!IsValid(GetGameInstance()))
+	{
+		return;
+	}
+
+	UAudioSubsystem* AudioSubsystem = GetGameInstance()->GetSubsystem<UAudioSubsystem>();
+
+	if (!IsValid(AudioSubsystem))
+	{
+		return;
+	}
+
+	AudioSubsystem->PlayUISound(SoundType);
+}
+
 
 //////////////////////////
 
-
 void UBaseWidget::InitWidget(UUISubsystem* uiHandle)
 {
-	/*
 	UIHandle = uiHandle;
-	StartAddDelegate.BindDynamic(this, &ThisClass::StartAddAnim);
+
+	/*StartAddDelegate.BindDynamic(this, &ThisClass::StartAddAnim);
 	EndAddDelegate.BindDynamic(this, &ThisClass::EndAddAnim);
 	StartRemoveDelegate.BindDynamic(this, &ThisClass::StartRemoveAnim);
 	EndRemoveDelegate.BindDynamic(this, &ThisClass::EndRemoveAnim);
@@ -38,8 +55,10 @@ void UBaseWidget::InitWidget(UUISubsystem* uiHandle)
 	BindToAnimationStarted(OpenAnimation, StartAddDelegate);
 	BindToAnimationFinished(OpenAnimation, EndAddDelegate);
 	BindToAnimationStarted(CloseAnimation, StartRemoveDelegate);
-	BindToAnimationFinished(CloseAnimation, EndRemoveDelegate);
-	*/
+	BindToAnimationFinished(CloseAnimation, EndRemoveDelegate);*/
+	
+
+	//SetVisibility(ESlateVisibility::Visible);
 }
 
 void UBaseWidget::Action()
@@ -130,6 +149,18 @@ void UBaseWidget::PlayRemoveAnim()
 	PlayAnimation(CloseAnimation);
 }
 
+void UBaseWidget::SetWidgetVisibility(bool bIsVisible)
+{
+	if (bIsVisible)
+	{
+		SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
+
 void UBaseWidget::StartRemoveAnim()
 {
 	bIsPlaying = true;
@@ -143,9 +174,9 @@ void UBaseWidget::EndRemoveAnim()
 
 void UBaseWidget::OnClickedMoveNext()
 {
-	//UISubsystemÈ¤Àº UIhandler Ã¼Å©
-	// UISubsystemÈ¤Àº UIhandler¿¡ Å¬¸¯Çß´Ù°í ¾Ë¸®°í »ç¿îµå ¹ßµ¿ ¸®Äù½ºÆ®.
-	// Àå¸éÀüÈ¯ ÇÔ¼ö ½ÇÇà ¿äÃ»
+	//UISubsystemÈ¤ï¿½ï¿½ UIhandler Ã¼Å©
+	// UISubsystemÈ¤ï¿½ï¿½ UIhandlerï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ß´Ù°ï¿½ ï¿½Ë¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ßµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®.
+	// ï¿½ï¿½ï¿½ï¿½ï¿½È¯ ï¿½Ô¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã»
 	// 
 	
 	checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
@@ -156,35 +187,46 @@ void UBaseWidget::OnClickedMoveNext()
 void UBaseWidget::OnClickedMoveSingleMode()
 {
 	//fade out
-	//¾À ÀüÈ¯? È¤Àº ·¹º§ ÀüÈ¯? UIsubsystem È¤Àº UIhandler¿¡ ¿äÃ»
+	//ï¿½ï¿½ ï¿½ï¿½È¯? È¤ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯? UIsubsystem È¤ï¿½ï¿½ UIhandlerï¿½ï¿½ ï¿½ï¿½Ã»
 	//fade in
 
-	UIHandle->ShowLevel(ELevelType::SingleLevel);
-}
+	//UIHandle->ShowLevel(ELevelType::SingleLevel);
 
+	UIHandle->OnClickedMoveLevel(ELevelType::SingleLevel, true);
+}
 
 void UBaseWidget::OnClickedMoveMultiMode()
 {
+	UIHandle->OnClickedMoveLevel(ELevelType::MultiLevel, false); // change bool value to true, Level Type Value to Match
+}
+
+
+void UBaseWidget::OnClickedMoveMultiLobbyMode()
+{
 	//fade out
-	//¾À ÀüÈ¯? È¤Àº ·¹º§ ÀüÈ¯? UIsubsystem È¤Àº UIhandler¿¡ ¿äÃ»
+	//ï¿½ï¿½ ï¿½ï¿½È¯? È¤ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯? UIsubsystem È¤ï¿½ï¿½ UIhandlerï¿½ï¿½ ï¿½ï¿½Ã»
 	//fade in
-	UIHandle->ShowLevel(ELevelType::MultiLevel);
+	//UIHandle->ShowLevel(ELevelType::LobbyLevel);
+
+	UIHandle->OnClickedMoveLevel(ELevelType::MultiLobbyLevel, true); // change bool value to true, Level Type Value to Match
 }
 
 
 void UBaseWidget::OnClickedMoveTrainingMode()
 {
 	//fade out
-	//¾À ÀüÈ¯? È¤Àº ·¹º§ ÀüÈ¯? UIsubsystem È¤Àº UIhandler¿¡ ¿äÃ»
+	//ï¿½ï¿½ ï¿½ï¿½È¯? È¤ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯? UIsubsystem È¤ï¿½ï¿½ UIhandlerï¿½ï¿½ ï¿½ï¿½Ã»
 	//fade in
-	UIHandle->ShowLevel(ELevelType::TrainingLevel);
+	//UIHandle->ShowLevel(ELevelType::TrainingLevel);
+
+	UIHandle->OnClickedMoveLevel(ELevelType::TrainingLevel, true);
 }
 
 void UBaseWidget::OnClickedMoveTitle()
 {
-	//UISubsystemÈ¤Àº UIhandler Ã¼Å©
-	// UISubsystemÈ¤Àº UIhandler¿¡ Å¬¸¯Çß´Ù°í ¾Ë¸®°í »ç¿îµå ¹ßµ¿ ¸®Äù½ºÆ®.
-	// Å¸ÀÌÆ² ·¹º§ ÀüÈ¯ ÇÔ¼ö ½ÇÇà ¿äÃ»
+	//UISubsystemÈ¤ï¿½ï¿½ UIhandler Ã¼Å©
+	// UISubsystemÈ¤ï¿½ï¿½ UIhandlerï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ß´Ù°ï¿½ ï¿½Ë¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ßµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®.
+	// Å¸ï¿½ï¿½Æ² ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ ï¿½Ô¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã»
  
 	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
 	//UIHandle->RequestPlayUISound(EUISoundType::Click);
@@ -192,15 +234,16 @@ void UBaseWidget::OnClickedMoveTitle()
 
 	UE_LOG(LogTemp, Warning, TEXT("ShowLevel called - this: %p"), this);
 
-	UIHandle->ShowLevel(ELevelType::TitleLevel);
+	//UIHandle->ShowLevel(ELevelType::TitleLevel);
+	UIHandle->OnClickedMoveLevel(ELevelType::TitleLevel, true); // change bool value to true
 
 }
 
 void UBaseWidget::OnClickedQuitGame()
 {
-	//UISubsystemÈ¤Àº UIhandler Ã¼Å©
-	// UISubsystemÈ¤Àº UIhandler¿¡ Å¬¸¯Çß´Ù°í ¾Ë¸®°í »ç¿îµå ¹ßµ¿ ¸®Äù½ºÆ®.
-	// °ÔÀÓ Á¾·á ÇÔ¼ö ½ÇÇà ¿äÃ»
+	//UISubsystemÈ¤ï¿½ï¿½ UIhandler Ã¼Å©
+	// UISubsystemÈ¤ï¿½ï¿½ UIhandlerï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ß´Ù°ï¿½ ï¿½Ë¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ßµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®.
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã»
 
 
 	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
@@ -210,16 +253,16 @@ void UBaseWidget::OnClickedQuitGame()
 }
 
 
-void UBaseWidget::OnClickedOpenWidget(const EWidgetType WidgetType)
+void UBaseWidget::OnClickedOpenWidget(const EAddWidgetType WidgetType)
 {
-	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
-	//UIHandle->AddToViewportByCoverType(WidgetType);
+	checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
+	UIHandle->ShowWidget(WidgetType);
 }
 
-void UBaseWidget::OnClickedCloseWidget(const EWidgetType WidgetType)
+void UBaseWidget::OnClickedCloseWidget(const EAddWidgetType WidgetType)
 {
-	//checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
-	//UIHandle->RequestRemoveCoverFromViewport(WidgetType);
+	checkf(IsValid(UIHandle), TEXT("UIHandle is invalid"));
+	UIHandle->CloseWidget(WidgetType);
 }
 
 
@@ -227,9 +270,9 @@ void UBaseWidget::OnClickedCloseWidget(const EWidgetType WidgetType)
 
 void UBaseWidget::OnClick_MoveLevel()
 {
-	//if (UISubsystemÀÌ Á¸ÀçÇÏ¸é)
+	//if (UISubsystemï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½)
 	{
-		/*UISubSystem¿¡ ¿äÃ»*/
+		/*UISubSystemï¿½ï¿½ ï¿½ï¿½Ã»*/
 		//UISub->RequestLevelChange("LevelName");
 	}
 }

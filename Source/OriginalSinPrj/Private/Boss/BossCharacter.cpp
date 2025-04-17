@@ -13,12 +13,28 @@ ABossCharacter::ABossCharacter()
 	MaxHP = 1000;
 	CurrentHP = MaxHP;
 	bIsDead = false;
+	bIsInvincibility = false;
 	
 	AIControllerClass = ABossController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	bReplicates = true;
 	SetReplicateMovement(true);
+}
+
+float ABossCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+	class AController* EventInstigator, AActor* DamageCauser)
+{
+	if (!HasAuthority()) return 0.0f;
+	if (!IsValid(DamageCauser)) return 0.0f;
+	if (bIsInvincibility) return 0.0f;
+
+	float DamageApplied = FMath::Clamp(DamageAmount, 0.0f, CurrentHP);
+	CurrentHP -= DamageAmount;
+
+	OnBossTakeDamage.Broadcast(CurrentHP);
+	
+	return 0.0f;
 }
 
 void ABossCharacter::UpdateFacingDirection(APawn* ClosestPlayer)
@@ -52,7 +68,7 @@ void ABossCharacter::SetFacingDirection(float Direction)
 
 void ABossCharacter::MulticastPlayStartBattleMontage_Implementation()
 {
-	if (StartBattleMontage && GetNetMode() != NM_DedicatedServer)
+	if (IsValid(StartBattleMontage))
 	{
 		PlayAnimMontage(StartBattleMontage);
 	}
@@ -60,7 +76,7 @@ void ABossCharacter::MulticastPlayStartBattleMontage_Implementation()
 
 void ABossCharacter::MulticastPlayDeathMontage_Implementation()
 {
-	if (DeathMontage && GetNetMode() != NM_DedicatedServer)
+	if (IsValid(DeathMontage))
 	{
 		PlayAnimMontage(DeathMontage);
 	}
@@ -68,7 +84,7 @@ void ABossCharacter::MulticastPlayDeathMontage_Implementation()
 
 void ABossCharacter::MulticastPlayRangeAttackMontage_Implementation()
 {
-	if (RangeAttackMontage && GetNetMode() != NM_DedicatedServer)
+	if (IsValid(RangeAttackMontage))
 	{
 		PlayAnimMontage(RangeAttackMontage);
 	}
@@ -76,7 +92,7 @@ void ABossCharacter::MulticastPlayRangeAttackMontage_Implementation()
 
 void ABossCharacter::MulticastPlayAreaSpawnWeaponMontage_Implementation()
 {
-	if (AreaSpawnWeaponMontage && GetNetMode() != NM_DedicatedServer)
+	if (IsValid(AreaSpawnWeaponMontage))
 	{
 		PlayAnimMontage(AreaSpawnWeaponMontage);
 	}
@@ -84,9 +100,57 @@ void ABossCharacter::MulticastPlayAreaSpawnWeaponMontage_Implementation()
 
 void ABossCharacter::MulticastPlayRushBossAttackMontage_Implementation()
 {
-	if (RushBossAttackMontage && GetNetMode() != NM_DedicatedServer)
+	if (IsValid(RushBossAttackMontage))
 	{
 		PlayAnimMontage(RushBossAttackMontage);
+	}
+}
+
+void ABossCharacter::MulticastPlayHijackAttackMontage_Implementation()
+{
+	if (IsValid(HijackAttackMontage))
+	{
+		PlayAnimMontage(HijackAttackMontage);
+	}
+}
+
+void ABossCharacter::MulticastPlayInstantDeathAttackMontage_Implementation()
+{
+	if (IsValid(InstantDeathAttackMontage))
+	{
+		PlayAnimMontage(InstantDeathAttackMontage);
+	}
+}
+
+void ABossCharacter::MulticastPlayStartStunMontage_Implementation()
+{
+	if (IsValid(StartStunMontage))
+	{
+		PlayAnimMontage(StartStunMontage);
+	}
+}
+
+void ABossCharacter::MulticastPlayEndStunMontage_Implementation()
+{
+	if (IsValid(EndStunMontage))
+	{
+		PlayAnimMontage(EndStunMontage);
+	}
+}
+
+void ABossCharacter::MulticastPlayIndexAttackMontage_Implementation()
+{
+	if (IsValid(IndexAttackMontage))
+	{
+		PlayAnimMontage(IndexAttackMontage);
+	}
+}
+
+void ABossCharacter::MulticastPlayKillAllPlayerAttackMontage_Implementation()
+{
+	if (IsValid(KillAllPlayerAttackMontage))
+	{
+		PlayAnimMontage(KillAllPlayerAttackMontage);
 	}
 }
 
@@ -103,6 +167,22 @@ void ABossCharacter::PlayDeathMontage()
 	if (HasAuthority())
 	{
 		MulticastPlayDeathMontage();
+	}
+}
+
+void ABossCharacter::PlayStartStunMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayStartStunMontage();
+	}
+}
+
+void ABossCharacter::PlayEndStunMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayEndStunMontage();
 	}
 }
 
@@ -127,5 +207,37 @@ void ABossCharacter::PlayRushBossAttackMontage()
 	if (HasAuthority())
 	{
 		MulticastPlayRushBossAttackMontage();
+	}
+}
+
+void ABossCharacter::PlayHijackAttackMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayHijackAttackMontage();
+	}
+}
+
+void ABossCharacter::PlayInstantDeathAttackMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayInstantDeathAttackMontage();
+	}
+}
+
+void ABossCharacter::PlayIndexAttackMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayIndexAttackMontage();
+	}
+}
+
+void ABossCharacter::PlayKillAllPlayerAttackMontage()
+{
+	if (HasAuthority())
+	{
+		MulticastPlayKillAllPlayerAttackMontage();
 	}
 }

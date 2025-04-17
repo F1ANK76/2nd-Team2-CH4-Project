@@ -13,19 +13,19 @@ void UPlayerStateWidget::InitPlayerState(const FPlayerData& Data)
     CharacterImageUI->SetBrushFromTexture(Data.CharacterImage);
 
     HPBar->SetPercent(1.0f);
-    ManaBar->SetPercent(Data.CurrentMana / Data.MaxMana);
+    ManaBar->SetPercent(0.0f);
     EXPBar->SetPercent(Data.CurrentEXP/ Data.MaxEXP);
 
     FString PercentString = FString::Printf(TEXT("%d%%"), Data.AirbornePercent);
     AirbornePercentText->SetText(FText::FromString(PercentString));
     PlayerLevel->SetText(FText::AsNumber(Data.PlayerLevel));
-
+    PlayerLifes->SetText(FText::AsNumber(Data.LifePoint));
 }
 
 
 void UPlayerStateWidget::UpdateStatus(const FPlayerData& Data)
 {
-    // HP, Mana, Special °°Àº ½Ç½Ã°£ ¼öÄ¡¸¸ °»½Å
+    // HP, Mana, Special ï¿½ï¿½ï¿½ï¿½ ï¿½Ç½Ã°ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     HPBar->SetPercent(Data.CurrentHP / Data.MaxHP);
     ManaBar->SetPercent(Data.CurrentMana / Data.MaxMana);
     EXPBar->SetPercent(Data.CurrentEXP / Data.MaxEXP);
@@ -33,4 +33,6 @@ void UPlayerStateWidget::UpdateStatus(const FPlayerData& Data)
     FString PercentString = FString::Printf(TEXT("%d%%"), Data.AirbornePercent);
     AirbornePercentText->SetText(FText::FromString(PercentString));
     PlayerLevel->SetText(FText::AsNumber(Data.PlayerLevel));
+    PlayerLifes->SetText(FText::AsNumber(Data.LifePoint));
 }
+

@@ -5,6 +5,7 @@
 #include "../Widget/BaseWidget.h"
 #include "UISettings.h"
 #include "AudioSubsystem.h"
+#include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
 
 void UUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -14,82 +15,127 @@ void UUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
     UISettings = GetDefault<UUISettings>();
 
-    CreateWidgets();
+    //CreateWidgets();
 }
 
-void UUISubsystem::ShowLevel(ELevelType LevelType)
+void UUISubsystem::ShowLevelWidget(ELevelType LevelType)
 {
-    if (GetWorld())
+    UE_LOG(LogTemp, Warning, TEXT("Show Level Widget"));
+
+    bool isMouseMode;
+
+    switch (LevelType)
     {
-        FString LevelName;
-
-        switch (LevelType)
+    case ELevelType::IntroLevel:
+        if (!IsValid(IntroLevelWidget))
         {
-            case ELevelType::IntroLevel:
-                LevelName = "IntroLevel";
-                CurrentActiveWidget = IntroLevelWidget;
-                break;
-
-            case ELevelType::TitleLevel:
-                LevelName = "TitleLevel";
-                CurrentActiveWidget = TitleLevelWidget;
-                break;
-
-            case ELevelType::MatchLevel:
-                LevelName = "MatchLevel";
-                CurrentActiveWidget = MatchLevelWidget;
-                break;
-
-            case ELevelType::LobbyLevel:
-                LevelName = "LobbyLevel";
-                CurrentActiveWidget = LobbyLevelWidget;
-                break;
-
-            case ELevelType::MultiLevel:
-                LevelName = "MultiLevel";
-                CurrentActiveWidget = MultiLevelWidget;
-                break;
-
-            case ELevelType::CooperationLevel:
-                LevelName = "CooperationLevel";
-                CurrentActiveWidget = CooperationLevelWidget;
-                break;
-
-            case ELevelType::SingleLevel:
-                LevelName = "SingleLevel";
-                CurrentActiveWidget = SingleLevelWidget;
-                break;
-
-            case ELevelType::TrainingLevel:
-                LevelName = "TrainingLevel";
-                CurrentActiveWidget = TrainingLevelWidget;
-                break;
-
-            case ELevelType::FarmingLevel:
-                LevelName = "FarmingLevel";
-                CurrentActiveWidget = FarmingLevelWidget;
-                break;
-
-            default:
-                UE_LOG(LogTemp, Warning, TEXT("Invalid LevelType"));
-                return;
+            IntroLevelWidget = CreateWidgetByClass(UISettings->IntroWidgetClass);
         }
+        CurrentActiveWidget = IntroLevelWidget;
+        isMouseMode = true;
+        break;
 
-        // ·¹º§ ·Îµù ÀÌÀü¿¡ À§Á¬ µî·Ï ¾ÈµÅ¼­ ·Îµù ÀÌÈÄ¿¡ À§Á¬À» ¶ç¿ìµµ·Ï ¹ÙÀÎµù
-        FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UUISubsystem::OnPostLoadMap);
+    case ELevelType::TitleLevel:
+        if (!IsValid(TitleLevelWidget))
+        {
+            TitleLevelWidget = CreateWidgetByClass(UISettings->TitleWidgetClass);
+        }
+        CurrentActiveWidget = TitleLevelWidget;
+        isMouseMode = true;
+        break;
 
-        // ·¹º§ ÀüÈ¯½Ã ±âÁ¸ À§Á¬ ÀüºÎ ÀÚµ¿ Á¦°ÅµÊ
-        UGameplayStatics::OpenLevel(GetWorld(), FName(*LevelName));
+    case ELevelType::MatchLevel:
+        if (!IsValid(MatchLevelWidget))
+        {
+            MatchLevelWidget = CreateWidgetByClass(UISettings->MatchWidgetClass);
+        }
+        CurrentActiveWidget = MatchLevelWidget;
+        isMouseMode = true;
+        break;
+
+    case ELevelType::LobbyLevel:
+        if (!IsValid(LobbyLevelWidget))
+        {
+            LobbyLevelWidget = CreateWidgetByClass(UISettings->LobbyWidgetClass);
+        }
+        CurrentActiveWidget = LobbyLevelWidget;
+        isMouseMode = true;
+        break;
+
+    case ELevelType::MultiLobbyLevel:
+        if (!IsValid(MultiLobbyLevelWidget))
+        {
+            MultiLobbyLevelWidget = CreateWidgetByClass(UISettings->MultiLobbyWidgetClass);
+        }
+        CurrentActiveWidget = MultiLobbyLevelWidget;
+        isMouseMode = true;
+        break;
+
+    case ELevelType::MultiLevel:
+        if (!IsValid(MultiLevelWidget))
+        {
+            MultiLevelWidget = CreateWidgetByClass(UISettings->MultiWidgetClass);
+        }
+        CurrentActiveWidget = MultiLevelWidget;
+        isMouseMode = false;
+        break;
+
+    case ELevelType::CooperationLevel:
+        if (!IsValid(CooperationLevelWidget))
+        {
+            CooperationLevelWidget = CreateWidgetByClass(UISettings->CooperationWidgetClass);
+        }
+        CurrentActiveWidget = CooperationLevelWidget;
+        isMouseMode = false;
+        break;
+
+    case ELevelType::SingleLevel:
+        if (!IsValid(SingleLevelWidget))
+        {
+            SingleLevelWidget = CreateWidgetByClass(UISettings->SingleWidgetClass);
+        }
+        CurrentActiveWidget = SingleLevelWidget;
+        isMouseMode = false;
+        break;
+
+    case ELevelType::TrainingLevel:
+        if (!IsValid(TrainingLevelWidget))
+        {
+            TrainingLevelWidget = CreateWidgetByClass(UISettings->TrainingWidgetClass);
+        }
+        CurrentActiveWidget = TrainingLevelWidget;
+        isMouseMode = false;
+        break;
+
+    case ELevelType::FarmingLevel:
+        if (!IsValid(FarmingLevelWidget))
+        {
+            FarmingLevelWidget = CreateWidgetByClass(UISettings->FarmingWidgetClass);
+        }
+        CurrentActiveWidget = FarmingLevelWidget;
+        isMouseMode = false;
+        break;
+
+    default:
+        checkNoEntry();
+        break;
+    }
+
+    if (IsValid(CurrentActiveWidget))
+    {
+        CurrentActiveWidget->AddToViewport();
+        SetMouseMode(isMouseMode);
     }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("Invalid World"));
+        UE_LOG(LogTemp, Warning, TEXT("Current Active Widget is invalid"));
     }
 }
 
+
 void UUISubsystem::OnPostLoadMap(UWorld* LoadedWorld)
 {
-    FCoreUObjectDelegates::PostLoadMapWithWorld.RemoveAll(this); // ÀÌÀü µî·Ï ÀÌº¥Æ® ÀüºÎ Á¦°Å
+    FCoreUObjectDelegates::PostLoadMapWithWorld.RemoveAll(this); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
     if (CurrentActiveWidget)
     {
@@ -97,13 +143,13 @@ void UUISubsystem::OnPostLoadMap(UWorld* LoadedWorld)
         
         if (UAudioSubsystem* AudioSubsystem = GetGameInstance()->GetSubsystem<UAudioSubsystem>())
         {
-            // BGM Àç»ý È£Ãâ ½ÃÁ¡ º¯°æÀº ÇÊ¿äÇÒ ¼öµµ ÀÖÀ½, ·¹º§ ÀüÈ¯½Ã ±âÁ¸¿¡ Àç»ýµÇ´ø BGMÀº ÀüºÎ ³¯¾Æ°¨
+            // BGM ï¿½ï¿½ï¿½ È£ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ç´ï¿½ BGMï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Æ°ï¿½
             if (CurrentActiveWidget == IntroLevelWidget)
             {
                 AudioSubsystem->PlayBGM(ELevelSoundType::TitleSound);
             }
 
-            // ÇÊ¿ä ·¹º§º° Àç»ý..
+            // ï¿½Ê¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½..
         }
     }
     else
@@ -112,37 +158,78 @@ void UUISubsystem::OnPostLoadMap(UWorld* LoadedWorld)
     }
 }
 
+UBaseWidget* UUISubsystem::CreateWidgetByClass(TSubclassOf<UBaseWidget> WidgetClass)
+{
+    if (!IsValid(WidgetClass))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Widget Class is invali"));
+        return nullptr;
+    }
+
+    TempWidget = CreateWidget<UBaseWidget>(GetGameInstance(), WidgetClass);
+    TempWidget->InitWidget(this);
+    return TempWidget;
+}
+
 void UUISubsystem::ShowWidget(EAddWidgetType WidgetType)
 {
     UBaseWidget* TargetWidget = nullptr;
 
     switch (WidgetType)
     {
-        case EAddWidgetType::OptionWidget:     
+        case EAddWidgetType::OptionWidget:
+            if (!IsValid(OptionWidget))
+            {
+                OptionWidget = CreateWidgetByClass(UISettings->OptionWidgetClass);
+            }
             TargetWidget = OptionWidget; 
             break;
 
         case EAddWidgetType::BuffSelectWidget:
+            if (!IsValid(BuffSelectWidget))
+            {
+                BuffSelectWidget = CreateWidgetByClass(UISettings->BuffSelectWidgetClass);
+            }
             TargetWidget = BuffSelectWidget;
             break;
 
         case EAddWidgetType::CharacterSelectWidget:
+            if (!IsValid(CharacterSelectWidget))
+            {
+                CharacterSelectWidget = CreateWidgetByClass(UISettings->CharacterSelectWidgetClass);
+            }
             TargetWidget = CharacterSelectWidget;
             break;
 
         case EAddWidgetType::GameSettingWidget:
+            if (!IsValid(GameSettingWidget))
+            {
+                GameSettingWidget = CreateWidgetByClass(UISettings->GameSettingWidgetClass);
+            }
             TargetWidget = GameSettingWidget;
             break;
 
         case EAddWidgetType::MapSelectWidget:
+            if (!IsValid(MapSelectWidget))
+            {
+                MapSelectWidget = CreateWidgetByClass(UISettings->MapSelectWidgetClass);
+            }
             TargetWidget = MapSelectWidget;
             break;
 
         case EAddWidgetType::PlayerStateWidget:
+            if (!IsValid(PlayerStateWidget))
+            {
+                PlayerStateWidget = CreateWidgetByClass(UISettings->PlayerStateWidgetClass);
+            }
             TargetWidget = PlayerStateWidget;
             break;
 
         case EAddWidgetType::ResultWidget:
+            if (!IsValid(ResultWidget))
+            {
+                ResultWidget = CreateWidgetByClass(UISettings->ResultWidgetClass);
+            }
             TargetWidget = ResultWidget;
             break;
 
@@ -157,14 +244,55 @@ void UUISubsystem::ShowWidget(EAddWidgetType WidgetType)
         {
             TargetWidget->AddToViewport();
         }
-        else
-        {
-            TargetWidget->RemoveFromParent();
-        }
     }
     else
     {
         UE_LOG(LogTemp, Warning, TEXT("Invalid TargetWidget"));
+    }
+}
+
+void UUISubsystem::CloseWidget(EAddWidgetType WidgetType)
+{
+    UBaseWidget* TargetWidget = nullptr;
+
+    switch (WidgetType)
+    {
+    case EAddWidgetType::OptionWidget:
+        TargetWidget = OptionWidget;
+        break;
+
+    case EAddWidgetType::BuffSelectWidget:
+        TargetWidget = BuffSelectWidget;
+        break;
+
+    case EAddWidgetType::CharacterSelectWidget:
+        TargetWidget = CharacterSelectWidget;
+        break;
+
+    case EAddWidgetType::GameSettingWidget:
+        TargetWidget = GameSettingWidget;
+        break;
+
+    case EAddWidgetType::MapSelectWidget:
+        TargetWidget = MapSelectWidget;
+        break;
+
+    case EAddWidgetType::PlayerStateWidget:
+        TargetWidget = PlayerStateWidget;
+        break;
+
+    case EAddWidgetType::ResultWidget:
+        TargetWidget = ResultWidget;
+        break;
+
+    default:
+        UE_LOG(LogTemp, Warning, TEXT("Invalid WidgetType"));
+        return;
+    }
+
+    if (TargetWidget->IsInViewport())
+    {
+        TargetWidget->RemoveFromParent();
     }
 }
 
@@ -174,46 +302,61 @@ void UUISubsystem::CreateWidgets()
     if (UISettings->IntroWidgetClass)
     {
         IntroLevelWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->IntroWidgetClass);
+        IntroLevelWidget->InitWidget(this);
     }
 
     if (UISettings->TitleWidgetClass)
     {
         TitleLevelWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->TitleWidgetClass);
+        TitleLevelWidget->InitWidget(this);
     }
 
     if (UISettings->MatchWidgetClass)
     {
         MatchLevelWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->MatchWidgetClass);
+        MatchLevelWidget->InitWidget(this);
     }
 
     if (UISettings->LobbyWidgetClass)
     {
         LobbyLevelWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->LobbyWidgetClass);
+        LobbyLevelWidget->InitWidget(this);
+    }
+
+    if (UISettings->MultiLobbyWidgetClass)
+    {
+        MultiLobbyLevelWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->MultiLobbyWidgetClass);
+        MultiLobbyLevelWidget->InitWidget(this);
     }
 
     if (UISettings->MultiWidgetClass)
     {
         MultiLevelWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->MultiWidgetClass);
+        MultiLevelWidget->InitWidget(this);
     }
 
     if (UISettings->CooperationWidgetClass)
     {
         CooperationLevelWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->CooperationWidgetClass);
+        CooperationLevelWidget->InitWidget(this);
     }
 
     if (UISettings->SingleWidgetClass)
     {
         SingleLevelWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->SingleWidgetClass);
+        SingleLevelWidget->InitWidget(this);
     }
 
     if (UISettings->TrainingWidgetClass)
     {
         TrainingLevelWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->TrainingWidgetClass);
+        TrainingLevelWidget->InitWidget(this);
     }
 
     if (UISettings->FarmingWidgetClass)
     {
         FarmingLevelWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->FarmingWidgetClass);
+        FarmingLevelWidget->InitWidget(this);
     }
 
     // On/Off Widget
@@ -221,37 +364,91 @@ void UUISubsystem::CreateWidgets()
     if (UISettings->OptionWidgetClass)
     {
         OptionWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->OptionWidgetClass);
+        OptionWidget->InitWidget(this);
     }
 
     if (UISettings->BuffSelectWidgetClass)
     {
         BuffSelectWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->BuffSelectWidgetClass);
+        BuffSelectWidget->InitWidget(this);
     }
 
     if (UISettings->CharacterSelectWidgetClass)
     {
         CharacterSelectWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->CharacterSelectWidgetClass);
+        CharacterSelectWidget->InitWidget(this);
     }
 
     if (UISettings->GameSettingWidgetClass)
     {
         GameSettingWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->GameSettingWidgetClass);
+        GameSettingWidget->InitWidget(this);
     }
 
     if (UISettings->MapSelectWidgetClass)
     {
         MapSelectWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->MapSelectWidgetClass);
+        MapSelectWidget->InitWidget(this);
     }
 
     if (UISettings->PlayerStateWidgetClass)
     {
         PlayerStateWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->PlayerStateWidgetClass);
+        PlayerStateWidget->InitWidget(this);
     }
 
     if (UISettings->ResultWidgetClass)
     {
         ResultWidget = CreateWidget<UBaseWidget>(GetWorld(), UISettings->ResultWidgetClass);
+        ResultWidget->InitWidget(this);
     }
+}
+
+void UUISubsystem::SetVisibilityWidget(bool bIsVisible)
+{
+    CurrentActiveWidget->SetWidgetVisibility(bIsVisible);
+}
+
+const ELevelType UUISubsystem::GetCurrentLevelType()
+{
+    if (CheckValidOfGameInstance())
+    {
+        CurrentLevel = GameInstance->GetCurrentLevelType();
+    }
+
+    return CurrentLevel;
+}
+
+void UUISubsystem::OnClickedMoveLevel(ELevelType LevelType, bool bIsSingle)
+{
+    if (!CheckValidOfGameInstance())
+    {
+        return;
+    }
+
+    GameInstance->RequestOpenLevelByType(LevelType, bIsSingle);
+}
+
+bool UUISubsystem::CheckValidOfGameInstance()
+{
+    if (IsValid(GameInstance))
+    {
+        return true;
+    }
+
+    if (!IsValid(GetGameInstance()))
+    {
+        return false;
+    }
+
+    GameInstance = Cast<UOriginalSinPrjGameInstance>(GetGameInstance());
+
+    if (!IsValid(GameInstance))
+    {
+        return false;
+    }
+
+    return true;
 }
 
 void UUISubsystem::CloseGame()
@@ -259,5 +456,37 @@ void UUISubsystem::CloseGame()
     if (GetWorld())
     {
         UKismetSystemLibrary::QuitGame(GetWorld(), nullptr, EQuitPreference::Quit, true);
+    }
+}
+
+void UUISubsystem::SetMouseMode(bool MouseMode)
+{
+    if (!CheckValidOfGameInstance())
+    {
+        return;
+    }
+
+    APlayerController* PC = GameInstance->GetOwningPlayerController();
+
+    if (!IsValid(PC))
+    {
+        return;
+    }
+
+    if (MouseMode)
+    {
+        PC->bShowMouseCursor = true;
+        FInputModeUIOnly InputMode;
+        InputMode.SetWidgetToFocus(CurrentActiveWidget->TakeWidget());
+        InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+        PC->SetInputMode(InputMode);
+        UE_LOG(LogTemp, Warning, TEXT("MouseMode On"));
+    }
+    else
+    {
+        FInputModeGameOnly InputMode;
+        PC->SetInputMode(InputMode);
+        PC->bShowMouseCursor = false;
+        UE_LOG(LogTemp, Warning, TEXT("MouseMode Off"));
     }
 }

@@ -3,18 +3,23 @@
 
 #include "Boss/Object/RangeAttackProjectile.h"
 
+#include "NiagaraComponent.h"
+#include "Engine/DamageEvents.h"
 #include "Boss/BossCharacter.h"
 #include "Boss/BossObjectPoolWorldSubsystem.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/DamageType.h"
 #include "Components/SphereComponent.h"
+#include "NiagaraSystem.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/BaseWitch.h"
 
 ARangeAttackProjectile::ARangeAttackProjectile()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	Damage = 50.0f;
+	Damage = 10.0f;
 	LifeTime = 3.0f;
 	bIsActivate = false;
 
@@ -37,6 +42,11 @@ ARangeAttackProjectile::ARangeAttackProjectile()
 	SphereComponent->SetCollisionResponseToAllChannels(ECR_Overlap);
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &ARangeAttackProjectile::OnOverlapBegin);
 
+	//Niagara
+	NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("NiagaraComponent");
+	NiagaraComponent->SetupAttachment(SceneRoot);
+	NiagaraComponent->SetAutoActivate(false);
+
 	//투사체 - ProjectileMovementComponent
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovementComponent");
 	ProjectileMovementComponent->bShouldBounce = false;
@@ -51,7 +61,7 @@ void ARangeAttackProjectile::BeginPlay()
 	Super::BeginPlay();
 
 	if (!HasAuthority()) return;
-
+	
 	bIsActivate = false;
 	MulticastSetActive(bIsActivate);
 	ProjectileMovementComponent->StopMovementImmediately();
@@ -94,6 +104,10 @@ void ARangeAttackProjectile::MulticastSetActive_Implementation(bool bIsActive)
 {
 	SetActorHiddenInGame(!bIsActive);
 	SetActorEnableCollision(bIsActive);
+	if (IsValid(NiagaraComponent))
+	{
+		NiagaraComponent->SetActive(bIsActive);
+	}
 }
 
 void ARangeAttackProjectile::OnOverlapBegin(
@@ -108,37 +122,19 @@ void ARangeAttackProjectile::OnOverlapBegin(
 	{
 		//보스 자신 제외
 		if (OtherActor->Tags.Contains("Boss")) return;
-		UE_LOG(LogTemp, Warning, TEXT("RangeAttack Projectile Hits : %s"), *OtherActor->GetName());
 
-		//캐릭터일 경우
-		if (OtherActor->IsA(ACharacter::StaticClass()))
+		if (IsValid(OtherActor) && OtherActor->IsA(ABaseWitch::StaticClass()))
 		{
-			ACharacter* HitCharacter = Cast<ACharacter>(OtherActor);
-			if (IsValid(HitCharacter))
+			ABaseWitch* HitWitch = Cast<ABaseWitch>(OtherActor);
+			if (IsValid(HitWitch))
 			{
-				UGameplayStatics::ApplyDamage(
-					HitCharacter,
-					Damage,
-					nullptr,
-					this,
-					nullptr);
-				IBossPoolableActorInterface::Execute_OnPooledObjectReset(this);
-			}
-		}
+				FDamageEvent DamageEvent;
 
-		//폰일 경우(추후 삭제 예정 : DefaultPawn 테스트용도)
-		if (OtherActor->IsA(APawn::StaticClass()))
-		{
-			APawn* HitPawn = Cast<APawn>(OtherActor);
-			if (IsValid(HitPawn))
-			{
-				UGameplayStatics::ApplyDamage(
-					HitPawn,
+				HitWitch->TakeDamage(
 					Damage,
-					nullptr,
-					this,
-					nullptr);
-				IBossPoolableActorInterface::Execute_OnPooledObjectReset(this);
+					DamageEvent,
+					GetInstigatorController(),
+					this);
 			}
 		}
 

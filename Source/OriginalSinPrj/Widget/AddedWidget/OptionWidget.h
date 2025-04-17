@@ -9,6 +9,7 @@
 class UUISubsystem;
 class UButton;
 class USlider;
+class UAudioSubsystem;
 
 UCLASS()
 class ORIGINALSINPRJ_API UOptionWidget : public UBaseWidget
@@ -16,8 +17,7 @@ class ORIGINALSINPRJ_API UOptionWidget : public UBaseWidget
 	GENERATED_BODY()
 
 public:
-
-	virtual void NativeConstruct() override;
+	virtual void InitWidget(UUISubsystem* uiSubsystem) override;
 	virtual void EndRemoveAnim() override;
 
 private:
@@ -33,7 +33,7 @@ private:
 	UFUNCTION()
 	void OpenKeySetting();
 
-
+	bool CheckValidOfAudioSubsystem();
 	//Button Binding
 	/*
 	UPROPERTY(Meta = (BindWidget))
@@ -46,6 +46,9 @@ private:
 	TObjectPtr<UButton> QuitButton;
 
 	*/
+
+	UPROPERTY()
+	TObjectPtr<UAudioSubsystem> AudioSubsystem = nullptr;
 
 	UPROPERTY(Meta = (BindWidget))
 	TObjectPtr<UButton> CloseButton;

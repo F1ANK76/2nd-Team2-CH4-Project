@@ -4,20 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "../BaseWidget.h"
+#include "OriginalSinPrj/Widget/AddedWidget/PlayerStateWidget.h"
 #include "BattleWidget.generated.h"
 
-struct FPlayerData; //ÀÓ½Ã ¼±¾ð// ³ªÁß¿¡ Data±¸Á¶·Î µû·Î »©¾ßµÊ.
+struct FPlayerData;
 
 UCLASS()
 class ORIGINALSINPRJ_API UBattleWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 
-
 protected:
 	virtual void NativeConstruct() override;
 
-	//Å¸ÀÌ¸Ó
+	//Å¸ï¿½Ì¸ï¿½
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* FarmingModeTimer;
@@ -41,11 +41,9 @@ private:
 	class UPlayerStateWidget* Player2StateUI;
 
 public:
-	UFUNCTION(BlueprintCallable)
-	void InitPlayerUI(FPlayerData Player1, FPlayerData Player2);
+	void InitPlayerUI(FPlayerData* Player1, FPlayerData* Player2);
 	
-	UFUNCTION(BlueprintCallable)
-	void UpdatePlayerUI(FPlayerData Player1, FPlayerData Player2);
+	void UpdatePlayerUI(FPlayerData* Player1, FPlayerData* Player2);
 
 
 	UFUNCTION()
@@ -58,6 +56,16 @@ public:
 	void DeactiveFarmingModeWidget();
 	UFUNCTION()
 	void DeactiveTimeLimitModeWidget();
+	
+	UFUNCTION()
+	void ActivePlayerWidget();
+
+	UFUNCTION()
+	void ActiveEnemyWidget();
+
+	UFUNCTION()
+	void DeactiveEnemyWidget();
+
 
 	FPlayerData* Player1Data;
 	FPlayerData* Player2Data;

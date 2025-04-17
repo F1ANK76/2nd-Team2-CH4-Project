@@ -14,9 +14,6 @@ class ORIGINALSINPRJ_API UBTTask_RangeAttack : public UBTTaskNode
 {
 	GENERATED_BODY()
 
-public:
-	UBTTask_RangeAttack();
-
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& BTComponent, uint8* NodeMemory) override;
 	

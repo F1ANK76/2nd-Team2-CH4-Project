@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "../BaseWidget.h"
+#include "OriginalSinPrj/GameInstance/EnumSet.h"
 #include "BuffSelectWidget.generated.h"
 
 
@@ -22,64 +23,104 @@ struct FBuffInfo
     UTexture2D* BuffIcon;
 };
 
+class UTextBlock;
+class UImage;
+class ABuffSelectManager;
+class UButton;
+class UDataTable;
+class UCanvasPanel;
+struct FBuffDataStruct;
 
 
 UCLASS()
 class ORIGINALSINPRJ_API UBuffSelectWidget : public UBaseWidget
 {
 	GENERATED_BODY()
-	
-	// 버프 UI 텍스트 + 이미지
-	// 버프 선택 버튼
+
 
 public:
-    // 외부에서 버프 3개 설정 //자료형 바꿔야할듯
-    void InitializeBuffs(const TArray<FBuffInfo>& InBuffs);
+    virtual void InitWidget(UUISubsystem* uiSubsystem) override;
+    //virtual void NativeConstruct() override;
+
+    void InitializeBuffs(TArray<EBuffType> BuffList);
+    TArray<EBuffType> ReceivedBuffType;
+
+    UPROPERTY()	
+    UDataTable* MyCBuffTable; //CSV파일과 연동하여 데이터 불러들이기.
+    TArray<FBuffDataStruct*> Data;
+
+    bool bIsHovered1 = false;
+    bool bIsHovered2 = false;
+    bool bIsHovered3 = false;
+
 
 protected:
-    virtual void NativeConstruct() override;
-
-    // 각 카드 구성요소 (BindWidget으로 BP 연결)
-    UPROPERTY(meta = (BindWidget))
-    class UTextBlock* BuffName1;
-    UPROPERTY(meta = (BindWidget))
-    class UTextBlock* BuffDesc1;
-    UPROPERTY(meta = (BindWidget))
-    class UImage* BuffImage1;
-    UPROPERTY(meta = (BindWidget))
-    class UButton* BuffButton1;
-
-    // 2번 카드
-    UPROPERTY(meta = (BindWidget))
-    class UTextBlock* BuffName2;
-    UPROPERTY(meta = (BindWidget))
-    class UTextBlock* BuffDesc2;
-    UPROPERTY(meta = (BindWidget))
-    class UImage* BuffImage2;
-    UPROPERTY(meta = (BindWidget))
-    class UButton* BuffButton2;
-
-    // 3번 카드
-    UPROPERTY(meta = (BindWidget))
-    class UTextBlock* BuffName3;
-    UPROPERTY(meta = (BindWidget))
-    class UTextBlock* BuffDesc3;
-    UPROPERTY(meta = (BindWidget))
-    class UImage* BuffImage3;
-    UPROPERTY(meta = (BindWidget))
-    class UButton* BuffButton3;
-
-    UFUNCTION()
+    UFUNCTION(BlueprintCallable)
     void OnBuff1Clicked();
-    UFUNCTION()
+    UFUNCTION(BlueprintCallable)
     void OnBuff2Clicked();
-    UFUNCTION()
+    UFUNCTION(BlueprintCallable)
     void OnBuff3Clicked();
 
-    UFUNCTION()
-    void DeactivateOhterWidgets(int32 SelectedButtonIndex);
+    UFUNCTION(BlueprintCallable)
+    void OnHoveredButton1();
+    UFUNCTION(BlueprintCallable)
+    void OnUnHoveredButton1();
+    UFUNCTION(BlueprintCallable)
+    void OnHoveredButton2();
+    UFUNCTION(BlueprintCallable)
+    void OnUnHoveredButton2();
+    UFUNCTION(BlueprintCallable)
+    void OnHoveredButton3();
+    UFUNCTION(BlueprintCallable)
+    void OnUnHoveredButton3();
 
-private:
-    TArray<FBuffInfo> Buffs;
+
+
+    UFUNCTION()
+    void DeactivateOhterWidgets(int32 SelectedButtonIndex, EBuffType buff);
+
+
+
+protected:
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UTextBlock> BuffName1;
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UImage> BuffImage1;
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UButton> BuffButton1;
+
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UTextBlock> BuffName2;
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UImage> BuffImage2;
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UButton> BuffButton2;
+
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UTextBlock> BuffName3;
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UImage> BuffImage3;
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<UButton> BuffButton3;
+
+
+    UPROPERTY(Meta = (BindWidget))
+    TObjectPtr<UCanvasPanel> Buff1InfoBox;
+
+    UPROPERTY(Meta = (BindWidget))
+    TObjectPtr<UTextBlock> Buff1InfoText;
+
+    UPROPERTY(Meta = (BindWidget))
+    TObjectPtr<UCanvasPanel> Buff2InfoBox;
+
+    UPROPERTY(Meta = (BindWidget))
+    TObjectPtr<UTextBlock> Buff2InfoText;
+
+    UPROPERTY(Meta = (BindWidget))
+    TObjectPtr<UCanvasPanel> Buff3InfoBox;
+
+    UPROPERTY(Meta = (BindWidget))
+    TObjectPtr<UTextBlock> Buff3InfoText;
 
 };

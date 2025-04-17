@@ -5,6 +5,7 @@
 #include "Player/Abilies/BaseWitchAbility.h"
 #include "Player/BaseWitch.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Player/Struct/CharacterStateBuffer.h"
 
 UWitchAbilityComponent::UWitchAbilityComponent()
 {
@@ -35,8 +36,10 @@ void UWitchAbilityComponent::CallMove(const FVector2D& Value)
 	}
 }
 
-void UWitchAbilityComponent::CallNormalAttack()
+void UWitchAbilityComponent::CallNormalAttack(float AttackSpeed)
 {
+	AbilityBuffer.AttackSpeed = AttackSpeed;
+
 	if (!AbilityBuffer.LastAbilities.IsEmpty())
 	{
 		if (AbilityBuffer.LastAbilities[0] == JumpAbility)
@@ -61,8 +64,10 @@ void UWitchAbilityComponent::CallNormalAttack()
 	ExcuteCurrentAbility();
 }
 
-void UWitchAbilityComponent::CallSpecialAttack()
+void UWitchAbilityComponent::CallSpecialAttack(float AttackSpeed)
 {
+	AbilityBuffer.AttackSpeed = AttackSpeed;
+
 	if (!AbilityBuffer.LastAbilities.IsEmpty())
 	{
 		if (AbilityBuffer.LastAbilities[0] == JumpAbility)
@@ -87,8 +92,10 @@ void UWitchAbilityComponent::CallSpecialAttack()
 	ExcuteCurrentAbility();
 }
 
-void UWitchAbilityComponent::CallSkillAttack(int32 SkillNum)
+void UWitchAbilityComponent::CallSkillAttack(int32 SkillNum, float AttackSpeed)
 {
+	AbilityBuffer.AttackSpeed = AttackSpeed;
+	//UE_LOG(LogTemp, Warning, TEXT("Request Active Skill Num is %d"), SkillNum);
 	switch (SkillNum)
 	{
 	case 0:
@@ -222,14 +229,14 @@ void UWitchAbilityComponent::CallRoll(const FVector2D& DirectionVector)
 void UWitchAbilityComponent::ResponseEndAnim()
 {
 	bIsPlayingAnim = false;
-	//UE_LOG(LogTemp, Warning, TEXT("Response End Anim"));
+	//UE_LOG(LogTemp, Warning, TEXT("%s : Response End Anim"), *AbilityBuffer.ParentWitch->GetName());
 	if (IsValid(AbilityBuffer.CurrentAbility))
 	{
 		AbilityBuffer.CurrentAbility->UndoAbility(AbilityBuffer);
-		//UE_LOG(LogTemp, Warning, TEXT("Undo Ability %s"), *AbilityBuffer.CurrentAbility->GetName());
+		//UE_LOG(LogTemp, Warning, TEXT("%s : Undo Ability %s"), *AbilityBuffer.ParentWitch->GetName(), *AbilityBuffer.CurrentAbility->GetName());
 		if (AbilityBuffer.CurrentAbility == JumpAbility)
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("Undo Target Ability is Jump Ability"));
+			//UE_LOG(LogTemp, Warning, TEXT("%s : Undo Target Ability is Jump Ability"), *AbilityBuffer.ParentWitch->GetName());
 			GetWorld()->GetTimerManager().ClearTimer(BufferTimer);
 			ClearLastAbilities();
 		}
@@ -253,6 +260,30 @@ void UWitchAbilityComponent::PauseBufferTimer()
 	}
 }
 
+void UWitchAbilityComponent::ResetAbility()
+{
+	if (IsValid(AbilityBuffer.CurrentAbility))
+	{
+		AbilityBuffer.CurrentAbility->UndoAbility(AbilityBuffer);
+	}
+
+	GetWorld()->GetTimerManager().ClearTimer(BufferTimer);
+	ClearLastAbilities();
+
+	AbilityBuffer.bIsInAir = false;
+	AbilityBuffer.bIsJumpable = true;
+	AbilityBuffer.bIsLeft = false;
+	AbilityBuffer.bIsMoveable = true;
+	AbilityBuffer.bIsUseable = true;
+}
+
+void UWitchAbilityComponent::OnChangedCharacterState(const FCharacterStateBuffer& Buffer)
+{
+	AbilityBuffer.CurrentMana = Buffer.CurrentMana;
+	AbilityBuffer.MaxMana = Buffer.MaxMana;
+	AbilityBuffer.KnockGuage = Buffer.AirbornePercent;
+}
+
 void UWitchAbilityComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -264,10 +295,14 @@ void UWitchAbilityComponent::BeginPlay()
 
 	checkf(IsValid(ParentWitch), TEXT("Ability Component : Parent is invalid. Parent == nullptr || Not BaseWitch type"));
 
-
 	ParentMovementComp = ParentWitch->GetCharacterMovement();
 	AbilityBuffer.ParentWitch = ParentWitch;
 	AbilityBuffer.MovementComp = ParentMovementComp;
+
+	if (ParentWitch->HasAuthority())
+	{
+		ParentWitch->OnChangedState.AddDynamic(this, &ThisClass::OnChangedCharacterState);
+	}
 }
 
 ABaseWitchAbility* UWitchAbilityComponent::SpawnAbility(UClass* TargetClass)
@@ -302,6 +337,12 @@ ABaseWitchAbility* UWitchAbilityComponent::SpawnAbility(UClass* TargetClass)
 
 void UWitchAbilityComponent::ExcuteCurrentAbility()
 {
+	if (AbilityBuffer.ParentWitch->GetWitchState() == EWitchStateType::Die)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Character is Die State"));
+		return;
+	}
+
 	if (!IsValid(AbilityBuffer.CurrentAbility))
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("Current Ability is invalid"));
@@ -335,10 +376,12 @@ void UWitchAbilityComponent::ActiveTimer()
 {
 	if (!GetWorld()->GetTimerManager().TimerExists(BufferTimer))
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("%s : Timer is invalid. "), *AbilityBuffer.ParentWitch->GetName());
 		GetWorld()->GetTimerManager().SetTimer(BufferTimer, this, &ThisClass::ClearLastAbilities, BufferActiveTime, false);
 
 		if (bIsPlayingAnim)
 		{
+			//UE_LOG(LogTemp, Warning, TEXT("%s : Animation is Playing. Timer Pause. "), *AbilityBuffer.ParentWitch->GetName());
 			GetWorld()->GetTimerManager().PauseTimer(BufferTimer);
 		}
 
@@ -347,6 +390,7 @@ void UWitchAbilityComponent::ActiveTimer()
 
 	if (!GetWorld()->GetTimerManager().IsTimerPaused(BufferTimer))
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("%s : Timer is not paused. Set Timer. "), *AbilityBuffer.ParentWitch->GetName());
 		GetWorld()->GetTimerManager().SetTimer(BufferTimer, this, &ThisClass::ClearLastAbilities, BufferActiveTime, false);
 	}
 }
@@ -367,8 +411,10 @@ void UWitchAbilityComponent::RemoveOldAbilityFromArray()
 
 void UWitchAbilityComponent::ClearLastAbilities()
 {
+	//UE_LOG(LogTemp, Warning, TEXT("%s : Clear Last Ability Array"), *AbilityBuffer.ParentWitch->GetName());
 	AbilityBuffer.LastAbilities.Empty();
 	AbilityBuffer.CurrentAbility = nullptr;
+	AbilityBuffer.ComandDirection = EDirectionType::None;
 	AbilityBuffer.MoveValueVector = FVector2D::ZeroVector;
 }
 

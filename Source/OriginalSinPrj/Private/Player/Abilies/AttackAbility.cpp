@@ -5,6 +5,7 @@
 #include "Player/BaseWitch.h"
 #include "Player/Struct/AbilityDataBuffer.h"
 #include "Player/Projectile/BaseProjectile.h"
+#include "GameState/BaseGameState.h"
 
 bool AAttackAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 {
@@ -52,7 +53,7 @@ bool AAttackAbility::CheckExcuteable(FAbilityDataBuffer& Buffer)
 	return true;
 }
 
-void AAttackAbility::ExcuteAttackByType(const FAbilityDataBuffer& Buffer)
+void AAttackAbility::ExcuteAttackByType(FAbilityDataBuffer& Buffer)
 {
 	switch (AttackType)
 	{
@@ -96,7 +97,7 @@ void AAttackAbility::UndoAttackByType(const FAbilityDataBuffer& Buffer)
 
 void AAttackAbility::ExcuteMelleAttack(const FAbilityDataBuffer& Buffer)
 {
-	Buffer.ParentWitch->PlayEffect(MelleType);
+	CheckIsPlayWitchEffect(Buffer.ParentWitch, true);
 	Buffer.ParentWitch->PlayMelleAttack(MelleType, DefaultDamage + Buffer.AddedDamage);
 }
 
@@ -132,21 +133,25 @@ void AAttackAbility::ExcuteSpawnAttack(const FAbilityDataBuffer& Buffer)
 		ActiveProjectilePool.Add(ProjectileObj);
 		ProjectilePool.Remove(ProjectileObj);
 	}
+
+	CheckIsPlayWitchEffect(Buffer.ParentWitch, true);
 }
 
-void AAttackAbility::ExcuteSkillAttack(const FAbilityDataBuffer& Buffer)
+void AAttackAbility::ExcuteSkillAttack(FAbilityDataBuffer& Buffer)
 {
-	
+	CheckIsPlayWitchEffect(Buffer.ParentWitch, true);
 }
 
 void AAttackAbility::UndoMelleAttack(const FAbilityDataBuffer& Buffer)
 {
+	CheckIsPlayWitchEffect(Buffer.ParentWitch, false);
 	Buffer.ParentWitch->StopMelleAttack();
-	Buffer.ParentWitch->StopEffect();
 }
 
 void AAttackAbility::UndoSpawnAttack(const FAbilityDataBuffer& Buffer)
 {
+	CheckIsPlayWitchEffect(Buffer.ParentWitch, false);
+
 	if (ActiveProjectilePool.IsEmpty())
 	{
 		return;
@@ -164,19 +169,19 @@ void AAttackAbility::UndoSpawnAttack(const FAbilityDataBuffer& Buffer)
 
 void AAttackAbility::UndoSkillAttack(const FAbilityDataBuffer& Buffer)
 {
-
+	CheckIsPlayWitchEffect(Buffer.ParentWitch, false);
 }
 
 void AAttackAbility::UpdateProjectileData(const FAbilityDataBuffer& Buffer)
 {
 	ProjectileData.ParentWitch = Buffer.ParentWitch;
 	ProjectileData.AttackDamage = DefaultDamage + Buffer.AddedDamage;
-	ProjectileData.AttackDelay = AttackDelayTime;
-	ProjectileData.MoveDelay = MoveDelayTime;
-	ProjectileData.VisibleDelay = VisibleDelayTime;
-	ProjectileData.DeactiveDelay = DeactiveDelayTime;
+	ProjectileData.AttackDelay = AttackDelayTime * (1 - (Buffer.AttackSpeed - 1));
+	ProjectileData.MoveDelay = MoveDelayTime * (1 - (Buffer.AttackSpeed - 1));
+	ProjectileData.VisibleDelay = VisibleDelayTime * (1 - (Buffer.AttackSpeed - 1));
+	ProjectileData.DeactiveDelay = DeactiveDelayTime * (1 - (Buffer.AttackSpeed - 1));
 	ProjectileData.MoveDirection = MoveDirection;
-	ProjectileData.MoveSpeed = MoveSpeed;
+	ProjectileData.MoveSpeed = MoveSpeed * Buffer.AttackSpeed;
 }
 
 void AAttackAbility::CalculateProjectilePos(ABaseWitch* Parent)
@@ -232,5 +237,30 @@ void AAttackAbility::SpawnProjectileObj()
 	{
 		ProjectileObj = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileClass);
 		ProjectilePool.Add(ProjectileObj);
+	}
+}
+
+void AAttackAbility::CheckIsPlayWitchEffect(ABaseWitch* Parent, bool bIsStart)
+{
+	if (bIsPlayWitchEffect)
+	{
+		if (bIsStart)
+		{
+			Parent->PlayEffect(MelleType);
+
+			if (CheckValidOfGameState())
+			{
+				BaseGameState->PlayCharacterSound(Parent->GetAudioComponent(), Parent->GetAttackSoundType());
+			}
+		}
+		else
+		{
+			Parent->StopEffect();
+
+			if (CheckValidOfGameState())
+			{
+				BaseGameState->StopEffectSound(Parent->GetAudioComponent());
+			}
+		}
 	}
 }

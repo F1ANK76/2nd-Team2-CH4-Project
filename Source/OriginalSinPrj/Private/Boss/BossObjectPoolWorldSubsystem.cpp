@@ -5,21 +5,24 @@
 #include "Boss/Object/BossPoolableActorInterface.h"
 #include "Boss/Object/BossPoolObjectDataAsset.h"
 #include "Boss/Object/RangeAttackProjectile.h"
+#include "Boss/Object/IndexPatternProjectile.h"
+#include "Boss/BossCharacter.h"
 #include "GameFramework/GameMode.h"
 
 void UBossObjectPoolWorldSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-	PoolConfig = LoadObject<UBossPoolObjectDataAsset>(nullptr, TEXT("/Game/Resources/Boss/DA_BossPoolObject"));
-	
+	PoolConfig = LoadObject<UBossPoolObjectDataAsset>(nullptr, TEXT("/Game/DataAsset/DA_BossPoolObject"));
+
 	if (!IsValid(PoolConfig))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to Load BossPoolObject DataAsset"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("BossObjectPoolWorldSubsystem Initialized in Level : %s"), *GetWorld()->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("BossObjectPoolWorldSubsystem Initialized in Level : %s"),
+		       *GetWorld()->GetName());
 	}
 }
 
@@ -46,7 +49,8 @@ bool UBossObjectPoolWorldSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 }
 
 template <typename T>
-T* UBossObjectPoolWorldSubsystem::SpawnPooledActor(TSubclassOf<AActor> ClassToSpawn, const FVector& Location, const FRotator& Rotation)
+T* UBossObjectPoolWorldSubsystem::SpawnPooledActor(TSubclassOf<AActor> ClassToSpawn, const FVector& Location,
+                                                   const FRotator& Rotation)
 {
 	if (!IsValid(ClassToSpawn)) return nullptr;
 
@@ -81,14 +85,15 @@ T* UBossObjectPoolWorldSubsystem::SpawnPooledActor(TSubclassOf<AActor> ClassToSp
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParams.bNoFail = true;
 	SpawnParams.Owner = GetWorld()->GetAuthGameMode();
-	
+
 	AActor* NewActor = World->SpawnActor<AActor>(ClassToSpawn, Location, Rotation, SpawnParams);
 	if (IsValid(NewActor))
 	{
 		NewActor->SetReplicates(true);
 		NewActor->SetReplicateMovement(true);
+		NewActor->SetInstigator(Cast<APawn>(BossCharacter));
+		NewActor->SetOwner(Cast<APawn>(BossCharacter));
 		PoolList->PooledActors.Add(NewActor);
-		AllPooledActors.Add(NewActor);
 
 		if (NewActor->Implements<UBossPoolableActorInterface>())
 		{
@@ -96,6 +101,49 @@ T* UBossObjectPoolWorldSubsystem::SpawnPooledActor(TSubclassOf<AActor> ClassToSp
 		}
 	}
 	return Cast<T>(NewActor);
+}
+
+void UBossObjectPoolWorldSubsystem::PreSpawnPooledActor(TSubclassOf<AActor> ClassToSpawn, const FVector& Location,
+	const FRotator& Rotation, int32 NumberToSpawn)
+{
+	if (!IsValid(ClassToSpawn)) return;
+
+	FActorPoolList* PoolList = ObjectPools.Find(ClassToSpawn);
+	if (!PoolList)
+	{
+		FActorPoolList NewList;
+		ObjectPools.Add(ClassToSpawn, NewList);
+		PoolList = ObjectPools.Find(ClassToSpawn);
+	}
+
+	UWorld* World = GetWorld();
+	if (!IsValid(World)) return;
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.bNoFail = true;
+	SpawnParams.Owner = GetWorld()->GetAuthGameMode();
+
+	for (int i=0; i<NumberToSpawn; i++)
+	{
+		AActor* NewActor = World->SpawnActor<AActor>(ClassToSpawn, Location, Rotation, SpawnParams);
+		if (IsValid(NewActor))
+		{
+			NewActor->SetReplicates(true);
+			NewActor->SetReplicateMovement(true);
+			NewActor->SetInstigator(Cast<APawn>(BossCharacter));
+			NewActor->SetOwner(Cast<APawn>(BossCharacter));
+			PoolList->PooledActors.Add(NewActor);
+
+			if (NewActor->Implements<UBossPoolableActorInterface>())
+			{
+				IBossPoolableActorInterface::Execute_OnPooledObjectSpawn(NewActor);
+				IBossPoolableActorInterface::Execute_OnPooledObjectReset(NewActor);
+			}
+		}
+	}
+	
+	return;
 }
 
 void UBossObjectPoolWorldSubsystem::ReturnActorToPool(AActor* Actor)
@@ -107,7 +155,8 @@ void UBossObjectPoolWorldSubsystem::ReturnActorToPool(AActor* Actor)
 	}
 }
 
-ARangeAttackProjectile* UBossObjectPoolWorldSubsystem::SpawnRangeAttackProjectile(const FVector& Location, const FRotator& Rotation)
+ARangeAttackProjectile* UBossObjectPoolWorldSubsystem::SpawnRangeAttackProjectile(
+	const FVector& Location, const FRotator& Rotation)
 {
 	if (IsValid(PoolConfig->RangeAttackProjectileClass))
 	{
@@ -141,7 +190,7 @@ ARushBossClone* UBossObjectPoolWorldSubsystem::SpawnRushBossClone(const FVector&
 }
 
 ADestructibleObject* UBossObjectPoolWorldSubsystem::SpawnDestructibleObject(const FVector& Location,
-	const FRotator& Rotation)
+                                                                            const FRotator& Rotation)
 {
 	if (IsValid(PoolConfig->DestructibleObjectClass))
 	{
@@ -150,4 +199,32 @@ ADestructibleObject* UBossObjectPoolWorldSubsystem::SpawnDestructibleObject(cons
 
 	UE_LOG(LogTemp, Error, TEXT("No DestructibleObjectClass in Data Asset"));
 	return nullptr;
+}
+
+ABossPlatform* UBossObjectPoolWorldSubsystem::SpawnBossPlatform(const FVector& Location, const FRotator& Rotation)
+{
+	if (IsValid(PoolConfig->BossPlatformClass))
+	{
+		return SpawnPooledActor<ABossPlatform>(PoolConfig->BossPlatformClass, Location, Rotation);
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("No BossPlatformClass in Data Asset"));
+	return nullptr;
+}
+
+AIndexPatternProjectile* UBossObjectPoolWorldSubsystem::SpawnIndexPatternProjectile(const FVector& Location,
+	const FRotator& Rotation)
+{
+	if (IsValid(PoolConfig->IndexPatternProjectileClass))
+	{
+		return SpawnPooledActor<AIndexPatternProjectile>(PoolConfig->IndexPatternProjectileClass, Location, Rotation);
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("No IndexPatternProjectileClass in Data Asset"));
+	return nullptr;
+}
+
+void UBossObjectPoolWorldSubsystem::SetBossReference(ABossCharacter* InBossCharacter)
+{
+	BossCharacter = InBossCharacter;
 }
