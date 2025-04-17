@@ -9,6 +9,7 @@
 #include "Player/BaseWitch.h"
 #include "Player/Struct/ProjectileDataBuffer.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Components/AudioComponent.h"
 
 ABaseProjectile::ABaseProjectile()
 {
@@ -18,10 +19,12 @@ ABaseProjectile::ABaseProjectile()
 	CollisionComp = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision Comp"));
 	EffectComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Effect Comp"));
 	MoveComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Move Comp"));
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Comp"));
 
 	SetRootComponent(SceneComp);
 	CollisionComp->SetupAttachment(RootComponent);
 	EffectComp->SetupAttachment(RootComponent);
+	AudioComp->SetupAttachment(RootComponent);
 	
 	CollisionComp->SetGenerateOverlapEvents(true);
 	CollisionComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
@@ -175,6 +178,21 @@ void ABaseProjectile::ResetProjectile()
 {
 	bCompleteDeactive = true;
 	DeactiveProjectile();
+}
+
+void ABaseProjectile::RequestPlayStratSound()
+{
+	
+}
+
+void ABaseProjectile::RequestPlayAttackSound()
+{
+
+}
+
+void ABaseProjectile::RequestPlayEndSound()
+{
+	// None is Audio Stop.
 }
 
 void ABaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

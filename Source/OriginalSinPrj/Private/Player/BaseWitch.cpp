@@ -310,9 +310,11 @@ void ABaseWitch::ApplyAttack(AActor* Target, float ApplyValue)
 
 	float Result = Target->TakeDamage(RealDamage, FDamageEvent(), GetController(), this);
 
+	IncreaseCurrentMana();
+	CharacterBuffer.CurrentMana = 5;
 	if (Result > 0)
 	{
-		IncreaseCurrentMana();
+		
 	}
 }
 

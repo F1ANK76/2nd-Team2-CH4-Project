@@ -5,12 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Player/WitchTypes.h"
+#include "OriginalSinPrj/GameInstance/EnumSet.h"
 #include "BaseProjectile.generated.h"
 
 class UNiagaraComponent;
 class UBoxComponent;
 class ABaseWitch;
 class UProjectileMovementComponent;
+class UAudioComponent;
 struct FAbilityDataBuffer;
 struct FProjectileDataBuffer;
 
@@ -58,6 +60,11 @@ protected:
 
 	void ResetProjectile();
 
+	void RequestPlayStratSound();
+	void RequestPlayAttackSound();
+	void RequestPlayEndSound();
+	
+
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UNiagaraComponent> EffectComp = nullptr;
@@ -67,6 +74,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USceneComponent> SceneComp = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
+	TObjectPtr<UAudioComponent> AudioComp = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UProjectileMovementComponent> MoveComp = nullptr;
@@ -79,6 +89,15 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	bool bIsAgainAttack = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	ECharacterSoundType StartSoundType = ECharacterSoundType::None;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	ECharacterSoundType AttackSoundType = ECharacterSoundType::None;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	ECharacterSoundType EndSoundType = ECharacterSoundType::None;
 
 protected:
 	UPROPERTY()
