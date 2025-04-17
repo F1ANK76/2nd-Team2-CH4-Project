@@ -7,10 +7,7 @@
 #include "OriginalSinPrj/GameInstance/EnumSet.h"
 #include "BaseWidget.generated.h"
 
-
 class UUISubsystem;
-enum EWidgetType;
-enum ESceneType;
 
 UCLASS()
 class ORIGINALSINPRJ_API UBaseWidget : public UUserWidget
