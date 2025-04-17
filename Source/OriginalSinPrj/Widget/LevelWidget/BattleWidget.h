@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "../BaseWidget.h"
+#include "OriginalSinPrj/Widget/AddedWidget/PlayerStateWidget.h"
 #include "BattleWidget.generated.h"
 
 struct FPlayerData;
@@ -41,6 +42,7 @@ private:
 
 public:
 	void InitPlayerUI(FPlayerData* Player1, FPlayerData* Player2);
+	
 	void UpdatePlayerUI(FPlayerData* Player1, FPlayerData* Player2);
 
 

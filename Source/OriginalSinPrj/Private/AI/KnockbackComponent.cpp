@@ -7,8 +7,8 @@ UKnockbackComponent::UKnockbackComponent()
 {
     KnockbackGauge = 0.0f;
     MaxKnockbackGauge = 200.0f;
-    MinZKnockback = 0.5f;
-    ZKnockbackStrengthMultiplier = 0.0015f;
+    MinZKnockback = 0.12f; // ³Ë¹é Á¶Àý
+    ZKnockbackStrengthMultiplier = 0.001f;
 
     SetIsReplicatedByDefault(true);
 }
@@ -16,8 +16,6 @@ UKnockbackComponent::UKnockbackComponent()
 void UKnockbackComponent::BeginPlay()
 {
     Super::BeginPlay();
-
-    //KnockbackGauge = 0.0f;
 }
 
 void UKnockbackComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

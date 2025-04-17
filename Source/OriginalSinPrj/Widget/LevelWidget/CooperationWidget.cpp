@@ -13,6 +13,9 @@
 void UCooperationWidget::InitWidget(UUISubsystem* uiSubsystem)
 {
     Super::InitWidget(uiSubsystem);
+
+
+    DeactivateAllWidgets();
 }
 
 void UCooperationWidget::NativeConstruct()
@@ -28,11 +31,7 @@ void UCooperationWidget::NativeConstruct()
     FLinearColor(0.74f, 0.68f, 0.25f, 1.f),
     FLinearColor(0.74f, 0.26f, 0.71f, 1.f),
     FLinearColor(0.f, 0.f, 0.f, 0.37f)
-    };
-
-    /*
-    DeactivateAllWidgets();
-    */
+    };    
 }
 
 

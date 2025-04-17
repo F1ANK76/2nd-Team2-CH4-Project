@@ -7,6 +7,7 @@
 #include "BossPoolableActorInterface.h"
 #include "RangeAttackProjectile.generated.h"
 
+class UNiagaraComponent;
 class USphereComponent;
 class UProjectileMovementComponent;
 
@@ -25,17 +26,21 @@ protected:
 	virtual void OnPooledObjectSpawn_Implementation() override;
 	virtual void OnPooledObjectReset_Implementation() override;
 
-	UPROPERTY(VisibleAnywhere, Category = "RangeAttack | Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RangeAttack | Components")
 	USceneComponent* SceneRoot;
 	
-	UPROPERTY(VisibleAnywhere, Category = "RangeAttack | Components")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RangeAttack | Components")
 	UStaticMeshComponent* MeshComponent;
 
-	UPROPERTY(EditDefaultsOnly, Category = "RangeAttack | Components")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RangeAttack | Components")
 	USphereComponent* SphereComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "RangeAttack | Components")
 	UProjectileMovementComponent* ProjectileMovementComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RangeAttack | Components")
+	UNiagaraComponent* NiagaraComponent;
+	
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RangeAttack | Property")
 	float Damage;

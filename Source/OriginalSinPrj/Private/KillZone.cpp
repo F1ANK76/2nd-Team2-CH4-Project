@@ -2,6 +2,7 @@
 #include "LevelObject/BasePlatform.h"
 #include "Player/BaseWitch.h"
 #include "GameMode/CooperationGameMode.h"
+#include "GameMode/FarmingGameMode.h"
 #include "Net/UnrealNetwork.h"
 #include "Components/BoxComponent.h"
 #include "AI/MonsterCharacter.h" 
@@ -61,11 +62,24 @@ void AKillZone::OnOverlapBegin(
 
 void AKillZone::Server_TriggerOverlapMonsterEvent_Implementation(AMonsterCharacter* Monster)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Server_TriggerOverlapMonsterEvent_Implementation Overlap Event Begin"));
-
-	if (ACooperationGameMode* CoopMode = Cast<ACooperationGameMode>(GetWorld()->GetAuthGameMode()))
+	UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance());
+	if (MyGI)
 	{
-		CoopMode->OnDeathPlayer(Monster, Monster->GetActorLocation());
+		if (MyGI->GetCurrentLevelType() == ELevelType::FarmingLevel)
+		{
+			if (AFarmingGameMode* FarmMode = Cast<AFarmingGameMode>(GetWorld()->GetAuthGameMode()))
+			{
+				FarmMode->OnDeathMonster(Monster, Monster->GetActorLocation());
+			}
+		}
+
+		if (MyGI->GetCurrentLevelType() == ELevelType::CooperationLevel)
+		{
+			if (ACooperationGameMode* CoopMode = Cast<ACooperationGameMode>(GetWorld()->GetAuthGameMode()))
+			{
+				CoopMode->OnDeathMonster(Monster, Monster->GetActorLocation());
+			}
+		}
 	}
 }
 
@@ -73,6 +87,25 @@ void AKillZone::Server_TriggerOverlapWitchEvent_Implementation(ABaseWitch* Witch
 {
 	UE_LOG(LogTemp, Warning, TEXT("Server_TriggerOverlapWitchEvent_Implementation Overlap Event Begin"));
 
-	WitchActor->DecreaseLifePoint();
-	WitchActor->OnOverlapedDeathZone();
+	UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance());
+	if (MyGI)
+	{
+		if (MyGI->GetCurrentLevelType() == ELevelType::FarmingLevel)
+		{
+			if (AFarmingGameMode* FarmMode = Cast<AFarmingGameMode>(GetWorld()->GetAuthGameMode()))
+			{
+				FarmMode->OnDeathPlayer(WitchActor, WitchActor->GetActorLocation());
+			}
+		}
+
+		if (MyGI->GetCurrentLevelType() == ELevelType::CooperationLevel)
+		{
+			if (ACooperationGameMode* CoopMode = Cast<ACooperationGameMode>(GetWorld()->GetAuthGameMode()))
+			{
+				WitchActor->DecreaseLifePoint();
+				WitchActor->OnOverlapedDeathZone();
+			}
+		}
+	}
+
 }

@@ -35,6 +35,7 @@ public:
 
 	template <typename T>
 	T* SpawnPooledActor(TSubclassOf<AActor> ClassToSpawn, const FVector& Location, const FRotator& Rotation);
+	void PreSpawnPooledActor(TSubclassOf<AActor> ClassToSpawn, const FVector& Location, const FRotator& Rotation, int32 NumberToSpawn);
 	void ReturnActorToPool(AActor* Actor);
 
 	ARangeAttackProjectile* SpawnRangeAttackProjectile(const FVector& Location, const FRotator& Rotation);
@@ -42,6 +43,7 @@ public:
 	ARushBossClone* SpawnRushBossClone(const FVector& Location, const FRotator& Rotation);
 	ADestructibleObject* SpawnDestructibleObject(const FVector& Location, const FRotator& Rotation);
 	ABossPlatform* SpawnBossPlatform(const FVector& Location, const FRotator& Rotation);
+	AIndexPatternProjectile* SpawnIndexPatternProjectile(const FVector& Location, const FRotator& Rotation);
 
 	TMap<TSubclassOf<AActor>, FActorPoolList> GetObjectPools() const { return ObjectPools; }
 	void SetBossReference(ABossCharacter* InBossCharacter);

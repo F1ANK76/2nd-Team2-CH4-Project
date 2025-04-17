@@ -4,6 +4,9 @@
 #include "Boss/Object/IndexPatternProjectile.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Engine/DamageEvents.h"
+#include "Net/UnrealNetwork.h"
+#include "Player/BaseWitch.h"
 
 AIndexPatternProjectile::AIndexPatternProjectile()
 {
@@ -13,7 +16,7 @@ AIndexPatternProjectile::AIndexPatternProjectile()
 	LifeTime = 5.0f;
 	Speed = 2500.0f;
 	bIsActivate = false;
-	
+
 	bReplicates = true;
 	SetReplicateMovement(true);
 
@@ -46,22 +49,28 @@ void AIndexPatternProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (!HasAuthority()) return;
+	//if (!HasAuthority()) return;
 
 	bIsActivate = false;
-	MulticastSetActive(bIsActivate);
+	SetActorHiddenInGame(true);
+	SetActorEnableCollision(false);
+	//MulticastSetActive(bIsActivate);
 	ProjectileMovementComponent->StopMovementImmediately();
 	ProjectileMovementComponent->Deactivate();
 }
 
 void AIndexPatternProjectile::OnPooledObjectSpawn_Implementation()
 {
-	if (!HasAuthority()) return;
+	//if (!HasAuthority()) return;
 
 	bIsActivate = true;
-	MulticastSetActive(bIsActivate);
+	SetActorHiddenInGame(false);
+	SetActorEnableCollision(true);
+	//MulticastSetActive(bIsActivate);
 	ProjectileMovementComponent->Activate();
 
+	ApplyMaterialFromIndex(bIsFirstIndex);
+	
 	GetWorldTimerManager().SetTimer(
 		LifeTimeTimerHandle,
 		this,
@@ -72,10 +81,12 @@ void AIndexPatternProjectile::OnPooledObjectSpawn_Implementation()
 
 void AIndexPatternProjectile::OnPooledObjectReset_Implementation()
 {
-	if (!HasAuthority()) return;
+	//if (!HasAuthority()) return;
 
 	bIsActivate = false;
-	MulticastSetActive(bIsActivate);
+	//MulticastSetActive(bIsActivate);
+	SetActorHiddenInGame(true);
+	SetActorEnableCollision(false);
 	ProjectileMovementComponent->StopMovementImmediately();
 	ProjectileMovementComponent->Deactivate();
 	ProjectileMovementComponent->Velocity = FVector::ZeroVector;
@@ -86,18 +97,81 @@ void AIndexPatternProjectile::OnPooledObjectReset_Implementation()
 	}
 }
 
+void AIndexPatternProjectile::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AIndexPatternProjectile, bIsFirstIndex);
+}
+
 void AIndexPatternProjectile::MulticastSetActive_Implementation(bool bIsActive)
 {
 	SetActorHiddenInGame(!bIsActive);
 	SetActorEnableCollision(bIsActive);
 }
 
-void AIndexPatternProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweap, const FHitResult& SweapResult)
+void AIndexPatternProjectile::OnRep_IsFirstIndex()
 {
+	ApplyMaterialFromIndex(bIsFirstIndex);
 }
 
-void AIndexPatternProjectile::SetDirection(const FVector& InDirection)
+void AIndexPatternProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+                                             UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweap,
+                                             const FHitResult& SweapResult)
 {
+	if (!HasAuthority()) return;
+	
+	if (IsValid(OtherActor) && OtherActor->IsA(ABaseWitch::StaticClass()))
+	{
+		ABaseWitch* HitWitch = Cast<ABaseWitch>(OtherActor);
+		if (IsValid(HitWitch))
+		{
+			FDamageEvent DamageEvent;
+
+			if (HitWitch->GetColorIndex() == bIsFirstIndex)
+			{
+				HitWitch->TakeDamage(
+				Damage,
+				DamageEvent,
+				GetInstigatorController(),
+				this);
+			}
+			
+			IBossPoolableActorInterface::Execute_OnPooledObjectReset(this);
+		}
+	}
+	
+	if (IsValid(OtherActor) && OtherActor->ActorHasTag("Ground"))
+	{
+		IBossPoolableActorInterface::Execute_OnPooledObjectReset(this);
+	}
+}
+
+void AIndexPatternProjectile::ApplyMaterialFromIndex(bool bFirst)
+{
+	UMaterialInterface* MaterialToApply = bFirst ? Material1 : Material2;
+	if (IsValid(MaterialToApply))
+	{
+		MeshComponent->SetMaterial(0, MaterialToApply);
+	}
+}
+
+void AIndexPatternProjectile::SetDirectionAndVelocity(const FVector& InDirection)
+{
+	//if (!HasAuthority()) return;
+
 	Direction = InDirection;
+	ProjectileMovementComponent->Velocity = Direction * Speed;
+}
+
+void AIndexPatternProjectile::SetIndex(int32 InIndex)
+{
+	if (!HasAuthority()) return;
+	
+	UMaterialInterface* MaterialToApply = nullptr;
+
+	//InIndex : 0, 1, 2, 3
+	//bIsFirstIndex : true, false, true, false
+	bIsFirstIndex = ((InIndex + 1) % 2 == 1);
+	ApplyMaterialFromIndex(bIsFirstIndex);
 }

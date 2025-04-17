@@ -4,19 +4,21 @@
 #include "Boss/Object/DestructibleObject.h"
 
 #include "Boss/BossController.h"
+#include "Engine/DamageEvents.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/BaseWitch.h"
 
 
 ADestructibleObject::ADestructibleObject()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	//N번 공격하면 파괴
-	HP = 3;
+	CurrentHp = 1;
 	bIsActivate = false;
 	
 	bReplicates = true;
+	SetReplicateMovement(true);
 
 	SceneRoot = CreateDefaultSubobject<USceneComponent>("SceneRoot");
 	SetRootComponent(SceneRoot);
@@ -42,6 +44,20 @@ void ADestructibleObject::BeginPlay()
 	SetActorHiddenInGame(true);
 }
 
+float ADestructibleObject::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+	class AController* EventInstigator, AActor* DamageCauser)
+{
+	if (!HasAuthority()) return 0.0f;
+	if (!IsValid(DamageCauser)) return 0.0f;
+	
+	CurrentHp -= DamageAmount;
+	if (CurrentHp < 0) CurrentHp = 0;
+
+	if (CurrentHp <= 0) IBossPoolableActorInterface::Execute_OnPooledObjectReset(this);
+	
+	return 0.0f;
+}
+
 void ADestructibleObject::OnPooledObjectSpawn_Implementation()
 {
 	if (!HasAuthority()) return;
@@ -61,28 +77,15 @@ void ADestructibleObject::OnPooledObjectReset_Implementation()
 	MulticastSetActive(bIsActivate);
 }
 
-float ADestructibleObject::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, int32 DamageTypeID,
-	AController* EventInstigator, AActor* DamageCauser)
-{
-	if (!IsValid(DamageCauser)) return 0.0f;
-
-	//플레이어 합친 이후 데미지 로직 작성 필요
-
-	//임시
-	return 0.0f;
-}
-
 void ADestructibleObject::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                          UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (!HasAuthority()) return;
 
-	//데미지 로직 수행
-
 	//파괴
-	if (HP <= 0)
+	if (CurrentHp <= 0)
 	{
-		//파괴 이펙트 추가 필요
+		//파괴 이펙트 추가 필요 : OnPooledObjectReset쪽에 붙이는것도 괜찮을지도?
 
 		IBossPoolableActorInterface::Execute_OnPooledObjectReset(this);
 	}

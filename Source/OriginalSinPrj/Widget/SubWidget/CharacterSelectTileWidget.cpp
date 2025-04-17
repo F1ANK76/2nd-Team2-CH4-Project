@@ -27,13 +27,16 @@ void UCharacterSelectTileWidget::SetCharacterType(ECharacterType Type)
 
 void UCharacterSelectTileWidget::SetCharacterImage(UTexture2D* CharacterImg)
 {
-	CharacterImage->SetBrushFromTexture(CharacterImg);
+	if (IsValid(CharacterImage))
+	{
+		CharacterImage->SetBrushFromTexture(CharacterImg);
+	}
 }
 
 void UCharacterSelectTileWidget::HandleButtonClicked()
 {
 	UE_LOG(LogTemp, Log, TEXT("Tile with was clicked!"));
-    OnCharacterSelectTileClicked.Broadcast(MyTileIndex); // ��ư ������ �̺�Ʈ ����
+    OnCharacterSelectTileClicked.Broadcast(CharacterType); // ��ư ������ �̺�Ʈ ����
 }
 
 

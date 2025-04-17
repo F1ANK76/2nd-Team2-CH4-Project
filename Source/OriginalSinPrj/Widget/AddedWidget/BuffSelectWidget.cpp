@@ -7,11 +7,15 @@
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "GameInstance/LevelSubsystem.h"
+#include "OriginalSinPrj/GameInstance/DataSubsystem.h"
 #include "GameState/CooperationGameState.h"
 #include "GameMode/CooperationGameMode.h"
 #include "OriginalSinPrj/Public/BuffSelectManager.h"
+#include "OriginalSinPrj/GameInstance/Struct/BuffDataStruct.h"
 #include "OriginalSinPrj/Public/Player/Controller/WitchController.h"
 #include "EngineUtils.h"   
+
+
 
 void UBuffSelectWidget::InitWidget(UUISubsystem* uiSubsystem)
 {
@@ -38,6 +42,12 @@ void UBuffSelectWidget::InitWidget(UUISubsystem* uiSubsystem)
     Buff1InfoBox->SetVisibility(ESlateVisibility::Collapsed);
     Buff2InfoBox->SetVisibility(ESlateVisibility::Collapsed);
     Buff3InfoBox->SetVisibility(ESlateVisibility::Collapsed);
+    UDataSubsystem* DataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UDataSubsystem>();
+    if (DataSubsystem)
+    {
+        Data = DataSubsystem->GetBuffDataArray();
+        // 사용...
+    }
 }
 
 void UBuffSelectWidget::InitializeBuffs(TArray<EBuffType> BuffList)
@@ -50,16 +60,71 @@ void UBuffSelectWidget::InitializeBuffs(TArray<EBuffType> BuffList)
     BuffButton2->SetVisibility(ESlateVisibility::Visible);
     BuffButton3->SetVisibility(ESlateVisibility::Visible);
 
+    
+    for (const FBuffDataStruct* BuffData : Data)
+    {
+        
+        if (!BuffData) continue;
+        if (BuffData->BuffType == BuffList[0])
+        {
+            if (BuffName1)
+            {
+                FText DisplayText = StaticEnum<EBuffType>()->GetDisplayNameTextByValue((int64)BuffData->BuffType);
+                BuffName1->SetText(DisplayText);
+            }
+            if (Buff1InfoText)
+            {
+                Buff1InfoText->SetText(FText::FromString(BuffData->Description));
+            }
+            if (BuffImage1 && BuffData->BuffTexture) // BuffIcon이 UTexture2D*
+            {
+                FSlateBrush Brush;
+                Brush.SetResourceObject(BuffData->BuffTexture);
+                Brush.ImageSize = FVector2D(64, 64); // 필요 시 사이즈 조정
+                BuffImage1->SetBrush(Brush);
+            }
+        }
+        else if (BuffData->BuffType == BuffList[1])
+        {
+            if (BuffName2)
+            {
+                FText DisplayText = StaticEnum<EBuffType>()->GetDisplayNameTextByValue((int64)BuffData->BuffType);
+                BuffName2->SetText(DisplayText);
+            }
+            if (Buff2InfoText)
+            {
+                Buff2InfoText->SetText(FText::FromString(BuffData->Description));
+            }
+            if (BuffImage2 && BuffData->BuffTexture) // BuffIcon이 UTexture2D*
+            {
+                FSlateBrush Brush;
+                Brush.SetResourceObject(BuffData->BuffTexture);
+                Brush.ImageSize = FVector2D(64, 64); // 필요 시 사이즈 조정
+                BuffImage2->SetBrush(Brush);
+            }
+        }
+        else if (BuffData->BuffType == BuffList[2])
+        {
+            if (BuffName3)
+            {
+                FText DisplayText = StaticEnum<EBuffType>()->GetDisplayNameTextByValue((int64)BuffData->BuffType);
+                BuffName3->SetText(DisplayText);
+            }
+            if (Buff3InfoText)
+            {
+                Buff3InfoText->SetText(FText::FromString(BuffData->Description));
+            }
+            if (BuffImage3 && BuffData->BuffTexture) // BuffIcon이 UTexture2D*
+            {
+                FSlateBrush Brush;
+                Brush.SetResourceObject(BuffData->BuffTexture);
+                Brush.ImageSize = FVector2D(64, 64); // 필요 시 사이즈 조정
+                BuffImage3->SetBrush(Brush);
+            }
+        }
+    }
 
-/*
-    BuffName1->SetText(FText::FromString(BuffTitle1));
 
-    FString BuffTitle2 = TEXT("공격력 증가");
-    BuffName2->SetText(FText::FromString(BuffTitle2));
-
-    FString BuffTitle3 = TEXT("방어력 증가");
-    BuffName3->SetText(FText::FromString(BuffTitle3));
-    */
 
 
 

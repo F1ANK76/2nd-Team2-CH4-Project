@@ -24,11 +24,21 @@ void ABossController::BeginPlay()
 	{
 		PoolWorldSubsystem = GetWorld()->GetSubsystem<UBossObjectPoolWorldSubsystem>();
 		PoolWorldSubsystem->SetBossReference(Cast<ABossCharacter>(GetPawn()));
+		//PoolWorldSubsystem->PreSpawnPooledActor(AIndexPatternProjectile::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, 100);
 		UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("PlatformSpawnTarget"), PlatformSpawnTargets);
 		FindPlatforms();
 
 		//일단 임시, 추후 GameMode에서 호출
-		StartBattle();
+		//StartBattle(TArray<AActor*> 이름 아무렇게)
+		//지금은 가까운 플레이어를 타겟으로 함
+		//랜덤 대상을 위해서 GameMode에서 플레이어 정보 인자로 받아옴
+		FTimerHandle StartBattleTimerHandle;
+		GetWorldTimerManager().SetTimer(
+			StartBattleTimerHandle,
+			this,
+			&ABossController::StartBattle,
+			5.0f,
+			false);
 	}
 }
 
@@ -47,14 +57,13 @@ void ABossController::SetOnePlusDestructibleObjectCount()
 void ABossController::UpdateBossFacingDirection()
 {
 	if (!HasAuthority()) return;
-	ABossCharacter* Boss = Cast<ABossCharacter>(GetPawn());
-	if (!IsValid(Boss)) return;
+	if (!IsValid(BossCharacter)) return;
 
-	TargetPlayerPawn = FindClosestPlayer();
-	if (IsValid(TargetPlayerPawn))
+	FacingTargetPlayerPawn = FindClosestPlayer();
+	if (IsValid(FacingTargetPlayerPawn))
 	{
 		GetBlackboardComponent()->SetValueAsBool("bIsTargetPlayerSet", true);
-		Boss->UpdateFacingDirection(TargetPlayerPawn);
+		BossCharacter->UpdateFacingDirection(FacingTargetPlayerPawn);
 	}
 	else
 	{
@@ -98,63 +107,38 @@ APawn* ABossController::FindClosestPlayer()
 	}
 }
 
+//void ABossController::StartBattle(TArray<AActor*> Players)
 void ABossController::StartBattle()
 {
 	if (!HasAuthority()) return;
 
-	if (IsValid(BossBehaviorTree))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Running Behavior Tree!"));
-		RunBehaviorTree(BossBehaviorTree);
-		GetBlackboardComponent()->SetValueAsInt("BossHpPercent", 100);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Running Behavior Tree Failed!!"));
-		return;
-	}
+	BossCharacter = Cast<ABossCharacter>(GetPawn());
+	BossAnimInstance = BossCharacter->GetMesh()->GetAnimInstance();
+	
+	// StartBattle 바뀌면 주석 해제
+	// if (Players.Num() != 0)
+	// {
+	// 	for (AActor* Player : Players)
+	// 	{
+	// 		ACharacter* PlayerCharacter = Cast<ACharacter>(Player);
+	// 		PlayerCharacters.Add(PlayerCharacter);
+	// 	}
+	// }
 
 	bIsBattleStart = true;
-	GetBlackboardComponent()->SetValueAsBool("bIsBattleStart", true);
-
-	//파괴가능 오브젝트 스폰
-	GetWorld()->GetTimerManager().SetTimer(
-		ObjectSpawnTimerHandle,
-		this,
-		&ABossController::SpawnDestructibleObject,
-		DestructibleObjectSpawnDelay,
-		true);
-
-	//플레이어 찾기
-	GetWorld()->GetTimerManager().SetTimer(
-		FindClosestPlayerTimerHandle,
-		this,
-		&ABossController::UpdateBossFacingDirection,
-		FindClosestPlayerDelay,
-		true
-	);
-
-	//보스 체력 체크 및 업데이트
-	GetWorld()->GetTimerManager().SetTimer(
-		BossHpCheckTimerHandle,
-		this,
-		&ABossController::UpdateBossHpForSpecialAttack,
-		CheckBossHpDelay,
-		true);
-
-	//특수공격 타이머 
-	GetWorld()->GetTimerManager().SetTimer(
-		SpecialAttackTriggerTimerHandle,
-		this,
-		&ABossController::TriggerSpecialAttack,
-		SpecialAttackDelay,
-		true);
+	
+	if (IsValid(BossCharacter->StartBattleMontage) && IsValid(BossAnimInstance))
+	{
+		if (!BossAnimInstance->OnMontageEnded.IsAlreadyBound(this, &ABossController::OnStartMontageEnded))
+		{
+			BossAnimInstance->OnMontageEnded.AddDynamic(this, &ABossController::OnStartMontageEnded);	
+		}
+	}
+	BossCharacter->PlayStartBattleMontage();
 }
 
 void ABossController::EndBattle()
 {
-	ABossCharacter* BossCharacter = Cast<ABossCharacter>(GetPawn());
-
 	bIsBattleStart = false;
 	GetWorldTimerManager().ClearTimer(FindClosestPlayerTimerHandle);
 	GetWorldTimerManager().ClearTimer(ObjectSpawnTimerHandle);
@@ -166,17 +150,28 @@ void ABossController::EndBattle()
 	{
 		BrainComponent->StopLogic(TEXT("Boss Battle Ended"));
 	}
+	
+	if (IsValid(BossAnimInstance) && BossCharacter->GetIsDead())
+	{
+		static FName IsDeadName(TEXT("bIsDead"));
+		FBoolProperty* BoolProperty = FindFProperty<FBoolProperty>(BossAnimInstance->GetClass(), IsDeadName);
+		if (BoolProperty) BoolProperty->SetPropertyValue_InContainer(BossAnimInstance, BossCharacter->GetIsDead());
+	}
+	else if (IsValid(BossAnimInstance) && bIsBattleStart)
+	{
+		static FName IsBattleStartName(TEXT("bIsBattleStart"));
+		FBoolProperty* BoolProperty = FindFProperty<FBoolProperty>(BossAnimInstance->GetClass(), IsBattleStartName);
+		if (BoolProperty) BoolProperty->SetPropertyValue_InContainer(BossAnimInstance, bIsBattleStart);
+	}
 }
 
 void ABossController::TriggerSpecialAttack()
 {
 	GetBlackboardComponent()->SetValueAsBool("bCanSpecialAttack", true);
-	UE_LOG(LogTemp, Warning, TEXT("CanSpecialAttack Set"));
 }
 
 void ABossController::UpdateBossHpForSpecialAttack()
 {
-	ABossCharacter* BossCharacter = Cast<ABossCharacter>(GetPawn());
 	if (!IsValid(BossCharacter)) return;
 
 	int32 HpPercent = BossCharacter->GetCurrentHP() / BossCharacter->GetMaxHP() * 100;
@@ -190,7 +185,6 @@ void ABossController::UpdateBossHpForSpecialAttack()
 		bool bAlreadyExecuted = GetBlackboardComponent()->GetValueAsBool("bIsHpUnder75AttackPlayed");
 		if (!bAlreadyExecuted)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Boss HP below 75%% - Triggering special attack!"));
 			GetBlackboardComponent()->SetValueAsBool("bTriggerHp75Attack", true);
 		}
 	}
@@ -199,7 +193,6 @@ void ABossController::UpdateBossHpForSpecialAttack()
 		bool bAlreadyExecuted = GetBlackboardComponent()->GetValueAsBool("bIsHpUnder50AttackPlayed");
 		if (!bAlreadyExecuted)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Boss HP below 50%% - Triggering special attack!"));
 			GetBlackboardComponent()->SetValueAsBool("bTriggerHp50Attack", true);
 		}
 	}
@@ -208,7 +201,6 @@ void ABossController::UpdateBossHpForSpecialAttack()
 		bool bAlreadyExecuted = GetBlackboardComponent()->GetValueAsBool("bIsHpUnder25AttackPlayed");
 		if (!bAlreadyExecuted)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Boss HP below 25%% - Triggering special attack!"));
 			GetBlackboardComponent()->SetValueAsBool("bTriggerHp25Attack", true);
 		}
 	}
@@ -223,17 +215,9 @@ void ABossController::KillAllPlayerAttack()
 
 	if (!IsAnyBossPlatform(LeftPlatforms)) return;
 	
-	GetWorldTimerManager().ClearTimer(FindClosestPlayerTimerHandle);
-	GetWorldTimerManager().ClearTimer(ObjectSpawnTimerHandle);
-	GetWorldTimerManager().ClearTimer(InstantDeathAttackTimerHandle);
-	GetBlackboardComponent()->SetValueAsBool("bIsBattleStart", false);
-	if (IsValid(BrainComponent))
-	{
-		BrainComponent->StopLogic(TEXT("Boss Battle Ended"));
-	}
-
 	//즉사공격 애니메이션
-
+	BossCharacter->PlayKillAllPlayerAttackMontage();
+	
 	//남아있는 발판 제거
 	for (AActor* Actor : LeftPlatforms)
 	{
@@ -271,7 +255,6 @@ bool ABossController::IsAnyBossPlatform(TArray<AActor*>& Actors)
 		if (!BossPlatform->IsHidden()) LeftPlatformCount++;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("LeftPlatformCount : %d"), LeftPlatformCount);
 	return LeftPlatformCount > 0 ? true : false;
 }
 
@@ -295,6 +278,112 @@ void ABossController::FindPlatforms()
 				FoundPlatformActors.Add(Actor);
 			}
 		}
+	}
+}
+
+void ABossController::StartSpawnWeaponAttack()
+{
+	GetWorld()->GetTimerManager().SetTimer(
+		SpawnWeapontimerHandle,
+		this,
+		&ABossController::FireWeapon,
+		SpawnDelay,
+		true);
+}
+
+void ABossController::FireWeapon()
+{
+	FVector TargetLocation = FacingTargetPlayerPawn->GetActorLocation();
+	FVector SpawnLocation = FVector(0.0f, FMath::RandRange(-SpawnWidth/2, SpawnWidth/2), SpawnHeight);
+	FRotator SpawnRotation = (TargetLocation - SpawnLocation).Rotation();
+
+	if (IsValid(PoolWorldSubsystem) && SpawnCount < MaxSpawnCount)
+	{
+		AWeaponToSpawn* Weapon = PoolWorldSubsystem->SpawnWeaponToSpawn(SpawnLocation, SpawnRotation);
+		if (IsValid(Weapon))
+		{
+			Weapon->SetTargetDirection(TargetLocation);
+			SpawnCount++;
+		}
+	}
+	else if (SpawnCount == MaxSpawnCount)
+	{
+		SpawnCount = 0;
+		GetWorld()->GetTimerManager().ClearTimer(SpawnWeapontimerHandle);
+	}
+}
+
+void ABossController::OnStartMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (!IsValid(BossCharacter) || !IsValid(Montage)) return;
+	
+	if (IsValid(BossAnimInstance))
+	{
+		BossAnimInstance->OnMontageEnded.RemoveDynamic(this, &ABossController::OnStartMontageEnded);
+	}
+	
+	if (IsValid(BossBehaviorTree))
+	{
+		RunBehaviorTree(BossBehaviorTree);
+		GetBlackboardComponent()->SetValueAsInt("BossHpPercent", 100);
+	}
+	
+	GetBlackboardComponent()->SetValueAsBool("bIsBattleStart", true);
+
+	//파괴가능 오브젝트 스폰 
+	GetWorld()->GetTimerManager().SetTimer(
+		ObjectSpawnTimerHandle,
+		this,
+		&ABossController::SpawnDestructibleObject,
+		DestructibleObjectSpawnDelay,
+		true);
+
+	//플레이어 찾기
+	GetWorld()->GetTimerManager().SetTimer(
+		FindClosestPlayerTimerHandle,
+		this,
+		&ABossController::UpdateBossFacingDirection,
+		FindClosestPlayerDelay,
+		true
+	);
+
+	//보스 체력 체크 및 업데이트
+	GetWorld()->GetTimerManager().SetTimer(
+		BossHpCheckTimerHandle,
+		this,
+		&ABossController::UpdateBossHpForSpecialAttack,
+		CheckBossHpDelay,
+		true);
+
+	//특수공격 타이머  
+	GetWorld()->GetTimerManager().SetTimer(
+		SpecialAttackTriggerTimerHandle,
+		this,
+		&ABossController::TriggerSpecialAttack,
+		SpecialAttackDelay,
+		true);
+}
+
+void ABossController::OnStartStunMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (!IsValid(BossCharacter) || !IsValid(Montage)) return;
+	if (IsValid(BossAnimInstance))
+	{
+		BossAnimInstance->OnMontageEnded.RemoveDynamic(this, &ABossController::OnStartStunMontageEnded);
+	}
+}
+
+void ABossController::OnEndStunMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (!IsValid(BossCharacter) || !IsValid(Montage)) return;
+	if (IsValid(BossAnimInstance))
+	{
+		BossAnimInstance->OnMontageEnded.RemoveDynamic(this, &ABossController::OnEndStunMontageEnded);
+	}
+
+	if (IsValid(BrainComponent))
+	{
+		BrainComponent->RestartLogic();
 	}
 }
 
@@ -336,7 +425,56 @@ void ABossController::SpawnDestructibleObject()
 		FVector SpawnLocation = HitResult.ImpactPoint + FVector(0, 0, 50.0f);
 		ADestructibleObject* DestructibleObject = PoolWorldSubsystem->SpawnDestructibleObject(
 			SpawnLocation, FRotator::ZeroRotator);
-		UE_LOG(LogTemp, Warning, TEXT("DestructibleObjectCount : %d"), DestructibleObjectCount);
+	}
+}
+
+void ABossController::EnterToStunState()
+{
+	if (IsValid(BossCharacter->StartStunMontage) && IsValid(BossAnimInstance))
+	{
+		if (!BossAnimInstance->OnMontageEnded.IsAlreadyBound(this, &ABossController::OnStartStunMontageEnded))
+		{
+			BossAnimInstance->OnMontageEnded.AddDynamic(this, &ABossController::OnStartStunMontageEnded);	
+		}
+	}
+	BossCharacter->PlayStartStunMontage();
+	
+	if (IsValid(BossAnimInstance))
+	{
+		static FName IsStunnedName(TEXT("bIsStunned"));
+		FBoolProperty* BoolProperty = FindFProperty<FBoolProperty>(BossAnimInstance->GetClass(), IsStunnedName);
+		if (BoolProperty) BoolProperty->SetPropertyValue_InContainer(BossAnimInstance, true);
+	}
+	
+	if (IsValid(BrainComponent))
+	{
+		BrainComponent->StopLogic(TEXT("Boss Stunned"));
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(
+		StunStateTimerHandle,
+		this,
+		&ABossController::ExitStunState,
+		StunStateDelay,
+		false);
+}
+
+void ABossController::ExitStunState()
+{
+	if (IsValid(BossCharacter->EndStunMontage) && IsValid(BossAnimInstance))
+	{
+		if (!BossAnimInstance->OnMontageEnded.IsAlreadyBound(this, &ABossController::OnEndStunMontageEnded))
+		{
+			BossAnimInstance->OnMontageEnded.AddDynamic(this, &ABossController::OnEndStunMontageEnded);	
+		}
+	}
+	BossCharacter->PlayEndStunMontage();
+	
+	if (IsValid(BossAnimInstance))
+	{
+		static FName IsStunnedName(TEXT("bIsStunned"));
+		FBoolProperty* BoolProperty = FindFProperty<FBoolProperty>(BossAnimInstance->GetClass(), IsStunnedName);
+		if (BoolProperty) BoolProperty->SetPropertyValue_InContainer(BossAnimInstance, false);
 	}
 }
 

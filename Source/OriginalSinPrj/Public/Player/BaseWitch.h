@@ -17,6 +17,7 @@ class UBoxComponent;
 class UNiagaraComponent;
 class UBuffComponent;
 class UAIPerceptionStimuliSourceComponent;
+class UAudioComponent;
 struct FInputActionValue;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangedCharacterState, const FCharacterStateBuffer&, CharacterStateBuffer);
@@ -53,7 +54,7 @@ public:
 	UFUNCTION(Server, Unreliable)
 	void RequestEndMoveToAbility();
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(BlueprintCallable, Server, Unreliable)
 	void RequestUpDownToAbility(float Value);
 
 	UFUNCTION(Server, Unreliable)
@@ -89,7 +90,6 @@ public:
 	UFUNCTION(Server, Reliable)
 	void RequestPauseTimer();
 
-
 	UFUNCTION(BlueprintCallable)
 	const float GetCurrentMana() const;
 
@@ -111,7 +111,9 @@ public:
 	const ECharacterType GetWitchType() const;
 	const FVector GetHeadLocation() const;
 	const FVector GetFootLocation() const;
+	const ECharacterSoundType GetAttackSoundType() const;
 	AActor* GetLastDamageCasuser() const;
+	UAudioComponent* GetAudioComponent() const;
 
 	void ResponseSelectedBuff(EBuffType TargetType);
 	void SetCharacterLifePoint(int32 LifeValue);
@@ -204,6 +206,9 @@ public:
 	TObjectPtr<UBuffComponent> BuffComp = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UAudioComponent> AudioComp = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UAIPerceptionStimuliSourceComponent> PerceptionStimuliSource = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -240,6 +245,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effect")
 	TObjectPtr<UNiagaraComponent> RightHandEffect = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+	ECharacterSoundType AttackSoundType = ECharacterSoundType::HandEffect;
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damager")

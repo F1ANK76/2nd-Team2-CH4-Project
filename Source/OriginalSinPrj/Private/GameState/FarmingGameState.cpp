@@ -12,6 +12,7 @@ AFarmingGameState::AFarmingGameState()
     bIsFarmingStarted = false;
     TimeRemaining = 60.0f;
     bReplicates = true;
+    bIsPlayerCanMove = true;
 }
 
 // ShowUI는 서버에서 호출할 필요 없으므로 삭제 예정
@@ -39,9 +40,66 @@ void AFarmingGameState::Tick(float DeltaSeconds)
             {
                 EndFarmingMode();
             }
+            SetCameraTransform();
         }
     }
 }
+
+
+
+
+void AFarmingGameState::SetCameraTransform()
+{
+    FVector SumPlayerLocation = FVector::ZeroVector;
+    float minY = 99999.f;
+    float minZ = 99999.f;
+
+    float maxY = -99999.f;
+    float maxZ = -99999.f;
+
+
+    for (AActor* Player : FarmingGameMode->AlivePlayers)
+    {
+        FVector PlayerLocation = Player->GetActorLocation();
+
+        SumPlayerLocation += PlayerLocation;
+        if (PlayerLocation.Y > maxY)
+        {
+            maxY = PlayerLocation.Y;
+        }
+        if (PlayerLocation.Y < minY)
+        {
+            minY = PlayerLocation.Y;
+        }
+
+        if (PlayerLocation.Z > maxZ)
+        {
+            maxZ = PlayerLocation.Z;
+        }
+        if (PlayerLocation.Z < minZ)
+        {
+            minZ = PlayerLocation.Z;
+        }
+    }
+
+    FVector MeanPlayerLocation = FVector::ZeroVector;
+    if (FarmingGameMode->AlivePlayers.Num() > 0)
+    {
+        MeanPlayerLocation = SumPlayerLocation / FarmingGameMode->AlivePlayers.Num();
+    }
+
+    if (HasAuthority()) // 서버인지 확인
+    {
+        CameraDistance = maxY - minY + 2 * (maxZ - minZ);
+
+        CameraLocation = MeanPlayerLocation;
+        CameraRotation = FRotator::ZeroRotator;
+    }
+
+    FarmingGameMode->SpawnedBaseCamera[0]->UpdateCameraLocationandRotation();
+}
+
+
 
 void AFarmingGameState::StartFarmingMode()
 {
@@ -75,7 +133,16 @@ void AFarmingGameState::EndFarmingMode()
     UE_LOG(LogTemp, Warning, TEXT("Farming Mode Ended"));
 
     //alert to Gamemode
+
     FarmingGameMode->EndGame();
+}
+
+void AFarmingGameState::SetMyDataForNextLevel(int32 Level)
+{
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        MyGI->SetPlayerFarmingLevel(Level);
+    }
 }
 
 
@@ -124,7 +191,7 @@ void AFarmingGameState::AddExperienceToPlayer(APlayerController* Player, int32 A
         {
             PlayerData->CurrentEXP += Amount;
             CheckLevelUp(Player);
-            UpdatePlayerInfo(); // UI 갱신
+            //UpdatePlayerInfo(); // UI 갱신
         }
     }
 }
@@ -145,53 +212,155 @@ void AFarmingGameState::CheckLevelUp(APlayerController* Player)
 
 
 
-
 // 게임 시작 시, 플레이어 정보를 초기화하는 함수
 void AFarmingGameState::InitPlayerInfo()
 {
-    PlayerInfos.Empty(); // 기존 정보 삭제
+    if (HasAuthority())  // 서버에서만 실행되는 코드
+    {
+        PlayerInfos.Empty(); // 기존 정보 삭제
+        //어디선가 받아와야해...
+        FCharacterStateBuffer Player1State;
+        FCharacterStateBuffer Player2State;
+        if (FarmingGameMode->NetMode == ENetMode::NM_Standalone)
+        {
+            PlayerInfos.Add(FarmingGameMode->ActivePlayers[0], FPlayerData{
+            "Player1", nullptr,
+            100.0f, 100.0f,
+            0, 0,
+            0, 0.0f,
+            0,
+            0,
+            0, 100, 1 });
+            Player1StateData = PlayerInfos[FarmingGameMode->ActivePlayers[0]];
 
-    // 각 플레이어 정보 초기화
-    /*
-    플레이어의 정보를 받아오고 맵에 저장하기.
-    */
+            Cast<ABaseWitch>(FarmingGameMode->ActivePlayers[0])->ResetCharacterState();
+        }
+        else
+        {
+            PlayerInfos.Add(FarmingGameMode->ActivePlayers[0], FPlayerData{
+            "Player1", nullptr,
+            100.0f, 100.0f,
+            0, 0,
+            0, 0.0f,
+            0,
+            0,
+            0, 100, 1 });
+            Player1StateData = PlayerInfos[FarmingGameMode->ActivePlayers[0]];
+
+            PlayerInfos.Add(FarmingGameMode->ActivePlayers[1], FPlayerData{
+            "Player2", nullptr,
+            100.0f, 100.0f,
+            0, 0,
+            0, 0.0f,
+            0,
+            0,
+            0, 100, 1 });
+            Player2StateData = PlayerInfos[FarmingGameMode->ActivePlayers[1]];
+            Cast<ABaseWitch>(FarmingGameMode->ActivePlayers[0])->ResetCharacterState();
+            Cast<ABaseWitch>(FarmingGameMode->ActivePlayers[1])->ResetCharacterState();
+        }
+        
+        
+
+
+        InitPlayerUIInfo();
+
+
+    }
 }
 
 // 게임 시작 시, 플레이어 정보를 초기화하는 함수
-void AFarmingGameState::UpdatePlayerInfo()
+void AFarmingGameState::UpdatePlayerInfo(const FCharacterStateBuffer& State)
 {
+    UE_LOG(LogTemp, Warning, TEXT("Update Info"));
+    if (FarmingGameMode->NetMode == ENetMode::NM_Standalone)
+    {
+        PlayerInfos[FarmingGameMode->ActivePlayers[0]].CurrentHP = State.CurrentHP;
+        PlayerInfos[FarmingGameMode->ActivePlayers[0]].CurrentEXP = State.CurrentEXP;
+        PlayerInfos[FarmingGameMode->ActivePlayers[0]].CurrentMana = State.CurrentMana;
+        PlayerInfos[FarmingGameMode->ActivePlayers[0]].MaxHP = State.MaxHP;
+        PlayerInfos[FarmingGameMode->ActivePlayers[0]].MaxEXP = State.MaxEXP;
+        PlayerInfos[FarmingGameMode->ActivePlayers[0]].MaxMana = State.MaxMana;
+        PlayerInfos[FarmingGameMode->ActivePlayers[0]].PlayerLevel = State.PlayerLevel;
+        PlayerInfos[FarmingGameMode->ActivePlayers[0]].LifePoint = State.LifePoint;
+        PlayerInfos[FarmingGameMode->ActivePlayers[0]].AirbornePercent = State.AirbornePercent;
+        Player1StateData = PlayerInfos[FarmingGameMode->ActivePlayers[0]];
+        FarmingGameMode->RequestUpdateUI(0);
 
-    // 각 플레이어 정보 초기화
-    /*
-    
-    */
+    }
+    else
+    {
+        if (State.OwnWitch == FarmingGameMode->ActivePlayers[0])
+        {
+            PlayerInfos[FarmingGameMode->ActivePlayers[0]].CurrentHP = State.CurrentHP;
+            PlayerInfos[FarmingGameMode->ActivePlayers[0]].CurrentEXP = State.CurrentEXP;
+            PlayerInfos[FarmingGameMode->ActivePlayers[0]].CurrentMana = State.CurrentMana;
+            PlayerInfos[FarmingGameMode->ActivePlayers[0]].MaxHP = State.MaxHP;
+            PlayerInfos[FarmingGameMode->ActivePlayers[0]].MaxEXP = State.MaxEXP;
+            PlayerInfos[FarmingGameMode->ActivePlayers[0]].MaxMana = State.MaxMana;
+            PlayerInfos[FarmingGameMode->ActivePlayers[0]].PlayerLevel = State.PlayerLevel;
+            PlayerInfos[FarmingGameMode->ActivePlayers[0]].LifePoint = State.LifePoint;
+            PlayerInfos[FarmingGameMode->ActivePlayers[0]].AirbornePercent = State.AirbornePercent;
+            Player1StateData = PlayerInfos[FarmingGameMode->ActivePlayers[0]];
+            FarmingGameMode->RequestUpdateUI(0);
 
-    //ui 업데이트
+        }
+
+
+
+        if (State.OwnWitch == FarmingGameMode->ActivePlayers[1])
+        {
+            PlayerInfos[FarmingGameMode->ActivePlayers[1]].CurrentHP = State.CurrentHP;
+            PlayerInfos[FarmingGameMode->ActivePlayers[1]].CurrentEXP = State.CurrentEXP;
+            PlayerInfos[FarmingGameMode->ActivePlayers[1]].CurrentMana = State.CurrentMana;
+            PlayerInfos[FarmingGameMode->ActivePlayers[1]].MaxHP = State.MaxHP;
+            PlayerInfos[FarmingGameMode->ActivePlayers[1]].MaxEXP = State.MaxEXP;
+            PlayerInfos[FarmingGameMode->ActivePlayers[1]].MaxMana = State.MaxMana;
+            PlayerInfos[FarmingGameMode->ActivePlayers[1]].PlayerLevel = State.PlayerLevel;
+            PlayerInfos[FarmingGameMode->ActivePlayers[1]].LifePoint = State.LifePoint;
+            PlayerInfos[FarmingGameMode->ActivePlayers[1]].AirbornePercent = State.AirbornePercent;
+            
+            Player2StateData = PlayerInfos[FarmingGameMode->ActivePlayers[1]];
+            FarmingGameMode->RequestUpdateUI(1);
+        }
+    }
+
+}
+
+////////////////////////////멀티 처리
+
+void AFarmingGameState::OnRep_UpdatePlayer1DataUI()
+{
+    UpdatePlayerUIInfo();
+}
+
+void AFarmingGameState::OnRep_UpdatePlayer2DataUI()
+{
+    UpdatePlayerUIInfo();
 }
 
 void AFarmingGameState::InitPlayerUIInfo()
 {
-    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+    //위젯 접근해서 갱신
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
     {
-        APlayerController* PlayerController = Cast<APlayerController>(*It);
-        if (PlayerController)
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            //UISubSystem이나 gameInstance에게 UI 띄우라고 명령
-            //Player에게 UI정보 바꾸라고 명령.
-            //여기에 있는 PlayerInfo 활용해서...
+            // 여기서 UISubsystem 사용 가능!
+            Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->InitPlayerUI(&Player1StateData, &Player2StateData);
         }
     }
 }
 
 void AFarmingGameState::UpdatePlayerUIInfo()
 {
-    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+    //위젯 접근해서 갱신
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
     {
-        APlayerController* PlayerController = Cast<APlayerController>(*It);
-        if (PlayerController)
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            //Player에게 UI정보 바꾸라고 명령.
-            //여기에 있는 PlayerInfo 활용해서...
+            // 여기서 UISubsystem 사용 가능!
+            Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->UpdatePlayerUI(&Player1StateData, &Player2StateData);
         }
     }
 }
@@ -215,6 +384,16 @@ void AFarmingGameState::OnRep_UpdateTimer()
 }
 
 
+void AFarmingGameState::OnRep_SaveLevel()
+{
+    SetMyDataForNextLevel(Player1StateData.PlayerLevel);
+}
+
+void AFarmingGameState::SaveLevel()
+{
+    //SetMyDataForNextLevel(Level);
+}
+
 
 void AFarmingGameState::SetPlayerPawn(ABaseWitch* InPawn)
 {
@@ -229,4 +408,69 @@ void AFarmingGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
     DOREPLIFETIME(AFarmingGameState, bIsFarmingStarted); 
     DOREPLIFETIME(AFarmingGameState, TimeRemaining);
     DOREPLIFETIME(AFarmingGameState, MultiPlayer);
+    DOREPLIFETIME(AFarmingGameState, CameraLocation);
+    DOREPLIFETIME(AFarmingGameState, CameraRotation);
+    DOREPLIFETIME(AFarmingGameState, CameraDistance);
+    DOREPLIFETIME(AFarmingGameState, Player1StateData);
+    DOREPLIFETIME(AFarmingGameState, Player2StateData);
+    DOREPLIFETIME(AFarmingGameState, Player1DataChanged);
+    DOREPLIFETIME(AFarmingGameState, Player2DataChanged);
+    DOREPLIFETIME(AFarmingGameState, bIsPlayerCanMove);
+    DOREPLIFETIME(AFarmingGameState, SaveTrigger);
+}
+
+void AFarmingGameState::OnRep_SetPlayerMove()
+{
+    UE_LOG(LogTemp, Log, TEXT("This is NOT the local player controller."));
+    UWorld* WorldContext = GetWorld();
+    for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+    {
+        APlayerController* PC = It->Get();
+        if (PC && PC->GetPawn())
+        {
+            if (bIsPlayerCanMove)
+            {
+                PC->GetPawn()->DisableInput(PC);
+            }
+            else
+            {
+                PC->GetPawn()->EnableInput(PC);
+            }
+        }
+    }
+
+}
+
+void AFarmingGameState::SetPlayerMove(bool bCanMove)
+{
+    bIsPlayerCanMove = bCanMove;
+    UE_LOG(LogTemp, Log, TEXT("Disable Input"));
+    if (bIsPlayerCanMove)
+    {
+        bIsPlayerCanMove = false;
+        UWorld* WorldContext = GetWorld();
+
+        for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+        {
+            APlayerController* PC = It->Get();
+            if (PC && PC->GetPawn())
+            {
+                PC->GetPawn()->DisableInput(PC);
+            }
+        }
+    }
+    else
+    {
+        bIsPlayerCanMove = true;
+        UWorld* WorldContext = GetWorld();
+
+        for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+        {
+            APlayerController* PC = It->Get();
+            if (PC && PC->GetPawn())
+            {
+                PC->GetPawn()->EnableInput(PC);
+            }
+        }
+    }
 }
