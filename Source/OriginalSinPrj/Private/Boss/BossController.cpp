@@ -217,7 +217,8 @@ void ABossController::KillAllPlayerAttack()
 	if (!IsAnyBossPlatform(LeftPlatforms)) return;
 
 	UAnimInstance* AnimInstance = BossCharacter->GetMesh()->GetAnimInstance();
-	if (AnimInstance->Montage_IsActive())
+	if (AnimInstance->Montage_IsPlaying(nullptr)) AnimInstance->Montage_Stop(0.2);
+	
 	if (IsValid(BrainComponent))
 	{
 		BrainComponent->StopLogic(TEXT("Instant Death Executing"));
