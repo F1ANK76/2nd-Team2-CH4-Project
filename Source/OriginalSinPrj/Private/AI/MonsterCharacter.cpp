@@ -10,15 +10,20 @@
 #include "Components/CapsuleComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/BaseWitch.h"
+#include "Player/BuffComponent.h"
+#include "Engine/DamageEvents.h"
 
 AMonsterCharacter::AMonsterCharacter()
 {
-    KnockbackIncreaseAmount = 10.0f;
-    BaseKnockbackStrength = 500.0f;
+    KnockbackIncreaseAmount = 15.0f;
+    BaseKnockbackStrength = 2000.0f;
+    KnockbackScaleFactor = 3.0f;
     bIsPlayerHit = false;
     bIsAttack = false;
     bIsDead = false;
     ExpValue = 50;
+
+    BuffComp = CreateDefaultSubobject<UBuffComponent>(TEXT("Buff Component"));
 
     AIControllerClass = AEnemyAIController::StaticClass();
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
@@ -32,7 +37,7 @@ AMonsterCharacter::AMonsterCharacter()
     UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
     if (MovementComponent)
     {
-        MovementComponent->bConstrainToPlane = true;
+        MovementComponent->bConstrainToPlane = false;
         MovementComponent->SetPlaneConstraintNormal(FVector(1.0f, 0.0f, 0.0f));
         MovementComponent->bSnapToPlaneAtStart = true;
         MovementComponent->JumpZVelocity = 800.0f;
@@ -62,6 +67,7 @@ void AMonsterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
     DOREPLIFETIME(AMonsterCharacter, bIsPlayerHit);
     DOREPLIFETIME(AMonsterCharacter, bIsAttack);
     DOREPLIFETIME(AMonsterCharacter, bIsDead);
+    DOREPLIFETIME(AMonsterCharacter, KnockbackGauge);
 }
 
 void AMonsterCharacter::JumpToTargetPlatform(AActor* TargetActor)
@@ -103,12 +109,18 @@ void AMonsterCharacter::OnAttackOverlap(
             {
                 bIsPlayerHit = true;
 
+                KnockbackGauge = FMath::Clamp(KnockbackGauge + KnockbackIncreaseAmount, 0.0f, MaxKnockbackGauge);
+
+                ApplyAttack(OtherActor, Damage);
+
                 UKnockbackComponent* PlayerKnockbackComp = Player->FindComponentByClass<UKnockbackComponent>();
                 if (PlayerKnockbackComp)
                 {
-                    PlayerKnockbackComp->AddKnockbackGauge(KnockbackIncreaseAmount);
+                    PlayerKnockbackComp->AddKnockbackGauge(KnockbackIncreaseAmount); //플레이어 넉백 게이지
+
+                    float KnockbackStrength = BaseKnockbackStrength + (KnockbackGauge * KnockbackScaleFactor);
                     FVector KnockbackDirection = (Player->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-                    PlayerKnockbackComp->ApplyKnockback(KnockbackDirection, BaseKnockbackStrength);
+                    PlayerKnockbackComp->ApplyKnockback(KnockbackDirection, KnockbackStrength);
                 }
             }
         }
@@ -185,7 +197,54 @@ void AMonsterCharacter::ServerGiveExpToPlayer_Implementation(ACharacter* PlayerC
         ABaseWitch* Player = Cast<ABaseWitch>(PlayerCharacter);
         if (Player)
         {
-            //Player->AddExp(ExpValue); // basewitch에 AddExp 함수 만들기
+            // Player->AddExp(ExpValue);
         }
     }
+}
+
+void AMonsterCharacter::ApplyAttack(AActor* Target, float ApplyValue)
+{
+    if (!IsValid(Target))
+    {
+        return;
+    }
+
+    AMonsterCharacter* MonsterTarget = Cast<AMonsterCharacter>(Target);
+    if (MonsterTarget)
+    {
+        return;
+    }
+
+    float RealDamage = ApplyValue + AddedKnockGauge;
+    Target->TakeDamage(RealDamage, FDamageEvent(), GetController(), this);
+}
+
+float AMonsterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+    if (!HasAuthority() || !IsValid(DamageCauser) || bIsDead)
+    {
+        return 0.0f;
+    }
+
+    AMonsterCharacter* MonsterCauser = Cast<AMonsterCharacter>(DamageCauser);
+    if (MonsterCauser)
+    {
+        return 0.0f;
+    }
+
+    ABaseWitch* CauserWitch = Cast<ABaseWitch>(DamageCauser);
+    float DecreaseValue = 1.0f;
+    float RealDamage = FMath::Clamp(DamageAmount - DecreaseValue, 0.0f, 100.0f);
+
+    // KnockbackGauge 증가
+    KnockbackGauge = FMath::Clamp(KnockbackGauge + (RealDamage * 1.3), 0.0f, MaxKnockbackGauge);
+
+    UKnockbackComponent* MonsterKnockbackComp = FindComponentByClass<UKnockbackComponent>();
+    if (MonsterKnockbackComp)
+    {
+        float KnockbackStrength = BaseKnockbackStrength + (KnockbackGauge * KnockbackScaleFactor);
+        FVector KnockbackDirection = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal();
+        MonsterKnockbackComp->ApplyKnockback(KnockbackDirection, KnockbackStrength);
+    }
+    return RealDamage;
 }
