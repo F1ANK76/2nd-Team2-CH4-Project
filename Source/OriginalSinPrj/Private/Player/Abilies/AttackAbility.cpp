@@ -25,22 +25,6 @@ bool AAttackAbility::ExcuteAbility(FAbilityDataBuffer& Buffer)
 	Buffer.ParentWitch->SetWitchState(EWitchStateType::Attack);
 	Buffer.ParentWitch->PlayAnimation(AbilityMontage);
 
-	if (HasAuthority())
-	{
-		AGameStateBase* GameState = GetWorld()->GetGameState();
-
-		if (IsValid(GameState))
-		{
-			ACooperationGameState* CooperGameState = Cast<ACooperationGameState>(GameState);
-
-			if (IsValid(CooperGameState))
-			{
-				//UE_LOG(LogTemp, Warning, TEXT("Request Play Sound To GameState"));
-				CooperGameState->PlayCharacterSound(Buffer.ParentWitch->GetAudioComponent(), ECharacterSoundType::Attack);
-			}
-		}
-	}
-
 	return true;
 }
 
@@ -113,7 +97,7 @@ void AAttackAbility::UndoAttackByType(const FAbilityDataBuffer& Buffer)
 
 void AAttackAbility::ExcuteMelleAttack(const FAbilityDataBuffer& Buffer)
 {
-	Buffer.ParentWitch->PlayEffect(MelleType);
+	CheckIsPlayWitchEffect(Buffer.ParentWitch, true);
 	Buffer.ParentWitch->PlayMelleAttack(MelleType, DefaultDamage + Buffer.AddedDamage);
 }
 
@@ -150,32 +134,23 @@ void AAttackAbility::ExcuteSpawnAttack(const FAbilityDataBuffer& Buffer)
 		ProjectilePool.Remove(ProjectileObj);
 	}
 
-	if (bIsPlayWitchEffect)
-	{
-		Buffer.ParentWitch->PlayEffect(MelleType);
-	}
+	CheckIsPlayWitchEffect(Buffer.ParentWitch, true);
 }
 
 void AAttackAbility::ExcuteSkillAttack(FAbilityDataBuffer& Buffer)
 {
-	if (bIsPlayWitchEffect)
-	{
-		Buffer.ParentWitch->PlayEffect(MelleType);
-	}
+	CheckIsPlayWitchEffect(Buffer.ParentWitch, true);
 }
 
 void AAttackAbility::UndoMelleAttack(const FAbilityDataBuffer& Buffer)
 {
-	Buffer.ParentWitch->StopMelleAttack();
+	CheckIsPlayWitchEffect(Buffer.ParentWitch, false);
 	Buffer.ParentWitch->StopEffect();
 }
 
 void AAttackAbility::UndoSpawnAttack(const FAbilityDataBuffer& Buffer)
 {
-	if (bIsPlayWitchEffect)
-	{
-		Buffer.ParentWitch->StopEffect();
-	}
+	CheckIsPlayWitchEffect(Buffer.ParentWitch, false);
 
 	if (ActiveProjectilePool.IsEmpty())
 	{
@@ -194,10 +169,7 @@ void AAttackAbility::UndoSpawnAttack(const FAbilityDataBuffer& Buffer)
 
 void AAttackAbility::UndoSkillAttack(const FAbilityDataBuffer& Buffer)
 {
-	if (bIsPlayWitchEffect)
-	{
-		Buffer.ParentWitch->StopEffect();
-	}
+	CheckIsPlayWitchEffect(Buffer.ParentWitch, false);
 }
 
 void AAttackAbility::UpdateProjectileData(const FAbilityDataBuffer& Buffer)
@@ -265,5 +237,38 @@ void AAttackAbility::SpawnProjectileObj()
 	{
 		ProjectileObj = GetWorld()->SpawnActor<ABaseProjectile>(ProjectileClass);
 		ProjectilePool.Add(ProjectileObj);
+	}
+}
+
+void AAttackAbility::CheckIsPlayWitchEffect(ABaseWitch* Parent, bool bIsStart)
+{
+	if (bIsPlayWitchEffect)
+	{
+		if (bIsStart)
+		{
+			Parent->PlayEffect(MelleType);
+			//Play Sound To GameState
+
+			//if (HasAuthority())
+			//{
+			//	AGameStateBase* GameState = GetWorld()->GetGameState();
+		
+			//	if (IsValid(GameState))
+			//	{
+			//		ACooperationGameState* CooperGameState = Cast<ACooperationGameState>(GameState);
+
+			//		if (IsValid(CooperGameState))
+			//		{
+			//			//UE_LOG(LogTemp, Warning, TEXT("Request Play Sound To GameState"));
+			//			CooperGameState->PlayCharacterSound(Buffer.ParentWitch->GetAudioComponent(), ECharacterSoundType::Attack);
+			//		}
+			//	}
+			//}
+		}
+		else
+		{
+			Parent->StopEffect();
+			//Stop Sound To GameState
+		}
 	}
 }
