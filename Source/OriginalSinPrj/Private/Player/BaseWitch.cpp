@@ -51,7 +51,7 @@ ABaseWitch::ABaseWitch()
 
 	checkf(IsValid(HitCollision), TEXT("Root Component is not Capsule Component"));
 
-	DressMesh->SetupAttachment(MainMesh, (FName)"Root");
+	DressMesh->SetupAttachment(MainMesh);
 	StockingsMesh->SetupAttachment(MainMesh);
 	ShoesMesh->SetupAttachment(MainMesh);
 
