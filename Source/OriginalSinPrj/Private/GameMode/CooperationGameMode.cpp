@@ -792,7 +792,7 @@ void ACooperationGameMode::PostSeamlessTravel()
             GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this, PC, index]()
                 {
                     HandleClientPossession(PC, index);
-                }), 0.5f, false);
+                }), 1.5f, false);
             index++;
         }
         if (IsValid(PC))
