@@ -55,5 +55,6 @@ protected:
 	UPROPERTY()
 	TMap<TSubclassOf<AActor>, FActorPoolList> ObjectPools;
 
+	UPROPERTY();
 	ABossCharacter* BossCharacter;
 };

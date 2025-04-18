@@ -84,7 +84,7 @@ void ABaseCamera::UpdateCameraLocationandRotation()
         UE_LOG(LogTemp, Warning, TEXT("카메라 스테이트 인식 불가"));
     }
 
-    CameraComponent->SetWorldLocation(FMath::VInterpTo(CameraComponent->GetComponentLocation(), CamLoc, 0.01f, 5.0f));
+    CameraComponent->SetWorldLocation(FMath::VInterpTo(CameraComponent->GetComponentLocation(), CamLoc, 0.03f, 5.0f));
     CameraComponent->SetWorldRotation(CamRot);
 
 }

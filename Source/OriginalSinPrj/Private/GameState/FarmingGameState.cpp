@@ -15,12 +15,12 @@ AFarmingGameState::AFarmingGameState()
     bIsPlayerCanMove = true;
 }
 
-// ShowUI´Â ¼­¹ö¿¡¼­ È£ÃâÇÒ ÇÊ¿ä ¾øÀ¸¹Ç·Î »èÁ¦ ¿¹Á¤
+// ShowUIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 void AFarmingGameState::BeginPlay()
 {
     Super::BeginPlay();
     UE_LOG(LogTemp, Warning, TEXT("GameState BeginPlay"));
-
+    
     AGameModeBase* GameModeBase = UGameplayStatics::GetGameMode(this);
     FarmingGameMode = Cast<AFarmingGameMode>(GameModeBase);
 }
@@ -88,11 +88,12 @@ void AFarmingGameState::SetCameraTransform()
         MeanPlayerLocation = SumPlayerLocation / FarmingGameMode->AlivePlayers.Num();
     }
 
-    if (HasAuthority()) // ¼­¹öÀÎÁö È®ÀÎ
+    if (HasAuthority()) // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
     {
         CameraDistance = maxY - minY + 2 * (maxZ - minZ);
 
         CameraLocation = MeanPlayerLocation;
+        CameraLocation.X -= 400.0f;
         CameraRotation = FRotator::ZeroRotator;
     }
 
@@ -115,7 +116,7 @@ void AFarmingGameState::StartFarmingMode()
             {
                 if (PlayerController && !PlayerInfos.Contains(PlayerController))
                 {
-                    FPlayerData InitData; ///¾îµð¼­µç ¹Þ¾Æ¿À±â
+                    FPlayerData InitData; ///ï¿½ï¿½ð¼­µï¿½ ï¿½Þ¾Æ¿ï¿½ï¿½ï¿½
                     PlayerInfos.Add(PlayerController, InitData);
                 }
             }
@@ -153,7 +154,7 @@ void AFarmingGameState::TurnOnPlayerUI()
     {
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            // ¿©±â¼­ UISubsystem »ç¿ë °¡´É!
+            // ï¿½ï¿½ï¿½â¼­ UISubsystem ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½!
             Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->ActivePlayerWidget();
             Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->ActiveFarmingModeWidget();
         }
@@ -166,7 +167,7 @@ void AFarmingGameState::TurnOnAllUI()
     {
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            // ¿©±â¼­ UISubsystem »ç¿ë °¡´É!
+            // ï¿½ï¿½ï¿½â¼­ UISubsystem ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½!
             Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->ActivePlayerWidget();
             Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->ActiveEnemyWidget();
             Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->ActiveFarmingModeWidget();
@@ -179,19 +180,19 @@ void AFarmingGameState::OnRep_TurnOnAllUI()
     TurnOnAllUI();
 }
 
-// ¸ó½ºÅÍ Á×À» ¶§ °æÇèÄ¡¸¦ Ãß°¡ÇÏ´Â ÇÔ¼ö
+// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ß°ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½
 void AFarmingGameState::AddExperienceToPlayer(APlayerController* Player, int32 Amount)
 {
     if (Player)
     {
-        // PlayerInfos¿¡¼­ ÇÃ·¹ÀÌ¾î Á¤º¸ Ã£±â
+        // PlayerInfosï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½
         FPlayerData* PlayerData = PlayerInfos.Find(Player);
 
         if (PlayerData)
         {
             PlayerData->CurrentEXP += Amount;
             CheckLevelUp(Player);
-            //UpdatePlayerInfo(); // UI °»½Å
+            //UpdatePlayerInfo(); // UI ï¿½ï¿½ï¿½ï¿½
         }
     }
 }
@@ -212,13 +213,13 @@ void AFarmingGameState::CheckLevelUp(APlayerController* Player)
 
 
 
-// °ÔÀÓ ½ÃÀÛ ½Ã, ÇÃ·¹ÀÌ¾î Á¤º¸¸¦ ÃÊ±âÈ­ÇÏ´Â ÇÔ¼ö
+// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½, ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½
 void AFarmingGameState::InitPlayerInfo()
 {
-    if (HasAuthority())  // ¼­¹ö¿¡¼­¸¸ ½ÇÇàµÇ´Â ÄÚµå
+    if (HasAuthority())  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ç´ï¿½ ï¿½Úµï¿½
     {
-        PlayerInfos.Empty(); // ±âÁ¸ Á¤º¸ »èÁ¦
-        //¾îµð¼±°¡ ¹Þ¾Æ¿Í¾ßÇØ...
+        PlayerInfos.Empty(); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+        //ï¿½ï¿½ð¼±°ï¿½ ï¿½Þ¾Æ¿Í¾ï¿½ï¿½ï¿½...
         FCharacterStateBuffer Player1State;
         FCharacterStateBuffer Player2State;
         if (FarmingGameMode->NetMode == ENetMode::NM_Standalone)
@@ -269,7 +270,7 @@ void AFarmingGameState::InitPlayerInfo()
     }
 }
 
-// °ÔÀÓ ½ÃÀÛ ½Ã, ÇÃ·¹ÀÌ¾î Á¤º¸¸¦ ÃÊ±âÈ­ÇÏ´Â ÇÔ¼ö
+// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½, ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½
 void AFarmingGameState::UpdatePlayerInfo(const FCharacterStateBuffer& State)
 {
     UE_LOG(LogTemp, Warning, TEXT("Update Info"));
@@ -327,7 +328,7 @@ void AFarmingGameState::UpdatePlayerInfo(const FCharacterStateBuffer& State)
 
 }
 
-////////////////////////////¸ÖÆ¼ Ã³¸®
+////////////////////////////ï¿½ï¿½Æ¼ Ã³ï¿½ï¿½
 
 void AFarmingGameState::OnRep_UpdatePlayer1DataUI()
 {
@@ -341,12 +342,12 @@ void AFarmingGameState::OnRep_UpdatePlayer2DataUI()
 
 void AFarmingGameState::InitPlayerUIInfo()
 {
-    //À§Á¬ Á¢±ÙÇØ¼­ °»½Å
+    //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
     {
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            // ¿©±â¼­ UISubsystem »ç¿ë °¡´É!
+            // ï¿½ï¿½ï¿½â¼­ UISubsystem ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½!
             Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->InitPlayerUI(&Player1StateData, &Player2StateData);
         }
     }
@@ -354,12 +355,12 @@ void AFarmingGameState::InitPlayerUIInfo()
 
 void AFarmingGameState::UpdatePlayerUIInfo()
 {
-    //À§Á¬ Á¢±ÙÇØ¼­ °»½Å
+    //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
     {
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            // ¿©±â¼­ UISubsystem »ç¿ë °¡´É!
+            // ï¿½ï¿½ï¿½â¼­ UISubsystem ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½!
             Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->UpdatePlayerUI(&Player1StateData, &Player2StateData);
         }
     }
@@ -372,7 +373,7 @@ void AFarmingGameState::UpdateTimer()
     {
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            // ¿©±â¼­ UISubsystem »ç¿ë °¡´É!
+            // ï¿½ï¿½ï¿½â¼­ UISubsystem ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½!
             Cast<UBattleWidget>(UISubsystem->CurrentActiveWidget)->UpdateFarmingModeTimerUI(TimeRemaining);
         }
     }

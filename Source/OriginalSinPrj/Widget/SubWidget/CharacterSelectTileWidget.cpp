@@ -17,7 +17,7 @@ void UCharacterSelectTileWidget::InitWidget(UUISubsystem* uiSubsystem)
 	//Brush.SetResourceObject(SomeTexture);
 	//CharacterImage->SetBrush(Brush);
 
-	CharacterName->SetText(FText::FromString("Name"));
+	//CharacterName->SetText(FText::FromString("Name"));
 }
 
 void UCharacterSelectTileWidget::SetCharacterType(ECharacterType Type)
@@ -31,6 +31,11 @@ void UCharacterSelectTileWidget::SetCharacterImage(UTexture2D* CharacterImg)
 	{
 		CharacterImage->SetBrushFromTexture(CharacterImg);
 	}
+}
+
+void UCharacterSelectTileWidget::SetCharacterName(const FName& NewName)
+{
+	CharacterName->SetText(FText::FromString(NewName.ToString()));
 }
 
 void UCharacterSelectTileWidget::HandleButtonClicked()

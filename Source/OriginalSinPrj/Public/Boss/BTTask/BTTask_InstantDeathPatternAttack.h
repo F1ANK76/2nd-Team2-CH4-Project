@@ -26,11 +26,15 @@ private:
 	ABossCharacter* BossCharacter;
 	UPROPERTY()
 	UBossObjectPoolWorldSubsystem* PoolWorldSubsystem;
+	UPROPERTY()
+	TArray<AActor*> PlatformSpawnTargets;
+	UPROPERTY()
+	UBehaviorTreeComponent* BTComp;
 	
 	int32 MaxPlatform = 8;
 	int32 PlatformCount = 0;
-	TArray<AActor*> PlatformSpawnTargets;
-	UBehaviorTreeComponent* BTComp;
+	
+	
 
 	UFUNCTION()
 	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);

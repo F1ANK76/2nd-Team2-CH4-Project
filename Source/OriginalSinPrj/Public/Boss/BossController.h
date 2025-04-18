@@ -83,21 +83,45 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "SpawnWeaponAttack | Property")
 	float SpawnDelay = 1.0f;
 
-	//Stun
+	//AnimMontage Delegate
 	UFUNCTION()
 	void OnStartMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	UFUNCTION()
 	void OnStartStunMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	UFUNCTION()
 	void OnEndStunMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	UFUNCTION()
+	void OnKillAllMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 private:
-	bool bIsBattleStart = false;
+	UPROPERTY()
+	UBossObjectPoolWorldSubsystem* PoolWorldSubsystem;
+	UPROPERTY()
 	ABossCharacter* BossCharacter = nullptr;
+	UPROPERTY()
 	UAnimInstance* BossAnimInstance = nullptr;
+	UPROPERTY()
 	TArray<ACharacter*> PlayerCharacters;
+	UPROPERTY()
 	TArray<AActor*> PlatformSpawnTargets;
+	UPROPERTY()
 	APawn* FacingTargetPlayerPawn = nullptr;
+	
+	//DestructibleObject Property
+	UPROPERTY()
+	int32 DestructibleObjectCount = 0;
+	UPROPERTY()
+	TArray<FName> TargetPlatformTags;
+	UPROPERTY()
+	TArray<AActor*> FoundPlatformActors;
+
+	//SpawnWeaponAttack Property
+	UPROPERTY()
+	int32 SpawnCount = 0;
+	UPROPERTY()
+	int32 MaxSpawnCount = 8;
+	
+	bool bIsBattleStart = false;
 	
 	//TimerHandle
 	FTimerHandle FindClosestPlayerTimerHandle;
@@ -107,16 +131,6 @@ private:
 	FTimerHandle InstantDeathAttackTimerHandle;
 	FTimerHandle StunStateTimerHandle;
 	FTimerHandle SpawnWeapontimerHandle;
-
-	//SpawnWeaponAttack Property
-	int32 SpawnCount = 0;
-	int32 MaxSpawnCount = 8;
-	
-	//DestructibleObject Property
-	int32 DestructibleObjectCount = 0;
-	TArray<FName> TargetPlatformTags;
-	TArray<AActor*> FoundPlatformActors;
-	UBossObjectPoolWorldSubsystem* PoolWorldSubsystem;
 
 	//Controller Function
 	void UpdateBossFacingDirection();

@@ -20,7 +20,7 @@ AFarmingGameMode::AFarmingGameMode()
 void AFarmingGameMode::StartPlay()
 {
     Super::StartPlay();
-    //¹¹ ÀÌ·±Àú·± Ã³¸®¸¦ ÇÏ°í....
+    //ï¿½ï¿½ ï¿½Ì·ï¿½ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½ï¿½ ï¿½Ï°ï¿½....
 }
 
 void AFarmingGameMode::BeginPlay()
@@ -106,14 +106,14 @@ void AFarmingGameMode::StartMultiGame()
     }
 
     FarmingGameState->InitPlayerInfo();
-    //½ÃÀÛ ½ÅÈ£°¡ ¿À¸é...
+    //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È£ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½...
     RequestTurnOnEnemyUI();
     if (FarmingGameState)
     {
         FarmingGameState->StartFarmingMode();
     }
 
-    //¸ó½ºÅÍ ¼ÒÈ¯ÇÏ¸é¼­,
+    //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½Ï¸é¼­,
     SpawnInitialMonsters();
     SetPlayerReady();
 
@@ -127,12 +127,12 @@ void AFarmingGameMode::StartMultiGame()
 }
 
 
-// killzone »ý¼º ÇÔ¼ö
+// killzone ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 void AFarmingGameMode::SpawnKillZone()
 {
-    if (!ActorKillZone) return;  // UPROPERTY·Î ¼³Á¤ÇÑ Å¬·¡½º°¡ ¾øÀ¸¸é ¸®ÅÏ
+    if (!ActorKillZone) return;  // UPROPERTYï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
-    FVector SpawnLocation = FVector(0.f, 0.f, -500.f);  // ¿øÇÏ´Â À§Ä¡
+    FVector SpawnLocation = FVector(0.f, 0.f, -500.f);  // ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½Ä¡
     FRotator SpawnRotation = FRotator::ZeroRotator;
     FActorSpawnParameters SpawnParams;
     SpawnParams.Owner = this;
@@ -195,8 +195,8 @@ void AFarmingGameMode::EndMultiGame()
     // Move to next...
 }
 
-//ÀÌÀü °ÔÀÓ¸ðµå¿¡¼­ ¸Ê ¼³Á¤ ¹Þ¾Æ¿À´Â ÇÔ¼ö.
-//ÀÌÀü °ÔÀÓ¸ðµå¿¡¼­ Ä³¸¯ÅÍ¸¦ ¹Þ¾Æ¿À´Â ÇÔ¼ö.
+//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ó¸ï¿½å¿¡ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¾Æ¿ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½.
+//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ó¸ï¿½å¿¡ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½Þ¾Æ¿ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½.
 
 
 void AFarmingGameMode::MoveLevel()
@@ -244,7 +244,7 @@ void AFarmingGameMode::RequestTurnOnPlayerUI()
 }
 
 
-//ÃÊ±â 6¸¶¸® ¼ÒÈ¯
+//ï¿½Ê±ï¿½ 6ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
 void AFarmingGameMode::SpawnInitialMonsters()
 {
     UWorld* World = GetWorld();
@@ -291,13 +291,13 @@ void AFarmingGameMode::SpawnMissingMonsters()
 }
 
 
-//¸ó½ºÅÍ°¡ Á×À» ¶§ ´©±¸ÇÑÅ× Á×¾ú´ÂÁö Á¤º¸¸¦ ³Ñ±â¸ç °ÔÀÓ¸ðµå¿¡ ¾Ë·ÁÁÖ¸é È£ÃâµÇ´Â ÇÔ¼ö.
+//ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×¾ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ±ï¿½ï¿½ ï¿½ï¿½ï¿½Ó¸ï¿½å¿¡ ï¿½Ë·ï¿½ï¿½Ö¸ï¿½ È£ï¿½ï¿½Ç´ï¿½ ï¿½Ô¼ï¿½.
 void AFarmingGameMode::HandleMonsterKilled(AActor* DeadMonster, AActor* Killer)
 {   
     CurrentMonsterCount--;
     ActiveMonsters.Remove(DeadMonster);
 
-    // ¸ó½ºÅÍ 2¸¶¸® ÀÌÇÏÀÏ ¶§ ¸®½ºÆù
+    // ï¿½ï¿½ï¿½ï¿½ 2ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     if (CurrentMonsterCount <= 2)
     {
         SpawnMissingMonsters();
@@ -332,7 +332,7 @@ void AFarmingGameMode::SpawnCamera()
 void AFarmingGameMode::AttachPlayerToCamera(ACharacter* Player, ABaseCamera* Camera)
 {
     APlayerController* PlayerController = Cast<APlayerController>(Player->GetController());
-    if (PlayerController == nullptr) return;  // ÄÁÆ®·Ñ·¯°¡ ¾øÀ¸¸é Á¾·á
+    if (PlayerController == nullptr) return;  // ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
     if (PlayerController)
     {
@@ -351,12 +351,12 @@ void AFarmingGameMode::PostSeamlessTravel()
 
     if (NetMode == NM_Standalone)
     {
-        // ½Ì±ÛÇÃ·¹ÀÌ¿ë ÃÊ±âÈ­
+        // ï¿½Ì±ï¿½ï¿½Ã·ï¿½ï¿½Ì¿ï¿½ ï¿½Ê±ï¿½È­
         UE_LOG(LogTemp, Warning, TEXT("[FarmingGameMode] SinglePlay"));
 
         if (AWitchController* PC = Cast<AWitchController>(UGameplayStatics::GetPlayerController(this, 0)))
         {
-            // Á÷Á¢ Ä³¸¯ÅÍ ½ºÆù
+            // ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             if (DefaultCharacterClass)
             {
                 SpawnPlayerByCharacterType(DefaultCharacterClass, PC);
@@ -369,13 +369,13 @@ void AFarmingGameMode::PostSeamlessTravel()
     }
     else
     {
-        // ¸ÖÆ¼ÇÃ·¹ÀÌ (¼­¹ö ±âÁØ)
+        // ï¿½ï¿½Æ¼ï¿½Ã·ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
         UE_LOG(LogTemp, Warning, TEXT("[FarmingGameMode] MultiPlay"));
 
-        //¸ÖÆ¼ÇÃ·¹ÀÌ ·ÎÁ÷
+        //ï¿½ï¿½Æ¼ï¿½Ã·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         SpawnPlayers();
         int index = 0;
-        // Å¬¶óÀÌ¾ðÆ®ÀÇ ÄÁÆ®·Ñ·¯¿Í Ä³¸¯ÅÍ¸¦ ¸ÅÄª½ÃÅ´
+        // Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½Äªï¿½ï¿½Å´
 
         for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
         {
@@ -384,7 +384,7 @@ void AFarmingGameMode::PostSeamlessTravel()
             {
                 UE_LOG(LogTemp, Warning, TEXT("Controller Detected: %s"), *GetNameSafe(PC));
 
-                // ¼­¹ö¿¡¼­ Å¬¶óÀÌ¾ðÆ®ÀÇ PawnÀ» È®ÀÎÇÏ°í Possess Ã³¸®
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®ï¿½ï¿½ Pawnï¿½ï¿½ È®ï¿½ï¿½ï¿½Ï°ï¿½ Possess Ã³ï¿½ï¿½
                 PC->SetIgnoreLookInput(true);
                 if (PC)
                 {
@@ -416,18 +416,18 @@ void AFarmingGameMode::HandleClientPossession(APlayerController* PC, int index)
 
         if (PawnToPossess && IsValid(PawnToPossess))
         {
-            // ±âÁ¸ ÄÁÆ®·Ñ·¯°¡ ÀÖÀ¸¸é UnPossess Ã³¸®
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UnPossess Ã³ï¿½ï¿½
             APlayerController* OldPC = PawnToPossess->GetController<APlayerController>();
             if (OldPC)
             {
-                OldPC->UnPossess();  // ±âÁ¸ ÄÁÆ®·Ñ·¯¿¡¼­ PawnÀ» ÇØÁ¦
+                OldPC->UnPossess();  // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ï¿½ï¿½ï¿½ï¿½ Pawnï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             }
-            // »õ·Î¿î ÄÁÆ®·Ñ·¯°¡ ÇØ´ç PawnÀ» PossessÇÏµµ·Ï Ã³¸®
+            // ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ï¿½ï¿½ ï¿½Ø´ï¿½ Pawnï¿½ï¿½ Possessï¿½Ïµï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
             PC->SetControlRotation(FRotator::ZeroRotator);
             PC->Possess(PawnToPossess);
             PC->SetControlRotation(FRotator::ZeroRotator);
             PawnToPossess->SetActorRotation(FRotator::ZeroRotator);
-            PC->ClientRestart(PawnToPossess); // Å¬¶óÂÊ¿¡ Á¦´ë·Î »óÅÂ Àû¿ë
+            PC->ClientRestart(PawnToPossess); // Å¬ï¿½ï¿½ï¿½Ê¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             PC->SetIgnoreLookInput(false);
             UE_LOG(LogTemp, Warning, TEXT("Client Possessed Pawn: %s by %s"),
                 *GetNameSafe(PawnToPossess), *GetNameSafe(PC));
@@ -495,7 +495,7 @@ void AFarmingGameMode::SpawnPlayerByCharacterType(UClass* SpawnClass, APlayerCon
 
 void AFarmingGameMode::SpawnPlayers()
 {
-    // Ä³¸¯ÅÍ Å¸ÀÔ Á¤ÀÇ (¿¹: ±âº» Ä³¸¯ÅÍ Å¬·¡½º)
+    // Ä³ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½: ï¿½âº» Ä³ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½)
     TArray<UClass*> CharacterClasses = { DefaultCharacterClass, DefaultCharacterClass };
 
     for (int32 i = 0; i < CharacterClasses.Num(); ++i)
@@ -504,17 +504,17 @@ void AFarmingGameMode::SpawnPlayers()
 
         if (HasAuthority() && IsValid(SpawnClass))
         {
-            // ÇÃ·¹ÀÌ¾î ½ÃÀÛ ÁöÁ¡ Ã£±â
-            AActor* StartActor = FindPlayerStart(nullptr);  // Æ¯Á¤ ÇÃ·¹ÀÌ¾îÀÇ ½ÃÀÛ ÁöÁ¡ Ã£±â
+            // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½
+            AActor* StartActor = FindPlayerStart(nullptr);  // Æ¯ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½
             if (!StartActor) continue;
 
             FVector StartPos = StartActor->GetActorLocation();
 
             FActorSpawnParameters SpawnParam;
-            SpawnParam.Owner = nullptr;  // ±âº»°ªÀ¸·Î ¼³Á¤
-            SpawnParam.Instigator = nullptr;  // ±âº»°ªÀ¸·Î ¼³Á¤
+            SpawnParam.Owner = nullptr;  // ï¿½âº»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+            SpawnParam.Instigator = nullptr;  // ï¿½âº»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
-            // Ä³¸¯ÅÍ »ý¼º
+            // Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             ABaseWitch* SpawnedCharacter = GetWorld()->SpawnActor<ABaseWitch>(SpawnClass, PlayerSpawnLocations[i], FRotator::ZeroRotator, SpawnParam);
             AddCharacterOnAlivePlayers(SpawnedCharacter);
             if (SpawnedCharacter)
@@ -577,7 +577,7 @@ void AFarmingGameMode::SetPlayerLocation(AActor* Player)
 
 void AFarmingGameMode::InitPlayerUI()
 {
-    //GameState¿¡ ¸í·É ³»¸®±â....
+    //GameStateï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½....
     //AFarmingState::InitPlayerUIInfo();
     
 }
@@ -589,7 +589,7 @@ void AFarmingGameMode::PostLogin(APlayerController* NewPlayer)
     UE_LOG(LogTemp, Warning, TEXT("PostLogin Called"));
     if (DefaultCharacterClass)
     {
-        SpawnPlayerByCharacterType(DefaultCharacterClass, NewPlayer); // ¿©±â!
+        SpawnPlayerByCharacterType(DefaultCharacterClass, NewPlayer); // ï¿½ï¿½ï¿½ï¿½!
     }
 
     if (AFarmingGameState* GS = GetGameState<AFarmingGameState>())

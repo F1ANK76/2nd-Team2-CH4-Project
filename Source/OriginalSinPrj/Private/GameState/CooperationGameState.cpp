@@ -27,14 +27,14 @@ ACooperationGameState::ACooperationGameState()
 
     CameraLocation = FVector(-400.f, 200.f, 0.f);
     CameraRotation = FRotator::ZeroRotator;
-    CameraDistance = 0;    
+    CameraDistance = 0;
 }
 
 void ACooperationGameState::BeginPlay()
 {
     Super::BeginPlay();
 
-    // ���� ������Ʈ Ŭ�������� ���� ��忡 ����
+
     AGameModeBase* GameModeBase = UGameplayStatics::GetGameMode(this);
     CooperationGameGameMode = Cast<ACooperationGameMode>(GameModeBase);
     GameInstance = Cast<UOriginalSinPrjGameInstance>(GetGameInstance());
@@ -81,7 +81,7 @@ void ACooperationGameState::Tick(float DeltaSeconds)
             break;
 
         case 3:
-            //SetStage3CameraTransform(); -> Run only once at Start Stage3  -> in Gamemode
+            SetStage3CameraTransform();
             break;
 
         default:
@@ -89,7 +89,7 @@ void ACooperationGameState::Tick(float DeltaSeconds)
             break;
         }
     }
-    
+
 
 
 }
@@ -99,7 +99,7 @@ void ACooperationGameState::Tick(float DeltaSeconds)
 //ShowLevelWidget
 
 
-//������ Ÿ�̸� �ѱ�
+//       Ÿ ̸   ѱ 
 void ACooperationGameState::TurnOnTimer()
 {
     bIsStage3Started = true;
@@ -117,26 +117,10 @@ void ACooperationGameState::TurnOnStage1Widget()
     {
         if (IsValid(MyGI))
         {
-            UE_LOG(LogTemp, Warning, TEXT("GameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is ReadyGameGI Is Ready"));
-        }
-        else
-        {
-            UE_LOG(LogTemp, Warning, TEXT("InValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValidInValid"));
-        }
-        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
-        {
-            if (IsValid(UISubsystem->CurrentActiveWidget))
+            if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
             {
-                UE_LOG(LogTemp, Warning, TEXT("IValidlilasidladilasiladd"));
+                Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->ActiveStage1Widget();
             }
-            else
-            {
-                UE_LOG(LogTemp, Warning, TEXT("INVALID"));
-            }
-            UE_LOG(LogTemp, Warning, TEXT("I::::::::::::%d "), UISubsystem->GetCurrentLevelType());
-            
-            // ���⼭ UISubsystem ��� ����!
-            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->ActiveStage1Widget();
         }
     }
 }
@@ -146,7 +130,6 @@ void ACooperationGameState::TurnOnStage2Widget()
     {
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            // ���⼭ UISubsystem ��� ����!
             Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->ActiveStage2Widget();
         }
     }
@@ -157,7 +140,6 @@ void ACooperationGameState::TurnOnStage3Widget()
     {
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            // ���⼭ UISubsystem ��� ����!
             Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->ActiveStage3Widget();
         }
     }
@@ -169,7 +151,6 @@ void ACooperationGameState::TurnOffStage3Widget()
     {
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            // ���⼭ UISubsystem ��� ����!
             Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->DeactivateAllWidgets();
         }
     }
@@ -212,7 +193,7 @@ void ACooperationGameState::CloseBuffSelectUI()
     {
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            UE_LOG(LogTemp, Warning, TEXT("Show Buff Widget"));            
+            UE_LOG(LogTemp, Warning, TEXT("Show Buff Widget"));
             UISubsystem->CloseWidget(EAddWidgetType::BuffSelectWidget);
             UISubsystem->SetMouseMode(false);
         }
@@ -222,8 +203,8 @@ void ACooperationGameState::CloseBuffSelectUI()
 
 TArray<EBuffType> ACooperationGameState::BuffUIInit()
 {
-    //���� ������ ���⼭ ����.
-//���� ������ ��ϵǾ��ִ� ����� �޾Ƽ�, ��ġ�� �ʰ� ������ �޾� �������� �ø���
+    //               ⼭     .
+//              ϵǾ  ִ         ޾Ƽ ,   ġ    ʰ          ޾            ø   
 
     TArray<EBuffType> BuffArray =
     {
@@ -305,7 +286,7 @@ void ACooperationGameState::TurnOnResultWidget()
             }
 
             UISubsystem->SetMouseMode(true);
-            // ���⼭ UISubsystem ��� ����!
+            //    ⼭ UISubsystem         !
             //Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->ActiveStage2Widget();
         }
     }
@@ -313,10 +294,10 @@ void ACooperationGameState::TurnOnResultWidget()
 
 void ACooperationGameState::InitPlayerInfo()
 {
-    if (HasAuthority())  // ���������� ����Ǵ� �ڵ�
+    if (HasAuthority())  //                Ǵ   ڵ 
     {
-        PlayerInfos.Empty(); // ���� ���� ����
-        //��𼱰� �޾ƿ;���...
+        PlayerInfos.Empty(); //               
+        //  𼱰   ޾ƿ;   ...
         FCharacterStateBuffer Player1State;
         FCharacterStateBuffer Player2State;
 
@@ -347,10 +328,10 @@ void ACooperationGameState::InitPlayerInfo()
 }
 
 void ACooperationGameState::UpdatePlayerInfo(const FCharacterStateBuffer& State)
-{  
+{
 
     UE_LOG(LogTemp, Warning, TEXT("Update Info"));
-    
+
     if (State.OwnWitch == CooperationGameGameMode->ActivePlayers[0])
     {
         if (PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentHP != State.CurrentHP)
@@ -359,16 +340,16 @@ void ACooperationGameState::UpdatePlayerInfo(const FCharacterStateBuffer& State)
             Player1ReceivedDamage += (PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentHP - State.CurrentHP);
 
             PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentHP = State.CurrentHP;
-            
+
         }
         PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentEXP = State.CurrentEXP;
-        
+
         if (PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentMana != State.CurrentMana)
         {
             Player1ApplyAttackCount++;
             PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].CurrentMana = State.CurrentMana;
         }
-        
+
         PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].MaxHP = State.MaxHP;
         PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].MaxEXP = State.MaxEXP;
         PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].MaxMana = State.MaxMana;
@@ -377,11 +358,11 @@ void ACooperationGameState::UpdatePlayerInfo(const FCharacterStateBuffer& State)
         PlayerInfos[CooperationGameGameMode->ActivePlayers[0]].AirbornePercent = State.AirbornePercent;
         Player1StateData = PlayerInfos[CooperationGameGameMode->ActivePlayers[0]];
         CooperationGameGameMode->RequestUpdateUI(0);
-        
+
     }
-    
-    
-    
+
+
+
     if (State.OwnWitch == CooperationGameGameMode->ActivePlayers[1])
     {
         if (PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].CurrentHP != State.CurrentHP)
@@ -391,7 +372,7 @@ void ACooperationGameState::UpdatePlayerInfo(const FCharacterStateBuffer& State)
             PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].CurrentHP = State.CurrentHP;
         }
         PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].CurrentEXP = State.CurrentEXP;
-        
+
         if (PlayerInfos[CooperationGameGameMode->ActivePlayers[1]].CurrentMana != State.CurrentMana)
         {
             Player2ApplyAttackCount++;
@@ -412,12 +393,12 @@ void ACooperationGameState::UpdatePlayerInfo(const FCharacterStateBuffer& State)
 
 void ACooperationGameState::InitPlayerUIInfo()
 {
-    //���� �����ؼ� ����
+    //          ؼ      
     if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
     {
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            // ���⼭ UISubsystem ��� ����!
+            //    ⼭ UISubsystem         !
             Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->InitPlayerUI(&Player1StateData, &Player2StateData);
         }
     }
@@ -425,12 +406,12 @@ void ACooperationGameState::InitPlayerUIInfo()
 
 void ACooperationGameState::UpdatePlayerUIInfo()
 {
-    //���� �����ؼ� ����
+    //          ؼ      
     if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
     {
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            // ���⼭ UISubsystem ��� ����!
+            //    ⼭ UISubsystem         !
             Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->UpdatePlayerUI(&Player1StateData, &Player2StateData);
         }
     }
@@ -451,7 +432,7 @@ void ACooperationGameState::ReceiveSelectedBuff(APlayerController* player, FBuff
         }
     }
 
-    if (player == PlayerControllerSet[0]) //<- �̰� �³�?
+    if (player == PlayerControllerSet[0]) //<-  ̰   ³ ?
     {
         Player1Stage1SelectedBuff = Bufftype;
 
@@ -462,7 +443,7 @@ void ACooperationGameState::ReceiveSelectedBuff(APlayerController* player, FBuff
         Player2Stage1SelectedBuff = Bufftype;
     }
 
-    
+
 }
 
 void ACooperationGameState::ApplyBuffStat()
@@ -472,7 +453,7 @@ void ACooperationGameState::ApplyBuffStat()
         if (CooperationGameGameMode->StageIndex == 2)
         {
             /*
-            PlayerInfo += 
+            PlayerInfo +=
             SelectedBuff[0];
             SelectedBuff[1];
             */
@@ -480,13 +461,13 @@ void ACooperationGameState::ApplyBuffStat()
         else if (CooperationGameGameMode->StageIndex == 3)
         {
             /*
-            PlayerInfo += 
+            PlayerInfo +=
             SelectedBuff[2];
             SelectedBuff[3];
             */
         }
     }
-    //UI ���� ���
+    //UI         
 
     bIsPlayerBuffSelect = 0;
 }
@@ -505,14 +486,14 @@ void ACooperationGameState::AddExperienceToPlayer(AActor* Player, int32 Amount)
 {
     if (Player)
     {
-        // PlayerInfos���� �÷��̾� ���� ã��
+        // PlayerInfos      ÷  ̾       ã  
         FPlayerData* PlayerData = PlayerInfos.Find(Player);
 
         if (PlayerData)
         {
             PlayerData->CurrentEXP += Amount;
             CheckLevelUp(Player);
-            UpdatePlayerUIInfo(); // UI ����
+            UpdatePlayerUIInfo(); // UI     
         }
     }
 }
@@ -538,7 +519,7 @@ void ACooperationGameState::SetPlayerPawn(ABaseWitch* InPawn)
     PlayerPawnRef = InPawn;
 }
 
-//���� ��Ʈ�ѷ� ����صα�
+//       Ʈ ѷ      صα 
 void ACooperationGameState::RegisterInitialController(APlayerController* PC)
 {
     if (IsValid(PC) && !PlayerControllerSet.Contains(PC))
@@ -590,7 +571,7 @@ void ACooperationGameState::SetStage1CameraTransform()
         MeanPlayerLocation = SumPlayerLocation / CooperationGameGameMode->AlivePlayers.Num();
     }
 
-    if (HasAuthority()) // �������� Ȯ��
+    if (HasAuthority()) //          Ȯ  
     {
         CameraDistance = maxY - minY + 2 * (maxZ - minZ);
 
@@ -599,7 +580,7 @@ void ACooperationGameState::SetStage1CameraTransform()
     }
 
     CooperationGameGameMode->SpawnedBaseCamera[0]->UpdateCameraLocationandRotation();
-    
+
 }
 
 void ACooperationGameState::SetStage2CameraTransform()
@@ -637,7 +618,7 @@ void ACooperationGameState::SetStage2CameraTransform()
         }
     }
 
-    for (AActor* Enemy : CooperationGameGameMode->ActiveEnemies)
+    for (AActor* Enemy : CooperationGameGameMode->AliveEnemies)
     {
         if (IsValid(Enemy))
         {
@@ -681,7 +662,7 @@ void ACooperationGameState::SetStage2CameraTransform()
         CameraLocation = MeanActorLocation;
         CameraRotation = FRotator::ZeroRotator;
 
-    }// �������� Ȯ��
+    }
 
     CooperationGameGameMode->SpawnedBaseCamera[0]->UpdateCameraLocationandRotation();
 }
@@ -698,18 +679,12 @@ void ACooperationGameState::SetStage3CameraTransform()
 }
 
 
-//�������� ��ġ���Ͽ� ���� ����
-
-//
 
 
 
 
 
-
-
-
-////////////////////////////��Ƽ ó��
+////////////////////////////  Ƽ ó  
 
 void ACooperationGameState::OnRep_UpdatePlayer1DataUI()
 {
@@ -734,7 +709,7 @@ void ACooperationGameState::UpdateTimer()
     {
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            // ���⼭ UISubsystem ��� ����!
+            //    ⼭ UISubsystem         !
             Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->UpdateBossTimer(SpendedStage3Timer);
         }
     }
@@ -756,7 +731,7 @@ void ACooperationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME(ACooperationGameState, CameraRotation);
     DOREPLIFETIME(ACooperationGameState, CameraDistance);
     DOREPLIFETIME(ACooperationGameState, SpendedStage3Timer);
-    DOREPLIFETIME(ACooperationGameState, bIsPlayerCanMove); 
+    DOREPLIFETIME(ACooperationGameState, bIsPlayerCanMove);
     DOREPLIFETIME(ACooperationGameState, CurrentStageIndex);
     DOREPLIFETIME(ACooperationGameState, bIsPlayerBuffSelect);
     DOREPLIFETIME(ACooperationGameState, SelectBuffPlayer);
@@ -766,6 +741,15 @@ void ACooperationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME(ACooperationGameState, Player2StateData);
     DOREPLIFETIME(ACooperationGameState, PlayerDataChanged);
 
+    DOREPLIFETIME(ACooperationGameState, Enemy1StateData);
+    DOREPLIFETIME(ACooperationGameState, Enemy2StateData);
+    DOREPLIFETIME(ACooperationGameState, Enemy3StateData);
+    DOREPLIFETIME(ACooperationGameState, Enemy4StateData);
+
+    DOREPLIFETIME(ACooperationGameState, Enemy1DataChanged);
+    DOREPLIFETIME(ACooperationGameState, Enemy2DataChanged);
+    DOREPLIFETIME(ACooperationGameState, Enemy3DataChanged);
+    DOREPLIFETIME(ACooperationGameState, Enemy4DataChanged);
 
     DOREPLIFETIME(ACooperationGameState, Player1ReceivedDamage);
     DOREPLIFETIME(ACooperationGameState, Player2ReceivedDamage);
@@ -783,6 +767,8 @@ void ACooperationGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME(ACooperationGameState, bIsStage1Started);
     DOREPLIFETIME(ACooperationGameState, bIsStage2Started);
     DOREPLIFETIME(ACooperationGameState, bIsStage3Started);
+
+
 
 }
 
@@ -806,7 +792,7 @@ void ACooperationGameState::OnRep_SetPlayerMove()
             }
         }
     }
-    
+
 }
 
 
@@ -856,7 +842,7 @@ void ACooperationGameState::UpdateBossDataUI()
     {
         if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
         {
-            // ���⼭ UISubsystem ��� ����!
+            //    ⼭ UISubsystem         !
             Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->UpdateBossUI(BossData[0]);
         }
     }
@@ -868,12 +854,12 @@ void ACooperationGameState::ApplyDamage(AActor* Attacker, float Damage, const FV
     Multicast_ApplyDamage(Attacker, Damage, HitLocation);
 }
 
-void ACooperationGameState::TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation) 
+void ACooperationGameState::TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation)
 {
     Multicast_TakeDamage(Victim, Damage, HitLocation);
 }
 
-void ACooperationGameState::OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation) 
+void ACooperationGameState::OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation)
 {
     ABaseWitch* DeadPlayer = Cast<ABaseWitch>(Player);
     if (DeadPlayer == CooperationGameGameMode->ActivePlayers[0])
@@ -886,7 +872,7 @@ void ACooperationGameState::OnDeathPlayer(ACharacter* Player, const FVector& Dea
     }
 }
 
-void ACooperationGameState::OnDeathMonster(AActor* Monster, const FVector& DeathLocation) 
+void ACooperationGameState::OnDeathMonster(AActor* Monster, const FVector& DeathLocation)
 {
     Multicast_OnDeathMonster(Monster, DeathLocation);
 }
@@ -895,75 +881,213 @@ void ACooperationGameState::OnDeathMonster(AActor* Monster, const FVector& Death
 
 void ACooperationGameState::Multicast_ApplyDamage_Implementation(AActor* Attacker, float Damage, const FVector& HitLocation)
 {
-    // ��� Ŭ���̾�Ʈ���� �����
+    //     Ŭ   ̾ Ʈ          
     if (IsValid(Attacker))
     {
-        // ��: �ǰ� ��ġ�� ����Ʈ ����
+        //   :  ǰ    ġ       Ʈ     
         // UGameplayStatics::SpawnEmitterAtLocation(...);
     }
 
-    // ���� ������ ó���� �ʿ��ϴٸ� ���⼭ ���� (�Ǵ� ���������� �� ���� ����)
+    //             ó      ʿ  ϴٸ     ⼭      ( Ǵ                         )
 }
 
 void ACooperationGameState::Multicast_TakeDamage_Implementation(AActor* Victim, float Damage, const FVector& HitLocation)
 {
-    if (IsValid(Victim))
-    {
-        // ��: ���� ���� �ִϸ��̼� ���
-    }
-   
-    /*
-    Victim.HP -= Damage;
-    If(Victim.HP <= MaxHP)
-    {
-        if(Victim == Player)
-            Multicast_OnDeathPlayer_Implementation(Victim, HitLocation);
-        if Victim == enemy
-            Multicast_OnDeathPlayer_Implementation(Victim, HitLocation);
-        if Victim == monster
-            Multicast_OnDeathMonster_Implementation(Victim, HitLocation);
-    }
 
-    */
 }
 
 void ACooperationGameState::Multicast_OnDeathPlayer_Implementation(ACharacter* Player, const FVector& DeathLocation)
 {
-    if (IsValid(Player))
-    {
-        /*
-        if (Victim == Player)
-            Multicast_OnDeathPlayer_Implementation(Victim, HitLocation);
-            playDeathAnim
-            if Victim.Life > 0
-                Respawn
-            else
-                HandlePlayerKilled
 
-        if Victim == enemy
-            Multicast_OnDeathPlayer_Implementation(Victim, HitLocation);
-            GameMode->HandleEnemyKilled(Monster, AController* Killer)
-        */
-
-        // ��: ��� �ִϸ��̼�, ȿ�� ��
-        // Player->PlayDeathAnimation(); ���� �Լ� ȣ��
-    }
 }
 
 void ACooperationGameState::Multicast_OnDeathMonster_Implementation(AActor* Monster, const FVector& DeathLocation)
 {
-    if (IsValid(Monster))
+
+}
+
+
+
+void ACooperationGameState::InitEnemyInfo()
+{
+    if (HasAuthority())
     {
-        /*
-        
+        EnemyInfos.Empty();
+        FCharacterStateBuffer Enemy1State;
+        FCharacterStateBuffer Enemy2State;
+        FCharacterStateBuffer Enemy3State;
+        FCharacterStateBuffer Enemy4State;
 
-        if monster?
-        GameMode->HandleMonsterKilled(Monster, AController* Killer)
+        EnemyInfos.Add(CooperationGameGameMode->ActiveEnemies[0], FPlayerData{
+        "Enemy1", nullptr,
+        100.0f, 100.0f,
+        0, 0,
+        0, 0.0f,
+        0,
+        0,
+        0, 100, 1 });
+        Enemy1StateData = EnemyInfos[CooperationGameGameMode->ActiveEnemies[0]];
+
+        EnemyInfos.Add(CooperationGameGameMode->ActiveEnemies[1], FPlayerData{
+        "Enemy2", nullptr,
+        100.0f, 100.0f,
+        0, 0,
+        0, 0.0f,
+        0,
+        0,
+        0, 100, 1 });
+        Enemy2StateData = EnemyInfos[CooperationGameGameMode->ActiveEnemies[1]];
+
+        EnemyInfos.Add(CooperationGameGameMode->ActiveEnemies[2], FPlayerData{
+        "Enemy3", nullptr,
+        100.0f, 100.0f,
+        0, 0,
+        0, 0.0f,
+        0,
+        0,
+        0, 100, 1 });
+        Enemy3StateData = EnemyInfos[CooperationGameGameMode->ActiveEnemies[2]];
+
+        EnemyInfos.Add(CooperationGameGameMode->ActiveEnemies[3], FPlayerData{
+        "Enemy4", nullptr,
+        100.0f, 100.0f,
+        0, 0,
+        0, 0.0f,
+        0,
+        0,
+        0, 100, 1 });
+        Enemy4StateData = EnemyInfos[CooperationGameGameMode->ActiveEnemies[3]];
+
+        InitPlayerUIInfo();
 
 
+        Cast<ABaseWitch>(CooperationGameGameMode->ActiveEnemies[0])->ResetCharacterState();
+        Cast<ABaseWitch>(CooperationGameGameMode->ActiveEnemies[1])->ResetCharacterState();
+        Cast<ABaseWitch>(CooperationGameGameMode->ActiveEnemies[1])->ResetCharacterState();
+        Cast<ABaseWitch>(CooperationGameGameMode->ActiveEnemies[1])->ResetCharacterState();
+    }
+}
 
-        */
-        
+void ACooperationGameState::UpdateEnemyInfo(const FCharacterStateBuffer& State)
+{
+
+    UE_LOG(LogTemp, Warning, TEXT("Enemy Update Info"));
+
+    if (State.OwnWitch == CooperationGameGameMode->ActiveEnemies[0])
+    {
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[0]].CurrentHP = State.CurrentHP;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[0]].CurrentEXP = State.CurrentEXP;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[0]].CurrentMana = State.CurrentMana;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[0]].MaxHP = State.MaxHP;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[0]].MaxEXP = State.MaxEXP;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[0]].MaxMana = State.MaxMana;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[0]].PlayerLevel = State.PlayerLevel;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[0]].LifePoint = State.LifePoint;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[0]].AirbornePercent = State.AirbornePercent;
+        Enemy1StateData = EnemyInfos[CooperationGameGameMode->ActiveEnemies[0]];
+        CooperationGameGameMode->RequestUpdateUI(2);
+        UE_LOG(LogTemp, Warning, TEXT("1"));
 
     }
+
+    if (State.OwnWitch == CooperationGameGameMode->ActiveEnemies[1])
+    {
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[1]].CurrentHP = State.CurrentHP;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[1]].CurrentEXP = State.CurrentEXP;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[1]].CurrentMana = State.CurrentMana;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[1]].MaxHP = State.MaxHP;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[1]].MaxEXP = State.MaxEXP;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[1]].MaxMana = State.MaxMana;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[1]].PlayerLevel = State.PlayerLevel;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[1]].LifePoint = State.LifePoint;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[1]].AirbornePercent = State.AirbornePercent;
+        Enemy1StateData = EnemyInfos[CooperationGameGameMode->ActiveEnemies[1]];
+        CooperationGameGameMode->RequestUpdateUI(2);
+        UE_LOG(LogTemp, Warning, TEXT("2"));
+    }
+
+    if (State.OwnWitch == CooperationGameGameMode->ActiveEnemies[2])
+    {
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[2]].CurrentHP = State.CurrentHP;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[2]].CurrentEXP = State.CurrentEXP;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[2]].CurrentMana = State.CurrentMana;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[2]].MaxHP = State.MaxHP;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[2]].MaxEXP = State.MaxEXP;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[2]].MaxMana = State.MaxMana;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[2]].PlayerLevel = State.PlayerLevel;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[2]].LifePoint = State.LifePoint;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[2]].AirbornePercent = State.AirbornePercent;
+        Enemy1StateData = EnemyInfos[CooperationGameGameMode->ActiveEnemies[2]];
+        CooperationGameGameMode->RequestUpdateUI(2);
+        UE_LOG(LogTemp, Warning, TEXT("3"));
+    }
+
+    if (State.OwnWitch == CooperationGameGameMode->ActiveEnemies[3])
+    {
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[3]].CurrentHP = State.CurrentHP;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[3]].CurrentEXP = State.CurrentEXP;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[3]].CurrentMana = State.CurrentMana;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[3]].MaxHP = State.MaxHP;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[3]].MaxEXP = State.MaxEXP;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[3]].MaxMana = State.MaxMana;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[3]].PlayerLevel = State.PlayerLevel;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[3]].LifePoint = State.LifePoint;
+        EnemyInfos[CooperationGameGameMode->ActiveEnemies[3]].AirbornePercent = State.AirbornePercent;
+        Enemy1StateData = EnemyInfos[CooperationGameGameMode->ActiveEnemies[3]];
+        CooperationGameGameMode->RequestUpdateUI(2);
+        UE_LOG(LogTemp, Warning, TEXT("4"));
+    }
+}
+
+
+void ACooperationGameState::InitEnemyUIInfo()
+{
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
+        {
+
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->InitEnemyUI(&Enemy1StateData, &Enemy2StateData, &Enemy3StateData, &Enemy4StateData);
+        }
+    }
+}
+
+void ACooperationGameState::UpdateEnemyUIInfo()
+{
+    if (UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+    {
+        if (UUISubsystem* UISubsystem = MyGI->GetSubsystem<UUISubsystem>())
+        {
+            Cast<UCooperationWidget>(UISubsystem->CurrentActiveWidget)->UpdateEnemyUI(&Enemy1StateData, &Enemy2StateData, &Enemy3StateData, &Enemy4StateData);
+        }
+    }
+}
+
+
+
+void ACooperationGameState::OnRep_UpdateEnemy1DataUI()
+{
+    UpdateEnemyUIInfo();
+
+
+}
+
+void ACooperationGameState::OnRep_UpdateEnemy2DataUI()
+{
+    UpdateEnemyUIInfo();
+}
+
+void ACooperationGameState::OnRep_UpdateEnemy3DataUI()
+{
+    UpdateEnemyUIInfo();
+}
+
+void ACooperationGameState::OnRep_UpdateEnemy4DataUI()
+{
+    UpdateEnemyUIInfo();
+}
+
+void ACooperationGameState::OnRep_UpdateEnemyInitData()
+{
+    InitEnemyUIInfo();
 }

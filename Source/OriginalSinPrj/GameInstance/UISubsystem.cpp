@@ -290,9 +290,9 @@ void UUISubsystem::CloseWidget(EAddWidgetType WidgetType)
         return;
     }
 
-    if (TargetWidget->IsInViewport())
+    if (IsValid(TargetWidget))
     {
-        TargetWidget->RemoveFromParent();
+        TargetWidget->RemoveFromViewport();
     }
 }
 

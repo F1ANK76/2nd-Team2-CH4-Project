@@ -23,6 +23,7 @@ public:
 	virtual void InitWidget(UUISubsystem* uiSubsystem) override;
 	void SetCharacterType(ECharacterType Type);
 	void SetCharacterImage(UTexture2D* CharacterImg);
+	void SetCharacterName(const FName& NewName);
 
 private:
 	UFUNCTION()
