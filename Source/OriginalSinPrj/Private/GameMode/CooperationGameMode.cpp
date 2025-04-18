@@ -762,7 +762,7 @@ void ACooperationGameMode::FallDie(AActor* Character)
 
 
 
-/*
+
 void ACooperationGameMode::PostSeamlessTravel()
 {
     UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Called"));

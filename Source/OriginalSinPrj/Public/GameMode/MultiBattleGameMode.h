@@ -17,14 +17,15 @@ UCLASS()
 class ORIGINALSINPRJ_API AMultiBattleGameMode : public AGameMode, public IBattleEvent, public IMatchManage
 {
 	GENERATED_BODY()
-	
+protected:
+	virtual APawn* SpawnDefaultPawnFor_Implementation(AController* NewPlayer, AActor* StartSpot) override;
 public:
 	AMultiBattleGameMode();
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void HandleSeamlessTravelPlayer(AController*& C) override;
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-
+	
 	void StartGame();
 	void RespawnPlayer(APlayerController* PlayerController);
 
@@ -90,6 +91,9 @@ public:
 
 public:
 
+	UPROPERTY(EditDefaultsOnly, Category="Witches")
+	TArray<TSubclassOf<ABaseWitch>> WitchClasses;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ObjectManager")
 	TSubclassOf<ALevelObjectManager> LevelObjectManagerClass;
 

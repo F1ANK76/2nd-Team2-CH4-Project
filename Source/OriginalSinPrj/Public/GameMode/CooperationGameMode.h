@@ -341,7 +341,6 @@ protected:
 
     //��Ƽ ����
     virtual void PostSeamlessTravel() override;
-    void SeamlessTravel();
 
 public:
     virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;

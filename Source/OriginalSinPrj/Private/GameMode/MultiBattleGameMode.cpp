@@ -15,7 +15,8 @@ AMultiBattleGameMode::AMultiBattleGameMode()
 	, LevelObjectManager(nullptr)
 {
 	PrimaryActorTick.bCanEverTick = true;
-	
+
+	DefaultPawnClass = ABaseWitch::StaticClass();
 	bUseSeamlessTravel = true; // Seamless Travel
 	GameStateClass = AMultiBattleGameState::StaticClass();
 	PlayerControllerClass = AWitchController::StaticClass();
@@ -79,6 +80,21 @@ void AMultiBattleGameMode::HandleSeamlessTravelPlayer(AController*& C)
 	}
 }
 
+APawn* AMultiBattleGameMode::SpawnDefaultPawnFor_Implementation(AController* NewPlayer, AActor* StartSpot)
+{
+	int32 CharacterTypeIndex = 0;
+	if (UOriginalSinPrjGameInstance* GI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		CharacterTypeIndex = int32(GI->GetSelectedCharacterType());
+	}
+	
+	UClass* ChosenClass = WitchClasses[CharacterTypeIndex];
+	FTransform SpawnTransform = StartSpot ? StartSpot->GetActorTransform() : FTransform::Identity;
+	FActorSpawnParameters Params;
+	Params.Owner = NewPlayer;
+	
+	return GetWorld()->SpawnActor<APawn>(ChosenClass, SpawnTransform, Params);
+}
 
 void AMultiBattleGameMode::BeginPlay()
 {
