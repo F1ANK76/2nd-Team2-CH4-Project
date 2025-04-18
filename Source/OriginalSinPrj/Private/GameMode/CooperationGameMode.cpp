@@ -49,9 +49,19 @@ void ACooperationGameMode::BeginPlay()
 
     //Open Player UI;
     //InitPlayerUI();
-    InitPlayerUI();
+
+    /*
     SpawnKillZone();
     //Game Start Condition -> Start with a timer temporarily
+    */
+
+    FTimerHandle TimerHandle;
+    GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
+        {
+            StartGame();
+        }), 5.0f, false);
+
+
 }
 
 
@@ -888,7 +898,7 @@ void ACooperationGameMode::SpawnKillZone()
 {
     if (!ActorKillZone) return;  // UPROPERTY占쏙옙 占쏙옙占쏙옙占쏙옙 클占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙
 
-    FVector SpawnLocation = FVector(0.f, 0.f, -500.f);  // 占쏙옙占싹댐옙 占쏙옙치
+    FVector SpawnLocation = FVector(0.f, 0.f, -5000.f);  // 占쏙옙占싹댐옙 占쏙옙치
     FRotator SpawnRotation = FRotator::ZeroRotator;
     FActorSpawnParameters SpawnParams;
     SpawnParams.Owner = this;
