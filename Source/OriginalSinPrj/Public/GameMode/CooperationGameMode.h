@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -34,13 +34,13 @@ public: //for test
 
 public:
     ACooperationGameMode();
-    virtual void StartPlay() override; // BeginPlay���� ���� ȣ��
-    virtual void BeginPlay() override; // ������ ������ �غ� �Ǹ� ȣ��
+    virtual void StartPlay() override; // BeginPlay占쏙옙占쏙옙 占쏙옙占쏙옙 호占쏙옙
+    virtual void BeginPlay() override; // 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙 占쌔븝옙 占실몌옙 호占쏙옙
 
     //Added GameMode Function
     //Control Game Function
     UFUNCTION(BlueprintCallable)
-    void StartGame(); //game ���� Ʈ����
+    void StartGame(); //game 占쏙옙占쏙옙 트占쏙옙占쏙옙
 
     void EndGame();
     void SeamlessTravel();
@@ -93,7 +93,7 @@ public:
     int CurrentPlayerCount = 0;
 
 
-    // ���Ӹ��?Ŭ������ ����
+    // 占쏙옙占쌈몌옙占?클占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Controller")
     TSubclassOf<APlayerController> NewPlayerControllerClass;
 
@@ -113,7 +113,7 @@ public:
     UPROPERTY(EditDefaultsOnly, Category = "Camera")
     TSubclassOf<ABaseCamera> BaseCamera;
 
-    // ������ ī�޶� ������ �迭
+    // 占쏙옙占쏙옙占쏙옙 카占쌨띰옙 占쏙옙占쏙옙占쏙옙 占썼열
     UPROPERTY()
     TArray<ABaseCamera*> SpawnedBaseCamera;
 
@@ -129,7 +129,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BossCamera")
     TArray<FRotator> BossStageCameraAngle;
 
-    //ī�޶� ���� �Լ�
+    //카占쌨띰옙 占쏙옙占쏙옙 占쌉쇽옙
     void SpawnCamera();
 
     void AttachPlayerToCamera(ACharacter* Player, ABaseCamera* Camera);
@@ -152,37 +152,37 @@ public:
     bool bIsStage3Cleared = false;
 
     UFUNCTION(BlueprintCallable)
-    void ReadyStage1(); //Stage1 ���� Ʈ����
+    void ReadyStage1(); //Stage1 占쏙옙占쏙옙 트占쏙옙占쏙옙
 
     UFUNCTION(BlueprintCallable)
-    void ReadyStage2(); //Stage2 ���� Ʈ����
+    void ReadyStage2(); //Stage2 占쏙옙占쏙옙 트占쏙옙占쏙옙
 
     UFUNCTION(BlueprintCallable)
-    void ReadyStage3(); //Stage3 ���� Ʈ����
+    void ReadyStage3(); //Stage3 占쏙옙占쏙옙 트占쏙옙占쏙옙
 
     UFUNCTION(BlueprintCallable)
-    void StartStage1(); //Stage1 ���� Ʈ����
+    void StartStage1(); //Stage1 시작 트리거
 
     UFUNCTION(BlueprintCallable)
-    void StartStage2(); //Stage2 ���� Ʈ����
+    void StartStage2(); //Stage2 시작 트리거
 
     UFUNCTION(BlueprintCallable)
-    void StartStage3(); //Stage3 ���� Ʈ����
+    void StartStage3(); //Stage3 시작 트리거
 
     UFUNCTION(BlueprintCallable)
-    void EndStage1(); //Stage1 ���� Ʈ����
+    void EndStage1(); //Stage1 종료 트리거
 
     UFUNCTION(BlueprintCallable)
-    void EndStage2(); //Stage2 ���� Ʈ����
+    void EndStage2(); //Stage2 종료 트리거
 
     UFUNCTION(BlueprintCallable)
-    void EndStage3(); //Stage3 ���� Ʈ����
+    void EndStage3(); //Stage3 종료 트리거
 
 
 
     void SetPlayerLocation();
 
-    //�� Stage ���� �� �Ų����?�����?��ȯ�ϱ� ���� �Լ� �ʿ�
+    //�� Stage ���� �� �Ų���� ����� ��ȯ�ϱ� ���� �Լ� �ʿ�
     void MoveNextStage();
 
     void RequestTurnOnBuffSelectUI();
@@ -195,16 +195,16 @@ public:
     void Respawn(AActor* DeadActor);
 
     UFUNCTION(BlueprintCallable)
-    void HandleMonsterKilled(AActor* DeadMonster, AActor* Killer); //���Ͱ� ������ �̰� ȣ��
+    void HandleMonsterKilled(AActor* DeadMonster, AActor* Killer); //몬스터가 죽으면 이걸 호출
 
 
     UFUNCTION(BlueprintCallable)
-    void HandleEnemyKilled(AActor* DeadMonster, AActor* Killer); //���Ͱ� ������ �̰� ȣ��
+    void HandleEnemyKilled(AActor* DeadMonster, AActor* Killer); //占쏙옙占싶곤옙 占쏙옙占쏙옙占쏙옙 占싱곤옙 호占쏙옙
 
     UFUNCTION(BlueprintCallable)
-    void HandlePlayerKilled(AActor* DeadPlayer, AActor* Killer); //�÷��̾ ������ �̰� ȣ��
+    void HandlePlayerKilled(AActor* DeadPlayer, AActor* Killer); //占시뤄옙占싱어가 占쏙옙占쏙옙占쏙옙 占싱곤옙 호占쏙옙
 
-    //����ó��
+    //占쏙옙占쏙옙처占쏙옙
 
     UFUNCTION()
     void FallDie(AActor* Character);
@@ -220,10 +220,10 @@ public:
 
     void RequestOpenResultUI();
 
-    void CheckUntilAllPlayerSelectBuff(); // ���?�÷��̾ ������ �����ߴ��� ���� ����ϴ�?�Լ�.
+    void CheckUntilAllPlayerSelectBuff(); // 占쏙옙占?占시뤄옙占싱어가 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占쌩댐옙占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙求占?占쌉쇽옙.
 
 
-    // ĳ���� ���� �Լ�
+    // 캐占쏙옙占쏙옙 占쏙옙占쏙옙 占쌉쇽옙
     void SpawnPlayers();
 
     void PossessCharacter(APlayerController* PC, APawn* PawnToPossess);
@@ -239,7 +239,7 @@ public:
 
 
     // Stage1
-    //���� ������ ���� �ֱ�
+    //占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙 占쌍깍옙
     //UPROPERTY(BlueprintReadWrite, Category = "Spawn")
     //TSubclassOf<AMonsterSpawner> MonsterSpawner;
 
@@ -270,7 +270,7 @@ public:
 
 
     // Stage2
-    //Enemy ������ ���� �ֱ�
+    //Enemy 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙 占쌍깍옙
     //UPROPERTY(BlueprintReadWrite, Category = "Spawn")
     //TSubclassOf<AEnemySpawner> EnemySpawner;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
@@ -304,13 +304,13 @@ public:
     UPROPERTY(BlueprintReadWrite)
     TArray<AActor*> ActiveBossMonster;
 
-    //������Ʈ���� 0�̸� -> end battle ȣ�� -> ���� ���������� ���� ���� -> �������� �����ʿ���. -> ���Ӹ��� �״��?...
+    //占쏙옙占쏙옙占쏙옙트占쏙옙占쏙옙 0占싱몌옙 -> end battle 호占쏙옙 -> 占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙 -> 占쏙옙占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占십울옙占쏙옙. -> 占쏙옙占쌈몌옙占쏙옙 占쌓댐옙占?...
 
     TArray<AActor*> StartBattle(TArray<AActor*> Players);
 
 
 
-    //�÷��̾� �����̵�(ĳ����, �����̼�)
+    //占시뤄옙占싱억옙 占쏙옙占쏙옙占싱듸옙(캐占쏙옙占쏙옙, 占쏙옙占쏙옙占싱쇽옙)
     UFUNCTION(BlueprintCallable)
     void BossSetPlayerLocation(ACharacter* PlayerChar);
 
@@ -341,7 +341,7 @@ protected:
 
     //��Ƽ ����
     virtual void PostSeamlessTravel() override;
-
+    void SeamlessTravel();
 
 public:
     virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;

@@ -8,6 +8,9 @@ ABaseCamera::ABaseCamera()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+    bReplicates = true;
+    bAlwaysRelevant = true;
+    
     RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 
     CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
@@ -18,7 +21,7 @@ ABaseCamera::ABaseCamera()
 void ABaseCamera::BeginPlay()
 {
 	Super::BeginPlay();
-    // ÇöÀç WorldÀÇ GameState °¡Á®¿À±â
+    // ï¿½ï¿½ï¿½ï¿½ Worldï¿½ï¿½ GameState ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     GameState = GetWorld()->GetGameState();
     if (IsValid(GameState))
     {
@@ -71,9 +74,14 @@ void ABaseCamera::UpdateCameraLocationandRotation()
     {
         CamDist = CameraState->GetCameraDistance();
         CamRot = CameraState->GetCameraRotation();
-        CamLoc = CameraState->GetCameraLocation()
-            + FVector(FMath::Clamp(-CamDist, -1500.0f, -500.0f), 0.0f, 0.0f);
+        CamLoc = CameraState->GetCameraLocation() + FVector(FMath::Min(-CamDist, -500.0f) / 2.0f, 0.0f, 0.0f);
 
+        UE_LOG(LogTemp, Warning, TEXT("CamLoc: %s"), *CamLoc.ToString());
+        UE_LOG(LogTemp, Warning, TEXT("CamDist: %f"), CamDist);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ì¹´ë©”ë¼ ìŠ¤í…Œì´íŠ¸ ì¸ì‹ ë¶ˆê°€"));
     }
 
     CameraComponent->SetWorldLocation(FMath::VInterpTo(CameraComponent->GetComponentLocation(), CamLoc, 0.03f, 5.0f));

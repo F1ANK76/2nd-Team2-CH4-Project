@@ -134,7 +134,7 @@ void AMenuGameMode::StartMultiGame()
 	}
 
 	// if Selected Mode is Multi
-	GameInstance->RequestOpenLevelByType(ELevelType::FarmingLevel, false);
+	GameInstance->RequestOpenLevelByType(ELevelType::CooperationLevel, false);
 
 	// if Selected Mode is Cooper
 }

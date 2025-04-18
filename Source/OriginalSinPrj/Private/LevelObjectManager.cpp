@@ -12,6 +12,8 @@ ALevelObjectManager::ALevelObjectManager()
 {
  	PrimaryActorTick.bCanEverTick = false;
 	ObjectToPool = ABasePlatform::StaticClass();
+
+	TopPlatformLocation = FVector(0.0f, 0.0f, ObjectZLocation * 3);
 }
 
 void ALevelObjectManager::BeginPlay()
@@ -22,7 +24,8 @@ void ALevelObjectManager::BeginPlay()
 	{
 		for (int i = 0; i < PoolSize; i++)
 		{
-			FVector NewActorLocation(10.0f, 0.0f, ObjectZLocation);
+			float RandPlatformYLocation = FMath::FRandRange(-500.0f, 500.0f);
+			FVector NewActorLocation(10.0f, RandPlatformYLocation, ObjectZLocation);
 			FVector NewActorScale(1.0f, 1.0f, 1.0f);
 			FRotator NewActorRotator(0.0f, 0.0f, 0.0f);
 			FTransform NewActorTransform(NewActorRotator, NewActorLocation, NewActorScale);
@@ -39,6 +42,8 @@ void ALevelObjectManager::BeginPlay()
 			ObjectZLocation += ObjectDistance;
 		}
 	}
+	TopPlatformLocation = PooledObjects[4]->GetActorLocation();
+	TopPlatformLocation.Z += 10.0f;
 }
 
 void ALevelObjectManager::InitializeTempObjects()
@@ -79,6 +84,8 @@ void ALevelObjectManager::SpawnAndDestroyObject()
 	if (PooledObjects.IsValidIndex(PoolIndex))
 	{
 		AActor* TempActor = PooledObjects[PoolIndex];
+		TopPlatformLocation = TempActor->GetActorLocation();
+		TopPlatformLocation.Z += 20.0f;
 
 		TempActor->SetActorHiddenInGame(false);
 		TempActor->SetActorEnableCollision(true);
@@ -92,7 +99,7 @@ void ALevelObjectManager::SpawnAndDestroyObject()
 
 void ALevelObjectManager::SpawnDeathZone()
 {
-	FVector NewActorLocation(0.0f, 0.0f, -150.0f);
+	FVector NewActorLocation(0.0f, 0.0f, -200.0f);
 	FVector NewActorScale(1.0f, 1.0f, 1.0f);
 	FRotator NewActorRotator(0.0f, 0.0f, 0.0f);
 	FTransform NewActorTransform(NewActorRotator, NewActorLocation, NewActorScale);
@@ -116,4 +123,9 @@ AActor* ALevelObjectManager::GetRespawnPlatform()
 	}
 
 	return nullptr;
+}
+
+FVector ALevelObjectManager::GetTopPlatformLocation()
+{
+	return TopPlatformLocation;
 }

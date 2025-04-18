@@ -20,7 +20,7 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-	void SpawnPlayer(AWitchController* Controller, FVector SpawnLocation);
+	APawn* SpawnPlayer(AWitchController* Controller, FVector SpawnLocation);
 	void SpawnMonster(AController* Controller, FVector SpawnLocation);
 
 	UPROPERTY(EditAnywhere, Category = "SpawnPlayer")
