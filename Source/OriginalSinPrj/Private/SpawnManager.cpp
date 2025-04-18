@@ -19,8 +19,9 @@ void ASpawnManager::Tick(float DeltaTime)
 
 }
 
-void ASpawnManager::SpawnPlayer(AWitchController* Controller, FVector SpawnLocation)
+APawn* ASpawnManager::SpawnPlayer(AWitchController* Controller, FVector SpawnLocation)
 {
+	APawn* NewCharacter;
 	if (Controller)
 	{
 		FActorSpawnParameters SpawnParams;
@@ -28,7 +29,7 @@ void ASpawnManager::SpawnPlayer(AWitchController* Controller, FVector SpawnLocat
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 
-		APawn* NewCharacter = GetWorld()->SpawnActor<APawn>(
+		NewCharacter = GetWorld()->SpawnActor<APawn>(
 			PlayerClass, 
 			SpawnLocation, 
 			FRotator::ZeroRotator, 
@@ -40,7 +41,11 @@ void ASpawnManager::SpawnPlayer(AWitchController* Controller, FVector SpawnLocat
 			Controller->Possess(NewCharacter);
 			NewCharacter->PossessedBy(Controller);
 		}
+
+		return NewCharacter;
 	}
+
+	return nullptr;
 }
 
 void ASpawnManager::SpawnMonster(AController* Controller, FVector SpawnLocation)

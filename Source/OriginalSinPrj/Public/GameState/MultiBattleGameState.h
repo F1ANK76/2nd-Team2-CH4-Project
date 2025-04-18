@@ -3,11 +3,18 @@
 #include "CoreMinimal.h"
 #include "OriginalSinPrj/Interface/BattleEvent.h"
 #include "OriginalSinPrj/Interface/MatchManage.h"
+#include "Player/Struct/CharacterStateBuffer.h"
+#include "GameState/BaseGameState.h"
 #include "GameFramework/GameState.h"
+#include "OriginalSinPrj/Widget/AddedWidget/PlayerStateWidget.h"
 #include "MultiBattleGameState.generated.h"
 
+class AMultiBattleGameMode;
+struct FBuffType;
+class AWitchController;
+
 UCLASS()
-class ORIGINALSINPRJ_API AMultiBattleGameState : public AGameState, public IBattleEvent, public IMatchManage
+class ORIGINALSINPRJ_API AMultiBattleGameState : public ABaseGameState, public IBattleEvent, public IMatchManage
 {
 	GENERATED_BODY()
 	
@@ -16,6 +23,8 @@ public:
 
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void Tick(float DeltaSeconds) override;
+
 
 	virtual void ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation) override;
 	virtual void TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation) override;
@@ -25,6 +34,50 @@ public:
 	virtual void VictoryMatch() override;
 	virtual void DefeatMatch() override;
 	virtual void DrawMatch() override;
+
+	void InitPlayerInfo();
+	void UpdatePlayerInfo(const FCharacterStateBuffer& State);
+	void SetCameraTransform();
+	void InitPlayerUIInfo();
+	void UpdatePlayerUIInfo();
+	void RegisterInitialController(APlayerController* PC);
+	void TurnOnBattleWidget();
+	void SetPlayerMove(bool bCanMove);
+	void ReceiveSelectedBuff(APlayerController* player, FBuffType* Bufftype);
+	void ApplyBuffStat();
+	void CreateBuffSelectUI(AWitchController* Controller);
+	void CloseBuffSelectUI();
+	TArray<EBuffType> BuffUIInit();
+
+	UFUNCTION()
+	void OnRep_UpdatePlayerInitData();
+
+	UFUNCTION()
+	void OnRep_UpdatePlayer1DataUI();
+
+	UFUNCTION()
+	void OnRep_UpdatePlayer2DataUI();
+
+	UFUNCTION()
+	void OnRep_TurnOffBuffUI();
+
+	UFUNCTION()
+	void OnRep_SetPlayerMove();
+
+	UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayerInitData)
+	int PlayerDataChanged = 0;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayer1DataUI)
+	int Player1DataChanged = 0;
+
+	UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayer2DataUI)
+	int Player2DataChanged = 0;
+
+	UPROPERTY(ReplicatedUsing = OnRep_TurnOffBuffUI)
+	int SelectBuffPlayer = 0;
+
+	UPROPERTY(ReplicatedUsing = OnRep_SetPlayerMove)
+	bool bIsPlayerCanMove = true;
 
 private:
 
@@ -45,4 +98,64 @@ private:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_PlayBeAttackedMonsterAnimation(AActor* Attacker);
+
+protected:
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Camera")
+	FVector CameraLocation;
+
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Camera")
+	FRotator CameraRotation;
+
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Camera")
+	float CameraDistance;
+	
+public:
+
+	UOriginalSinPrjGameInstance* GameInstance = nullptr;
+
+	UPROPERTY()
+	TArray<TWeakObjectPtr<APlayerController>> PlayerControllerSet;
+
+	TArray<EBuffType> SelectedBuff;
+
+	FBuffType* Player1SelectedBuff;
+	FBuffType* Player2SelectedBuff;
+	
+	UPROPERTY(Replicated)
+	int bIsPlayerBuffSelect = 0;
+
+	UPROPERTY(Replicated)
+	float Player1ReceivedDamage = 0;
+
+	UPROPERTY(Replicated)
+	float Player2ReceivedDamage = 0;
+
+	UPROPERTY(Replicated)
+	int32 Player1DeathCount = 0;
+
+	UPROPERTY(Replicated)
+	int32 Player2DeathCount = 0;
+	
+	UPROPERTY(Replicated)
+	int32 Player1ApplyAttackCount = 0;
+
+	UPROPERTY(Replicated)
+	int32 Player2ApplyAttackCount = 0;
+
+	UPROPERTY(Replicated)
+	float SpendedStage1Timer = 0;
+
+	UPROPERTY(Replicated)
+	float SpendedStage2Timer = 0;
+	
+	UPROPERTY(Replicated)
+	FPlayerData Player1StateData;
+
+	UPROPERTY(Replicated)
+	FPlayerData Player2StateData;
+	
+	AMultiBattleGameMode* MultiBattleGameMode = nullptr;
+	
+	UPROPERTY(BlueprintReadOnly)
+	TArray<FPlayerData> PlayerInfos;
 };
