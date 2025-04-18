@@ -28,6 +28,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ObjectManager")
 	AActor* GetRespawnPlatform();
 
+	FVector GetTopPlatformLocation();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -54,6 +56,7 @@ protected:
 	int TempObjectSize;
 	float ObjectDistance;
 	float ObjectZLocation;
+	FVector TopPlatformLocation;
 
 private:
 

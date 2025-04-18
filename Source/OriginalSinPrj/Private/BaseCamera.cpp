@@ -75,6 +75,13 @@ void ABaseCamera::UpdateCameraLocationandRotation()
         CamDist = CameraState->GetCameraDistance();
         CamRot = CameraState->GetCameraRotation();
         CamLoc = CameraState->GetCameraLocation() + FVector(FMath::Min(-CamDist, -500.0f) / 2.0f, 0.0f, 0.0f);
+
+        UE_LOG(LogTemp, Warning, TEXT("CamLoc: %s"), *CamLoc.ToString());
+        UE_LOG(LogTemp, Warning, TEXT("CamDist: %f"), CamDist);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("카메라 스테이트 인식 불가"));
     }
 
     CameraComponent->SetWorldLocation(FMath::VInterpTo(CameraComponent->GetComponentLocation(), CamLoc, 0.01f, 5.0f));

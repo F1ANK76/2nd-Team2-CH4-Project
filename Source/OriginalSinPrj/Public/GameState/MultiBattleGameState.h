@@ -4,14 +4,17 @@
 #include "OriginalSinPrj/Interface/BattleEvent.h"
 #include "OriginalSinPrj/Interface/MatchManage.h"
 #include "Player/Struct/CharacterStateBuffer.h"
+#include "GameState/BaseGameState.h"
 #include "GameFramework/GameState.h"
 #include "OriginalSinPrj/Widget/AddedWidget/PlayerStateWidget.h"
 #include "MultiBattleGameState.generated.h"
 
 class AMultiBattleGameMode;
+struct FBuffType;
+class AWitchController;
 
 UCLASS()
-class ORIGINALSINPRJ_API AMultiBattleGameState : public AGameState, public IBattleEvent, public IMatchManage
+class ORIGINALSINPRJ_API AMultiBattleGameState : public ABaseGameState, public IBattleEvent, public IMatchManage
 {
 	GENERATED_BODY()
 	
@@ -39,6 +42,12 @@ public:
 	void UpdatePlayerUIInfo();
 	void RegisterInitialController(APlayerController* PC);
 	void TurnOnBattleWidget();
+	void SetPlayerMove(bool bCanMove);
+	void ReceiveSelectedBuff(APlayerController* player, FBuffType* Bufftype);
+	void ApplyBuffStat();
+	void CreateBuffSelectUI(AWitchController* Controller);
+	void CloseBuffSelectUI();
+	TArray<EBuffType> BuffUIInit();
 
 	UFUNCTION()
 	void OnRep_UpdatePlayerInitData();
@@ -49,6 +58,12 @@ public:
 	UFUNCTION()
 	void OnRep_UpdatePlayer2DataUI();
 
+	UFUNCTION()
+	void OnRep_TurnOffBuffUI();
+
+	UFUNCTION()
+	void OnRep_SetPlayerMove();
+
 	UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayerInitData)
 	int PlayerDataChanged = 0;
 	
@@ -57,6 +72,12 @@ public:
 
 	UPROPERTY(ReplicatedUsing = OnRep_UpdatePlayer2DataUI)
 	int Player2DataChanged = 0;
+
+	UPROPERTY(ReplicatedUsing = OnRep_TurnOffBuffUI)
+	int SelectBuffPlayer = 0;
+
+	UPROPERTY(ReplicatedUsing = OnRep_SetPlayerMove)
+	bool bIsPlayerCanMove = true;
 
 private:
 
@@ -90,8 +111,42 @@ protected:
 	
 public:
 
+	UOriginalSinPrjGameInstance* GameInstance = nullptr;
+
 	UPROPERTY()
 	TArray<TWeakObjectPtr<APlayerController>> PlayerControllerSet;
+
+	TArray<EBuffType> SelectedBuff;
+
+	FBuffType* Player1SelectedBuff;
+	FBuffType* Player2SelectedBuff;
+	
+	UPROPERTY(Replicated)
+	int bIsPlayerBuffSelect = 0;
+
+	UPROPERTY(Replicated)
+	float Player1ReceivedDamage = 0;
+
+	UPROPERTY(Replicated)
+	float Player2ReceivedDamage = 0;
+
+	UPROPERTY(Replicated)
+	int32 Player1DeathCount = 0;
+
+	UPROPERTY(Replicated)
+	int32 Player2DeathCount = 0;
+	
+	UPROPERTY(Replicated)
+	int32 Player1ApplyAttackCount = 0;
+
+	UPROPERTY(Replicated)
+	int32 Player2ApplyAttackCount = 0;
+
+	UPROPERTY(Replicated)
+	float SpendedStage1Timer = 0;
+
+	UPROPERTY(Replicated)
+	float SpendedStage2Timer = 0;
 	
 	UPROPERTY(Replicated)
 	FPlayerData Player1StateData;
@@ -102,5 +157,5 @@ public:
 	AMultiBattleGameMode* MultiBattleGameMode = nullptr;
 	
 	UPROPERTY(BlueprintReadOnly)
-	TMap<AActor*, FPlayerData> PlayerInfos;
+	TArray<FPlayerData> PlayerInfos;
 };

@@ -2,6 +2,7 @@
 
 
 #include "Player/BaseWitch.h"
+#include "DeathZone.h"
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
 #include "Player/Controller/WitchController.h"
@@ -19,6 +20,7 @@
 #include "OriginalSinPrj/Interface/BattleEvent.h"
 #include "Components/AudioComponent.h"
 #include "GameFramework/GameModeBase.h"
+#include "GameMode/MultiBattleGameMode.h"
 
 ABaseWitch::ABaseWitch()
 {
@@ -74,6 +76,7 @@ ABaseWitch::ABaseWitch()
 	LeftHandDamager->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 	RightHandDamager->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 
+	OnActorBeginOverlap.AddDynamic(this, &ABaseWitch::OnOverlapBegin);
 	Tags.Add((FName)"Player");
 }
 
@@ -521,6 +524,25 @@ void ABaseWitch::SetColorMode(bool Value)
 void ABaseWitch::SetColorIndex(bool Value)
 {
 	bIsFirstIndex = Value;
+}
+
+void ABaseWitch::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
+{
+	if (OtherActor && (OtherActor != this))
+	{
+		if (ADeathZone* DeathZone = Cast<ADeathZone>(OtherActor))
+		{
+			RequestTriggerDeathEvent(this);
+		}
+	}
+}
+
+void ABaseWitch::RequestTriggerDeathEvent(AActor* Player)
+{
+	if (AMultiBattleGameMode* GM = Cast<AMultiBattleGameMode>(GetWorld()->GetAuthGameMode()))
+	{
+		GM->OnDeathPlayer(Player);
+	}
 }
 
 void ABaseWitch::RequestDieToGameMode()

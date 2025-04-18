@@ -5,17 +5,80 @@
 #include "Player/Controller/WitchController.h"
 #include "Player/BaseWitch.h"
 #include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
+#include "OriginalSinPrj/GameInstance/Struct/BuffDataStruct.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "OriginalSinPrj/GameInstance/UISubsystem.h"
 
 AMultiBattleGameMode::AMultiBattleGameMode()
 	: CurrentActorArrayIndex(0)
 	, LevelObjectManager(nullptr)
 {
+	PrimaryActorTick.bCanEverTick = true;
+	
 	bUseSeamlessTravel = true; // Seamless Travel
 	GameStateClass = AMultiBattleGameState::StaticClass();
 	PlayerControllerClass = AWitchController::StaticClass();
 }
+
+void AMultiBattleGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+
+	// 엔진이 알아서 폰 스폰 & Possess & 복제까지 모두 처리
+	FTransform SpawnTransform(FRotator::ZeroRotator, PlayerSpawnLocations[SpawnLocationIndex]);
+	RestartPlayerAtTransform(NewPlayer, SpawnTransform);
+	SpawnLocationIndex++;
+
+	APawn* Pawn = NewPlayer->GetPawn();
+	if (ABaseWitch* Witch = Cast<ABaseWitch>(Pawn))
+	{
+		SpawnedCharacters.Add(Witch);
+		ActivePlayers.Add(Witch);
+		AlivePlayers.Add(Witch);
+		Witch->SetHpMode(false);
+	}
+	
+	Cast<AWitchController>(NewPlayer)->ResponseShowLevelWidget();
+
+	if (SpawnLocationIndex == 2)
+	{
+		StartGame();
+	}
+}
+
+void AMultiBattleGameMode::HandleSeamlessTravelPlayer(AController*& C)
+{
+	Super::HandleSeamlessTravelPlayer(C);
+
+	// C가 내 컨트롤러 타입인지 체크
+	AWitchController* PC = Cast<AWitchController>(C);
+	if (!PC) return;
+
+	// 1) 스폰 트랜스폼 계산(이미 스폰된 Pawn이 남아 있다면 스폰 로직이 아니라 Possess 로직만 필요할 수도 있고요)
+	FTransform SpawnTransform(FRotator::ZeroRotator, PlayerSpawnLocations[SpawnLocationIndex]);
+	RestartPlayerAtTransform(PC, SpawnTransform);
+	SpawnLocationIndex++;
+
+	// 2) Pawn 얻어서 리스트에 추가
+	if (ABaseWitch* Witch = Cast<ABaseWitch>(PC->GetPawn()))
+	{
+		SpawnedCharacters.Add(Witch);
+		ActivePlayers.Add(Witch);
+		AlivePlayers.Add(Witch);
+		Witch->SetHpMode(false);
+	}
+
+	// 3) UI 갱신
+	PC->ResponseShowLevelWidget();
+
+	// 4) 두 명 모두 처리된 뒤에 게임 시작
+	if (SpawnLocationIndex == 2)
+	{
+		StartGame();
+	}
+}
+
 
 void AMultiBattleGameMode::BeginPlay()
 {
@@ -31,19 +94,17 @@ void AMultiBattleGameMode::BeginPlay()
 
 	InitializeTempObjects();
 	LevelObjectManager->SpawnDeathZone();
+}
 
-	FTimerHandle DelayTimer;
-	GetWorldTimerManager().SetTimer(
-		DelayTimer,
-		this,
-		&AMultiBattleGameMode::StartGame,
-		10.0f,
-		false
-	);
+void AMultiBattleGameMode::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	MultiBattleGameState->SetCameraTransform();
 }
 
 void AMultiBattleGameMode::StartGame()
-{
+{	
 	SpawnedCharacters[0]->OnChangedState.AddDynamic(this, &AMultiBattleGameMode::OnCharacterStateReceived);
 	SpawnedCharacters[1]->OnChangedState.AddDynamic(this, &AMultiBattleGameMode::OnCharacterStateReceived);
 
@@ -52,60 +113,9 @@ void AMultiBattleGameMode::StartGame()
 	
 	MultiBattleGameState->InitPlayerInfo();
 	MultiBattleGameState->PlayerDataChanged++;
-	MultiBattleGameState->TurnOnBattleWidget();	
-}
+	MultiBattleGameState->TurnOnBattleWidget();
 
-void AMultiBattleGameMode::SpawnPlayers()
-{
-	// ĳ���� Ÿ�� ���� (��: �⺻ ĳ���� Ŭ����)
-	TArray<UClass*> CharacterClasses = { ABaseWitch::StaticClass(), ABaseWitch::StaticClass() };
-
-	for (int32 i = 0; i < CharacterClasses.Num(); ++i)
-	{
-		UClass* SpawnClass = CharacterClasses[i];
-
-		if (HasAuthority() && IsValid(SpawnClass))
-		{
-			// �÷��̾� ���� ���� ã��
-			AActor* StartActor = FindPlayerStart(nullptr);  // Ư�� �÷��̾��� ���� ���� ã��
-			if (!StartActor) continue;
-
-			FVector StartPos = StartActor->GetActorLocation();
-
-			FActorSpawnParameters SpawnParam;
-			SpawnParam.Owner = nullptr;  // �⺻������ ����
-			SpawnParam.Instigator = nullptr;  // �⺻������ ����
-
-			// ĳ���� ����
-			ABaseWitch* SpawnedCharacter = GetWorld()->SpawnActor<ABaseWitch>(SpawnClass, PlayerSpawnLocations[i], FRotator::ZeroRotator, SpawnParam);
-
-			if (SpawnedCharacter)
-			{
-				SpawnedCharacters.Add(SpawnedCharacter);
-				ActivePlayers.Add(SpawnedCharacter);
-				CurrentPlayerCount++;
-
-				SpawnedCharacter->SetHpMode(false);
-
-				UE_LOG(LogTemp, Warning, TEXT("Spawned Pawn: %s"), *GetNameSafe(SpawnedCharacter));
-			}
-		}
-	}
-
-	// SpawnedCharacters �迭�� ������ ĳ���͵��� Ȯ���� �� �ֽ��ϴ�.
-	for (ABaseWitch* Character : SpawnedCharacters)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Managed Character: %s"), *GetNameSafe(Character));
-	}
-
-	AlivePlayers.Empty(); // ���� ������ �����
-	for (AActor* Player : ActivePlayers)
-	{
-		if (Player) // null üũ �� ���� ���� �� ����
-		{
-			AlivePlayers.Add(Player);
-		}
-	}
+	UE_LOG(LogTemp, Warning, TEXT("PlayerInfos.Num() : %d"), MultiBattleGameState->PlayerInfos.Num());
 }
 
 void AMultiBattleGameMode::RespawnPlayer(APlayerController* PlayerController)
@@ -171,20 +181,12 @@ void AMultiBattleGameMode::InitPlayerUI()
 	UOriginalSinPrjGameInstance* MyGI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance());
 	if (MyGI)
 	{
-		MyGI->ResponseShowWidget();
+		if (IsValid(MyGI))
+		{
+			MyGI->ResponseShowWidget();
+		}
 	}
 }
-
-void AMultiBattleGameMode::PossessCharacter(APlayerController* PC, APawn* PawnToPossess)
-{
-	if (!PC || !PawnToPossess) return;
-
-	PawnToPossess->SetOwner(PC);
-	PC->Possess(PawnToPossess);
-
-	UE_LOG(LogTemp, Warning, TEXT("Possessed Pawn: %s by Controller: %s"), *GetNameSafe(PawnToPossess), *GetNameSafe(PC));
-}
-
 void AMultiBattleGameMode::InitializeTempObjects()
 {
 	LevelObjectManager->InitializeTempObjects();
@@ -203,77 +205,226 @@ void AMultiBattleGameMode::OnCharacterStateReceived(const FCharacterStateBuffer&
 	}
 }
 
-void AMultiBattleGameMode::HandleClientPossession(APlayerController* PC, int index)
+void AMultiBattleGameMode::RequestTurnOnBuffSelectUI(AWitchController* Controller)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Client Possess start %s"), *GetNameSafe(PC));
-	if (PC && SpawnedCharacters.Num() > 0)
+	Controller->Client_CreateBuffWidget();
+}
+
+void AMultiBattleGameMode::RequestTurnOffBuffSelectUI()
+{
+	MultiBattleGameState->SelectBuffPlayer++;
+	MultiBattleGameState->CloseBuffSelectUI();
+}
+
+void AMultiBattleGameMode::ApplyBuffToBothPlayer()
+{
+	//���� �ΰ� ������� ���� �����϶�� ��û.
+	if (IsValid(MultiBattleGameState))
 	{
-		APawn* PawnToPossess = SpawnedCharacters[index];
+		MultiBattleGameState->ApplyBuffStat();
+	}
+	RequestTurnOffBuffSelectUI();
+}
 
-		if (PawnToPossess && IsValid(PawnToPossess))
+void AMultiBattleGameMode::HandlePlayerKilled(AActor* DeadPlayer, AActor* Killer)
+{
+
+	UE_LOG(LogTemp, Warning, TEXT("HandlePlayerKilled Event Begin"));
+	UE_LOG(LogTemp, Warning, TEXT("ActivePlayers Size: %d"), ActivePlayers.Num());
+	UE_LOG(LogTemp, Warning, TEXT("AlivePlayers Size: %d"), AlivePlayers.Num());
+	if (CurrentPlayerCount > 1)
+	{
+		if (!IsValid(DeadPlayer))
 		{
-			// ���� ��Ʈ�ѷ��� ������ UnPossess ó��
-			APlayerController* OldPC = PawnToPossess->GetController<APlayerController>();
-			if (OldPC)
-			{
-				OldPC->UnPossess();  // ���� ��Ʈ�ѷ����� Pawn�� ����
-			}
-			// ���ο� ��Ʈ�ѷ��� �ش� Pawn�� Possess�ϵ��� ó��
-			PC->Possess(PawnToPossess);
-			PC->ClientRestart(PawnToPossess); // Ŭ���ʿ� ����� ���� ����
-
-
-			UE_LOG(LogTemp, Warning, TEXT("Client Possessed Pawn: %s by %s"),
-				*GetNameSafe(PawnToPossess), *GetNameSafe(PC));
+			UE_LOG(LogTemp, Warning, TEXT("DeadPlayer Is invalid"));
 		}
-		else
+
+		if (DeadPlayer == AlivePlayers[0])
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Pawn to possess is not valid."));
+			UE_LOG(LogTemp, Warning, TEXT("PlayerWitch1 Die"));
+			AlivePlayers.Remove(DeadPlayer);
+		}
+		else if (DeadPlayer == AlivePlayers[1])
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PlayerWitch2 Die"));
+			AlivePlayers.Remove(DeadPlayer);
+		}
+	}
+	else if (CurrentPlayerCount > 0)
+	{
+		if (DeadPlayer == AlivePlayers[0])
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PlayerWitch1 Die"));
+			AlivePlayers.Remove(DeadPlayer);
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PlayerController is invalid or no spawned characters."));
-	}
-	UE_LOG(LogTemp, Warning, TEXT("Client Possess ended %s"), *GetNameSafe(PC));
 
-	//Game Stage���� �ʿ��� ����� ���� ���� ������Ʈ�� ��Ʈ�ѷ� ����صα�
-	MultiBattleGameState->RegisterInitialController(PC);
+	}
+	CurrentPlayerCount--;
+
+
+
+	//ActivePlayers.Remove(DeadPlayer); // 알아서 내부에서 찾고 제거함 너무 위험.
+	//DeadPlayer->Destroy();   // 너무 위험
+	//test Code
+	if (CurrentPlayerCount <= 0)
+	{
+		bIsClear = false;
+		SetPlayerUnReady();
+
+		FTimerHandle DefeatHandle;
+		GetWorldTimerManager().SetTimer(DefeatHandle, FTimerDelegate::CreateLambda([this]()
+		{
+			EndGame();
+		}), 5.0f, false);
+	}
+}
+
+void AMultiBattleGameMode::SetPlayerUnReady()
+{
+	MultiBattleGameState->SetPlayerMove(false);
+	UWorld* WorldContext = GetWorld();
+
+	for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+	{
+		APlayerController* PC = It->Get();
+		if (PC && PC->GetPawn())
+		{
+			FString ControllerName = PC->GetName();
+			FString PawnName = PC->GetPawn()->GetName();
+
+			UE_LOG(LogTemp, Warning, TEXT("Disabling input for PlayerController: %s, Pawn: %s"), *ControllerName, *PawnName);
+
+			PC->GetPawn()->DisableInput(PC);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PlayerController or Pawn is null (PC: %s)"), PC ? *PC->GetName() : TEXT("nullptr"));
+		}
+	}
+}
+
+void AMultiBattleGameMode::SetPlayerReady()
+{
+	MultiBattleGameState->SetPlayerMove(true);
+    
+	UWorld* WorldContext = GetWorld();
+
+	for (FConstPlayerControllerIterator It = WorldContext->GetPlayerControllerIterator(); It; ++It)
+	{
+		APlayerController* PC = It->Get();
+		if (PC && PC->GetPawn())
+		{
+			PC->GetPawn()->EnableInput(PC);
+		}
+	}
+}
+
+void AMultiBattleGameMode::PlayerFallDie(AActor* DeadPlayer, AActor* Killer)
+{
+	ABaseWitch* Witch = Cast<ABaseWitch>(DeadPlayer);
+
+	
+	FPlayerData* Data = nullptr;
+	if (ActivePlayers[0] == DeadPlayer)
+	{
+		*Data = MultiBattleGameState->PlayerInfos[0];
+	}
+	if (ActivePlayers[1] == DeadPlayer)
+	{
+		*Data = MultiBattleGameState->PlayerInfos[0];
+	}
+
+	Data->LifePoint--;
+	
+	//test Code
+	if (IsValid(Witch))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PlayerWitch Die"));
+		if (Data->LifePoint < 0)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PlayerWitch kill"));
+			HandlePlayerKilled(DeadPlayer, Killer);
+			Witch->ResetCharacterState();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PlayerWitch respawn"));
+			Respawn(Witch);
+			Witch->ResetCharacterState();
+		}
+	}
+}
+
+void AMultiBattleGameMode::EndGame()
+{
+
+	//�ϴ� �÷��̾� �Է��� ���߱�.
+	SetPlayerUnReady();
+
+	//RequestOpenResultUI();
+	if (bIsClear == true) // GameClear
+	{
+
+	}
+	else
+	{
+
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Game End "));
+}
+
+void AMultiBattleGameMode::Respawn(AActor* DeadPlayer)
+{
+	UE_LOG(LogTemp, Warning, TEXT("PlayerWitch respawn"));
+
+	if (!IsValid(DeadPlayer))
+	{
+		return;
+	}
+	
+	ABaseWitch* Witch = Cast<ABaseWitch>(DeadPlayer);
+	if (Witch)
+	{
+		if (AWitchController* WitchController = Cast<AWitchController>(Witch->GetController()))
+		{
+			RequestTurnOnBuffSelectUI(WitchController);
+		}
+	}
+
+	FVector SpawnLocation = LevelObjectManager->GetTopPlatformLocation();
+	DeadPlayer->SetActorLocation(SpawnLocation); 
 }
 
 void AMultiBattleGameMode::PostSeamlessTravel()
 {
 	UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Called"));
-	Super::PostSeamlessTravel();  // �⺻ SeamlessTravel ó��
+	Super::PostSeamlessTravel();  // 기본 SeamlessTravel 처리
 
-	//��Ƽ�÷��� ����
-	SpawnPlayers();
-	int index = 0;
-	// Ŭ���̾�Ʈ�� ��Ʈ�ѷ��� ĳ���͸� ��Ī��Ŵ
+	if (UOriginalSinPrjGameInstance* GI = Cast<UOriginalSinPrjGameInstance>(GetGameInstance()))
+	{
+		if (UUISubsystem* UISub = GI->GetSubsystem<UUISubsystem>())
+		{
+			if (UISub->CurrentActiveWidget)
+			{
+				UISub->CurrentActiveWidget->RemoveFromParent();
+				UISub->CurrentActiveWidget = nullptr;
+			}
+		}
+	}
 
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
-		AWitchController* PC = Cast<AWitchController>(*It);
-		if (PC)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Controller Detected: %s"), *GetNameSafe(PC));
-			// �������� Ŭ���̾�Ʈ�� Pawn�� Ȯ���ϰ� Possess ó��
-			FTimerHandle TimerHandle;
-			GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this, PC, index]()
-				{
-					HandleClientPossession(PC, index);
-				}), 1.5f, false);
-			index++;
-		}
-		if (IsValid(PC))
+		if (AWitchController* PC = Cast<AWitchController>(*It))
 		{
 			PC->ResponseShowLevelWidget();
 		}
 	}
-
+	
 	UE_LOG(LogTemp, Warning, TEXT("PostSeamlessTravel Done"));
 }
-
 
 void AMultiBattleGameMode::ApplyDamage(AActor* Attacker, float Damage, const FVector& HitLocation)
 {
@@ -296,12 +447,73 @@ void AMultiBattleGameMode::TakeDamage(AActor* Victim, float Damage, const FVecto
 	}
 }
 
+void AMultiBattleGameMode::OnDeathPlayer(AActor* Player)
+{
+	ABaseWitch* Witch = Cast<ABaseWitch>(Player);
+
+	if (IsValid(Player))
+	{
+		if (ActivePlayers[0] == Player)
+		{
+			MultiBattleGameState->PlayerInfos[0].LifePoint--;
+			UE_LOG(LogTemp, Warning, TEXT("LifePoint : %d"), MultiBattleGameState->PlayerInfos[0].LifePoint);
+			
+			if (MultiBattleGameState->PlayerInfos[0].LifePoint < 0)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("PlayerWitch kill"));
+				HandlePlayerKilled(Player, Player);
+				Witch->ResetCharacterState();
+			}
+			else
+			{
+				if (IsValid(Witch))
+				{
+					UE_LOG(LogTemp, Warning, TEXT("PlayerWitch respawn"));
+					Respawn(Witch);
+					Witch->ResetCharacterState();
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("액터가 캐릭터로 인식되지 않음"));
+				}
+			}
+		}
+		if (ActivePlayers[1] == Player)
+		{
+			MultiBattleGameState->PlayerInfos[1].LifePoint--;
+			UE_LOG(LogTemp, Warning, TEXT("LifePoint : %d"), MultiBattleGameState->PlayerInfos[1].LifePoint);
+			
+			if (MultiBattleGameState->PlayerInfos[1].LifePoint < 0)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("PlayerWitch kill"));
+				HandlePlayerKilled(Player, Player);
+				Witch->ResetCharacterState();
+			}
+			else
+			{
+				if (IsValid(Witch))
+				{
+					UE_LOG(LogTemp, Warning, TEXT("PlayerWitch respawn"));
+					Respawn(Witch);
+					Witch->ResetCharacterState();
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("액터가 캐릭터로 인식되지 않음"));
+				}
+			}
+		}
+		UE_LOG(LogTemp, Warning, TEXT("PlayerWitch Die"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("액터가 nullptr"));
+	}
+}
+
 void AMultiBattleGameMode::OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation)
 {
-	if (AMultiBattleGameState* GS = Cast<AMultiBattleGameState>(UGameplayStatics::GetGameState(this)))
-	{
-		GS->OnDeathPlayer(Player, DeathLocation);
-	}
+	
 }
 
 void AMultiBattleGameMode::OnDeathMonster(AActor* Monster, const FVector& DeathLocation)

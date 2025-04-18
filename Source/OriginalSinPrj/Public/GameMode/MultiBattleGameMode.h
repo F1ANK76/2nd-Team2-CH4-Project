@@ -20,11 +20,12 @@ class ORIGINALSINPRJ_API AMultiBattleGameMode : public AGameMode, public IBattle
 	
 public:
 	AMultiBattleGameMode();
-
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+	virtual void HandleSeamlessTravelPlayer(AController*& C) override;
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 	void StartGame();
-	void SpawnPlayers();
 	void RespawnPlayer(APlayerController* PlayerController);
 
 	UFUNCTION(BlueprintCallable)
@@ -32,7 +33,8 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	virtual void TakeDamage(AActor* Victim, float Damage, const FVector& HitLocation) override;
-	
+	void OnDeathPlayer(AActor* Player);
+
 	UFUNCTION(BlueprintCallable)
 	virtual void OnDeathPlayer(ACharacter* Player, const FVector& DeathLocation) override;
 	
@@ -56,12 +58,11 @@ public:
 	void SpawnCamera();
 	void AttachPlayerToCamera(ACharacter* Player, ABaseCamera* Camera);
 	void InitPlayerUI();
-	void PossessCharacter(APlayerController* PC, APawn* PawnToPossess);
 
 	UFUNCTION()
 	void OnCharacterStateReceived(const FCharacterStateBuffer& State);
-	
-	void HandleClientPossession(APlayerController* PC, int index);
+	void RequestTurnOnBuffSelectUI(AWitchController* Controller);
+	void RequestTurnOffBuffSelectUI();
 
 	void RequestUpdateUI(int PlayerIndex)
 	{
@@ -77,6 +78,14 @@ public:
 		}
 	}
 
+	void ApplyBuffToBothPlayer();
+	void HandlePlayerKilled(AActor* DeadPlayer, AActor* Killer);
+	void SetPlayerUnReady();
+	void SetPlayerReady();
+	void SetPlayerUnReady(AActor* actor);
+	void PlayerFallDie(AActor* DeadPlayer, AActor* Killer);
+	void EndGame();
+	void Respawn(AActor* DeadPlayer);
 	virtual void PostSeamlessTravel() override;
 
 public:
@@ -92,7 +101,8 @@ public:
 
 	UPROPERTY()
 	TObjectPtr<AMultiBattleGameState> MultiBattleGameState = nullptr;
-	
+
+	TArray<FUniqueNetIdRepl> UniqueNetIdRepl;
 	TArray<AActor*> ActivePlayers;
 	TArray<AActor*> AlivePlayers;
 
@@ -119,4 +129,6 @@ private:
 	FTimerHandle ActorRevealTimer;
 	int32 CurrentActorArrayIndex;
 	int CurrentPlayerCount = 0;
+	int SpawnLocationIndex = 0;
+	bool bIsClear = true;
 };

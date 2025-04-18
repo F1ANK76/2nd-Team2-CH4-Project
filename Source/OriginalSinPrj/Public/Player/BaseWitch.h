@@ -90,6 +90,8 @@ public:
 	UFUNCTION(Server, Reliable)
 	void RequestPauseTimer();
 
+	void RequestTriggerDeathEvent(AActor* Player);
+
 	UFUNCTION(BlueprintCallable)
 	const float GetCurrentMana() const;
 
@@ -135,6 +137,9 @@ public:
 	void SetHpMode(bool Value);
 	void SetColorMode(bool Value);
 	void SetColorIndex(bool Value);
+
+	UFUNCTION()
+	void OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor);
 
 	void RequestDieToGameMode();
 
