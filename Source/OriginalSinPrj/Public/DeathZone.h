@@ -31,9 +31,6 @@ public:
 	UFUNCTION()
 	void TriggerOverlapPlatformEvent();
 
-	UFUNCTION(Server, Reliable)
-	void Server_TriggerOverlapWitchEvent(ABaseWitch* WitchActor);
-
 	FOnMyOverlapEvent OnMyOverlapEvent;
 
 	UPROPERTY(EditAnywhere, Replicated, Category = "Platform")

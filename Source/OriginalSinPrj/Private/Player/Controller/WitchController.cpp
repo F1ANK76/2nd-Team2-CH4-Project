@@ -4,9 +4,12 @@
 #include "Player/Controller/WitchController.h"
 #include <EnhancedInputSubsystems.h>
 #include "OriginalSinPrj/GameInstance/OriginalSinPrjGameInstance.h"
+#include "OriginalSinPrj/GameInstance/UISubsystem.h"
 #include "OriginalSinPrj/Public/GameMode/CooperationGameMode.h"
 #include "InputMappingContext.h"
 #include "MenuGameMode.h"
+#include "GameMode/MultiBattleGameMode.h"
+#include "OriginalSinPrj/GameInstance/UISettings.h"
 
 void AWitchController::OnReadiedClient()
 {
@@ -31,6 +34,32 @@ void AWitchController::OnClickedStartButton()
 
 void AWitchController::ResponseShowLevelWidget_Implementation()
 {
+	auto TryShow = [this]()
+	{
+		if (GetWorld() && !GetWorld()->bIsTearingDown)
+		{
+			if (UOriginalSinPrjGameInstance* GI = Cast<UOriginalSinPrjGameInstance>(GetWorld()->GetGameInstance()))
+				if (UUISubsystem* Sub = GI->GetSubsystem<UUISubsystem>())
+					if (Sub->CurrentActiveWidget)
+					{
+						ShowLevelWidget(GetWorld());
+						return true;
+					}
+		}
+		return false;
+	};
+
+	// 즉시 시도
+	if (!TryShow())
+	{
+		// 0.1초 후에 한 번 더 재시도
+		FTimerHandle RetryHandle;
+		GetWorldTimerManager().SetTimer(RetryHandle, FTimerDelegate::CreateLambda([TryShow]()
+		{
+			TryShow();
+		}), 0.1f, false);
+	}
+	
 	FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &ThisClass::ShowLevelWidget);
 }
 
@@ -151,6 +180,14 @@ void AWitchController::ShowLevelWidget(UWorld* LoadedWorld)
 	LocalGameInstance->ResponseShowWidget();
 }
 
+void AWitchController::Client_CreateBuffWidget_Implementation()
+{
+	if (AMultiBattleGameState* GM = Cast<AMultiBattleGameState>(GetWorld()->GetGameState()))
+	{
+		GM->CreateBuffSelectUI(this);
+	}
+}
+
 
 void AWitchController::Server_SelectBuff_Implementation(int32 BuffIndex, EBuffType buff)
 {
@@ -159,6 +196,10 @@ void AWitchController::Server_SelectBuff_Implementation(int32 BuffIndex, EBuffTy
 		if (ACooperationGameMode* MyGM = Cast<ACooperationGameMode>(GM))
 		{
 			MyGM->ApplyBuffToPlayer(this, BuffIndex, buff); // or GetPawn(), or PlayerState ��
+		}
+		if (AMultiBattleGameMode* MyGM = Cast<AMultiBattleGameMode>(GM))
+		{
+			MyGM->ApplyBuffToBothPlayer(); // or GetPawn(), or PlayerState ��
 		}
 	}
 }

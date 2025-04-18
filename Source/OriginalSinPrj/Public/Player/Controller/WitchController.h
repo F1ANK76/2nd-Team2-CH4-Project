@@ -85,6 +85,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintreadOnly, Category = "Input")
 	TObjectPtr<UInputAction> SkillAction5 = nullptr;
 
+	UFUNCTION(Client, Reliable)
+	void Client_CreateBuffWidget();
 
 protected:
 	UPROPERTY()
