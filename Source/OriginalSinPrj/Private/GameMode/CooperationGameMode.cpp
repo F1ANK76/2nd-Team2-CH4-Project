@@ -50,9 +50,10 @@ void ACooperationGameMode::BeginPlay()
     //Open Player UI;
     //InitPlayerUI();
 
+    /*
     SpawnKillZone();
     //Game Start Condition -> Start with a timer temporarily
-
+    */
 
     FTimerHandle TimerHandle;
     GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]()
@@ -1013,7 +1014,7 @@ void ACooperationGameMode::SpawnKillZone()
 {
     if (!ActorKillZone) return;  // UPROPERTY�� ������ Ŭ������ ������ ����
 
-    FVector SpawnLocation = FVector(0.f, 0.f, -500.f);  // ���ϴ� ��ġ
+    FVector SpawnLocation = FVector(0.f, 0.f, -5000.f);  // ���ϴ� ��ġ
     FRotator SpawnRotation = FRotator::ZeroRotator;
     FActorSpawnParameters SpawnParams;
     SpawnParams.Owner = this;
